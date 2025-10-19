@@ -1,0 +1,25 @@
+< THE SYMBOL TABLE >  ACTIVIDAD04_PBN.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+NUM1                     	00103     	2         	VAR       	(NOSEG)   
+NUM2                     	00105     	2         	VAR       	(NOSEG)   
+RESULTADO                	00107     	2         	VAR       	(NOSEG)   
+MSG1                     	00109     	1         	VAR       	(NOSEG)   
+MSG2                     	0012B     	1         	VAR       	(NOSEG)   
+MSG3                     	00156     	1         	VAR       	(NOSEG)   
+MSG4                     	00184     	1         	VAR       	(NOSEG)   
+MSGOVERFLOW              	00198     	1         	VAR       	(NOSEG)   
+LEERNUMERO               	001D2     	-1        	NEAR      	(NOSEG)   
+LEERDIGITO               	001DA     	-1        	LABEL     	(NOSEG)   
+FINLECTURA               	001FD     	-1        	LABEL     	(NOSEG)   
+MOSTRARNUMERO            	00203     	-1        	NEAR      	(NOSEG)   
+DIVIDIR                  	00215     	-1        	LABEL     	(NOSEG)   
+MOSTRARDIGITOS           	00220     	-1        	LABEL     	(NOSEG)   
+INICIO                   	0022F     	-1        	LABEL     	(NOSEG)   
+OVERFLOW                 	0026B     	-1        	LABEL     	(NOSEG)   
+CONTINUAR                	00272     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 19/10/2025  --  05:47:35 p. m. ] 
+< END >
+ 

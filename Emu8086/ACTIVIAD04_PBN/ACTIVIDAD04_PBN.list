@@ -1,0 +1,200 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+ACTIVIDAD04_PBN.com -- emu8086 assembler version: 4.08  
+ 
+[ 19/10/2025  --  05:47:35 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       ; Programa simple para sumar dos números (Tipo .COM)
+[   2]        :                                       ; Autor: Rodrigo Samborms
+[   3]        :                                       ; Fecha: 19 de Octubre, 2025
+[   4]        :                                       
+[   5]        :                                       ORG 100h               ; Los programas .COM comienzan en 100h
+[   6]        :                                       
+[   7]        :                                       ; Saltar sobre los datos al inicio del programa
+[   8]    0100: E9 2C 01                              JMP INICIO
+[   9]        :                                       
+[  10]        :                                       ; ============================================================
+[  11]        :                                       ; DATOS DEL PROGRAMA
+[  12]        :                                       ; ============================================================
+[  13]    0103: 00 00                                 num1 DW ?              ; Primer número (word para soportar hasta 999)
+[  14]    0105: 00 00                                 num2 DW ?              ; Segundo número
+[  15]    0107: 00 00                                 resultado DW ?         ; Variable para almacenar el resultado
+[  16]    0109: 50 72 6F 67 72 61 6D 61 20 64 65 20   msg1 DB 'Programa de suma de dos numeros', 0DH, 0AH, '$'
+                73 75 6D 61 20 64 65 20 64 6F 73 20 
+                6E 75 6D 65 72 6F 73 0D 0A 24       
+[  17]    012B: 49 6E 67 72 65 73 65 20 65 6C 20 70   msg2 DB 'Ingrese el primer numero (max 3 digitos): $'
+                72 69 6D 65 72 20 6E 75 6D 65 72 6F 
+                20 28 6D 61 78 20 33 20 64 69 67 69 
+                74 6F 73 29 3A 20 24                
+[  18]    0156: 0D 0A 49 6E 67 72 65 73 65 20 65 6C   msg3 DB 0DH, 0AH, 'Ingrese el segundo numero (max 3 digitos): $'
+                20 73 65 67 75 6E 64 6F 20 6E 75 6D 
+                65 72 6F 20 28 6D 61 78 20 33 20 64 
+                69 67 69 74 6F 73 29 3A 20 24       
+[  19]    0184: 0D 0A 45 6C 20 72 65 73 75 6C 74 61   msg4 DB 0DH, 0AH, 'El resultado es: $'
+                64 6F 20 65 73 3A 20 24             
+[  20]    0198: 0D 0A 45 52 52 4F 52 3A 20 4F 76 65   msgOverflow DB 0DH, 0AH, 'ERROR: Overflow detectado! El resultado excede 65535.', 0DH, 0AH, '$'
+                72 66 6C 6F 77 20 64 65 74 65 63 74 
+                61 64 6F 21 20 45 6C 20 72 65 73 75 
+                6C 74 61 64 6F 20 65 78 63 65 64 65 
+                20 36 35 35 33 35 2E 0D 0A 24       
+[  21]        :                                       
+[  22]        :                                       ; ============================================================
+[  23]        :                                       ; PROCEDIMIENTOS
+[  24]        :                                       ; ============================================================
+[  25]        :                                       
+[  26]        :                                       ; Procedimiento para leer un número de hasta 3 dígitos (ASCII a Binario)
+[  27]        :                                       ; Retorna el número en AX
+[  28]    01D2:                                       LeerNumero PROC
+[  29]    01D2: 53                                    PUSH BX
+[  30]    01D3: 51                                    PUSH CX
+[  31]    01D4: 52                                    PUSH DX
+[  32]        :                                       
+[  33]    01D5: 33 DB                                 XOR BX, BX         ; BX = 0 (acumulador del número)
+[  34]    01D7: B9 03 00                              MOV CX, 3          ; Máximo 3 dígitos
+[  35]        :                                       
+[  36]    01DA:                                       LeerDigito:
+[  37]    01DA: B4 01                                 MOV AH, 01H        ; Leer carácter del teclado
+[  38]    01DC: CD 21                                 INT 21H
+[  39]        :                                       
+[  40]    01DE: 3C 0D                                 CMP AL, 0DH        ; ¿Es Enter?
+[  41]    01E0: 74 1B                                 JE FinLectura      ; Si es Enter, terminar
+[  42]        :                                       
+[  43]    01E2: 3C 30                                 CMP AL, '0'        ; Verificar si es dígito válido
+[  44]    01E4: 72 F4                                 JB LeerDigito      ; Si es menor que '0', ignorar
+[  45]    01E6: 3C 39                                 CMP AL, '9'
+[  46]    01E8: 77 F0                                 JA LeerDigito      ; Si es mayor que '9', ignorar
+[  47]        :                                       
+[  48]        :                                       ; Convertir ASCII a número
+[  49]    01EA: 2C 30                                 SUB AL, 30H        ; AL = dígito numérico
+[  50]        :                                       
+[  51]        :                                       ; BX = BX * 10 + AL
+[  52]    01EC: 50                                    PUSH AX            ; Guardar AL
+[  53]    01ED: 8B C3                                 MOV AX, BX         ; AX = BX
+[  54]    01EF: BA 0A 00                              MOV DX, 10
+[  55]    01F2: F7 E2                                 MUL DX             ; AX = AX * 10
+[  56]    01F4: 8B D8                                 MOV BX, AX         ; BX = AX
+[  57]    01F6: 58                                    POP AX             ; Recuperar AL
+[  58]    01F7: 32 E4                                 XOR AH, AH         ; AH = 0
+[  59]    01F9: 03 D8                                 ADD BX, AX         ; BX = BX + AL
+[  60]        :                                       
+[  61]    01FB: E2 DD                                 LOOP LeerDigito    ; Repetir hasta 3 dígitos
+[  62]        :                                       
+[  63]    01FD:                                       FinLectura:
+[  64]    01FD: 8B C3                                 MOV AX, BX         ; Retornar número en AX
+[  65]        :                                       
+[  66]    01FF: 5A                                    POP DX
+[  67]    0200: 59                                    POP CX
+[  68]    0201: 5B                                    POP BX
+[  69]    0202: C3                                    RET
+[  70]        :                                       LeerNumero ENDP
+[  71]        :                                       
+[  72]        :                                       ; Procedimiento para mostrar un número (Binario a ASCII)
+[  73]        :                                       ; Recibe el número en AX
+[  74]    0203:                                       MostrarNumero PROC
+[  75]    0203: 50                                    PUSH AX
+[  76]    0204: 53                                    PUSH BX
+[  77]    0205: 51                                    PUSH CX
+[  78]    0206: 52                                    PUSH DX
+[  79]        :                                       
+[  80]    0207: 33 C9                                 XOR CX, CX         ; Contador de dígitos
+[  81]    0209: BB 0A 00                              MOV BX, 10         ; Divisor
+[  82]        :                                       
+[  83]        :                                       ; Caso especial: si el número es 0
+[  84]    020C: 3D 00 00                              CMP AX, 0
+[  85]    020F: 75 04                                 JNE Dividir
+[  86]    0211: 50                                    PUSH AX
+[  87]    0212: 41                                    INC CX
+[  88]    0213: EB 0B                                 JMP MostrarDigitos
+[  89]        :                                       
+[  90]    0215:                                       Dividir:
+[  91]    0215: 33 D2                                 XOR DX, DX         ; DX = 0
+[  92]    0217: F7 F3                                 DIV BX             ; AX = AX / 10, DX = resto
+[  93]    0219: 52                                    PUSH DX            ; Guardar dígito en la pila
+[  94]    021A: 41                                    INC CX             ; Incrementar contador
+[  95]    021B: 3D 00 00                              CMP AX, 0          ; ¿Quedan más dígitos?
+[  96]    021E: 75 F5                                 JNE Dividir        ; Si quedan, continuar
+[  97]        :                                       
+[  98]    0220:                                       MostrarDigitos:
+[  99]    0220: 5A                                    POP DX             ; Recuperar dígito
+[ 100]    0221: 80 C2 30                              ADD DL, 30H        ; Convertir a ASCII
+[ 101]    0224: B4 02                                 MOV AH, 02H        ; Mostrar carácter
+[ 102]    0226: CD 21                                 INT 21H
+[ 103]    0228: E2 F6                                 LOOP MostrarDigitos ; Repetir para todos los dígitos
+[ 104]        :                                       
+[ 105]    022A: 5A                                    POP DX
+[ 106]    022B: 59                                    POP CX
+[ 107]    022C: 5B                                    POP BX
+[ 108]    022D: 58                                    POP AX
+[ 109]    022E: C3                                    RET
+[ 110]        :                                       MostrarNumero ENDP
+[ 111]        :                                       
+[ 112]        :                                       ; ============================================================
+[ 113]        :                                       ; CÓDIGO PRINCIPAL
+[ 114]        :                                       ; ============================================================
+[ 115]    022F:                                       INICIO:
+[ 116]        :                                       ; Mostrar mensaje inicial
+[ 117]    022F: BA 09 01                              LEA DX, msg1
+[ 118]    0232: B4 09                                 MOV AH, 09H
+[ 119]    0234: CD 21                                 INT 21H
+[ 120]        :                                       
+[ 121]        :                                       ; Pedir primer número
+[ 122]    0236: BA 2B 01                              LEA DX, msg2
+[ 123]    0239: B4 09                                 MOV AH, 09H
+[ 124]    023B: CD 21                                 INT 21H
+[ 125]    023D: E8 92 FF                              CALL LeerNumero    ; Lee número de hasta 3 dígitos
+[ 126]    0240: A3 03 01                              MOV [num1], AX     ; Guardar primer número
+[ 127]        :                                       
+[ 128]        :                                       ; Pedir segundo número
+[ 129]    0243: BA 56 01                              LEA DX, msg3
+[ 130]    0246: B4 09                                 MOV AH, 09H
+[ 131]    0248: CD 21                                 INT 21H
+[ 132]    024A: E8 85 FF                              CALL LeerNumero    ; Lee número de hasta 3 dígitos
+[ 133]    024D: A3 05 01                              MOV [num2], AX     ; Guardar segundo número
+[ 134]        :                                       
+[ 135]        :                                       ; Realizar la suma
+[ 136]    0250: A1 03 01                              MOV AX, [num1]
+[ 137]    0253: 03 06 05 01                           ADD AX, [num2]
+[ 138]    0257: 72 12                                 JC Overflow        ; Si hay acarreo, hay overflow
+[ 139]    0259: A3 07 01                              MOV [resultado], AX
+[ 140]        :                                       
+[ 141]        :                                       ; Mostrar resultado
+[ 142]    025C: BA 84 01                              LEA DX, msg4
+[ 143]    025F: B4 09                                 MOV AH, 09H
+[ 144]    0261: CD 21                                 INT 21H
+[ 145]    0263: A1 07 01                              MOV AX, [resultado]
+[ 146]    0266: E8 9A FF                              CALL MostrarNumero ; Mostrar resultado sin restricción de dígitos
+[ 147]    0269: EB 07                                 JMP Continuar
+[ 148]        :                                       
+[ 149]    026B:                                       Overflow:
+[ 150]        :                                       ; Mostrar mensaje de overflow
+[ 151]    026B: BA 98 01                              LEA DX, msgOverflow
+[ 152]    026E: B4 09                                 MOV AH, 09H
+[ 153]    0270: CD 21                                 INT 21H
+[ 154]        :                                       
+[ 155]    0272:                                       Continuar:
+[ 156]        :                                       
+[ 157]        :                                       ; Salto de línea final
+[ 158]    0272: B2 0D                                 MOV DL, 0DH
+[ 159]    0274: B4 02                                 MOV AH, 02H
+[ 160]    0276: CD 21                                 INT 21H
+[ 161]    0278: B2 0A                                 MOV DL, 0AH
+[ 162]    027A: B4 02                                 MOV AH, 02H
+[ 163]    027C: CD 21                                 INT 21H
+[ 164]        :                                       
+[ 165]        :                                       ; Terminar el programa
+[ 166]    027E: B4 4C                                 MOV AH, 4CH
+[ 167]    0280: CD 21                                 INT 21H
+[ 168]        :                                       
+[ 169]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
