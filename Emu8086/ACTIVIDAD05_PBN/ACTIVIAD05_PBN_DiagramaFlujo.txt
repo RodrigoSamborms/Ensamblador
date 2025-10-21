@@ -1,0 +1,336 @@
+================================================================================
+DIAGRAMA DE FLUJO - ACTIVIAD05_PBN.asm
+Manejo de Directorios y Archivos en Ensamblador (tipo .COM)
+Autor: Rodrigo Samborms
+Fecha: 21 de Octubre, 2025
+================================================================================
+
+RESUMEN DEL PROGRAMA:
+El programa crea un directorio, genera un archivo de texto con la fecha actual,
+escribe la fecha en formato DD/MM/AAAA, luego lee el archivo y muestra su
+contenido en pantalla.
+
+================================================================================
+FLUJO PRINCIPAL DEL PROGRAMA
+================================================================================
+
+    [INICIO]
+       |
+       v
+  ┌─────────────────────────────────────┐
+  │ 1. INICIALIZAR SEGMENTO DE DATOS    │
+  │    - Asegurar DS = CS (modelo .COM) │
+  │    - Mostrar encabezado del programa│
+  └──────────────┬──────────────────────┘
+                 |
+                 v
+  ┌─────────────────────────────────────────────────────┐
+  │ 2. CREAR DIRECTORIO                                 │
+  │    Ruta: C:\emu8086\MyBuild\Rodrigo                 │
+  │    INT 21h, AH=39h (MKDIR)                          │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+         ┌───────┴───────┐
+         │  ¿CF=0?       │ (¿Se creó exitosamente?)
+         └───┬───────┬───┘
+             │       │
+          SI │       │ NO (CF=1)
+             │       │
+             v       v
+    ┌──────────┐   ┌────────────────────────────────┐
+    │ Mostrar  │   │ Verificar si ya existe         │
+    │ "Creado" │   │ INT 21h, AX=4300h (Get Attrs)  │
+    └─────┬────┘   └────────┬───────────────────────┘
+          │                 │
+          │         ┌───────┴───────┐
+          │         │  ¿CF=0?       │ (¿Existe?)
+          │         └───┬───────┬───┘
+          │             │       │
+          │          SI │       │ NO
+          │             │       │
+          │             v       v
+          │    ┌────────────┐ ┌─────────────┐
+          │    │ "Directorio│ │ "Error al   │
+          │    │ existente, │ │ crear dir,  │
+          │    │ CF activa" │ │ CF activa"  │
+          │    └──────┬─────┘ └──────┬──────┘
+          │           │               │
+          └───────────┴───────────────┘
+                      |
+                      v
+  ┌─────────────────────────────────────────────────────┐
+  │ 3. CONSTRUIR FECHA                                  │
+  │    - INT 21h, AH=2Ah (Get Date)                     │
+  │    - CX=año, DH=mes, DL=día                         │
+  │    - Convertir a ASCII formato DD/MM/AAAA           │
+  │    - Agregar CRLF (0Dh, 0Ah)                        │
+  │    - Guardar en bufferFecha                         │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+  ┌─────────────────────────────────────────────────────┐
+  │ 4. CREAR ARCHIVO                                    │
+  │    Ruta: C:\emu8086\MyBuild\Rodrigo\Torres.txt      │
+  │    INT 21h, AH=3Ch (CREATE)                         │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+         ┌───────┴───────┐
+         │  ¿CF=0?       │ (¿Se creó?)
+         └───┬───────┬───┘
+             │       │
+          SI │       │ NO (CF=1)
+             │       │
+             │       v
+             │   ┌──────────────────────────────────┐
+             │   │ INTENTAR ABRIR PARA ESCRITURA    │
+             │   │ INT 21h, AH=3Dh, AL=2 (R/W)      │
+             │   └─────────┬────────────────────────┘
+             │             │
+             │     ┌───────┴───────┐
+             │     │  ¿CF=0?       │
+             │     └───┬───────┬───┘
+             │         │       │
+             │      SI │       │ NO
+             │         │       │
+             │         v       v
+             │  ┌──────────┐ ┌──────────────┐
+             │  │ "Archivo │ │ Ir a ERROR   │
+             │  │ existe,  │ │              │
+             │  │ CF activa│ └──────────────┘
+             │  └─────┬────┘
+             │        │
+             └────────┘
+                 |
+                 v
+  ┌─────────────────────────────────────────────────────┐
+  │ 5. ESCRIBIR FECHA EN ARCHIVO                        │
+  │    INT 21h, AH=40h (WRITE)                          │
+  │    BX=manejador, CX=longitudFecha, DX=bufferFecha   │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+         ┌───────┴───────┐
+         │ ¿Bytes escritos│
+         │ = esperados?   │
+         └───┬───────┬────┘
+             │       │
+          SI │       │ NO
+             │       │
+             │       v
+             │   ┌──────────────┐
+             │   │ CERRAR y     │
+             │   │ Ir a ERROR   │
+             │   └──────────────┘
+             v
+  ┌─────────────────────────────────────────────────────┐
+  │ 6. CERRAR ARCHIVO DESPUÉS DE ESCRIBIR               │
+  │    INT 21h, AH=3Eh (CLOSE)                          │
+  │    Mostrar "Escritura OK"                           │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+  ┌─────────────────────────────────────────────────────┐
+  │ 7. ABRIR ARCHIVO PARA LECTURA                       │
+  │    Ruta: C:\emu8086\MyBuild\Rodrigo\Torres.txt      │
+  │    INT 21h, AH=3Dh, AL=0 (solo lectura)             │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+         ┌───────┴───────┐
+         │  ¿CF=0?       │
+         └───┬───────┬───┘
+             │       │
+          SI │       │ NO
+             │       │
+             │       v
+             │   ┌──────────────┐
+             │   │ Ir a ERROR   │
+             │   │ DE LECTURA   │
+             │   └──────────────┘
+             v
+  ┌─────────────────────────────────────────────────────┐
+  │ 8. LEER CONTENIDO DEL ARCHIVO                      │
+  │    INT 21h, AH=3Fh (READ)                           │
+  │    BX=manejador, CX=128, DX=bufferLectura           │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+  ┌─────────────────────────────────────────────────────┐
+  │ 9. CERRAR ARCHIVO DESPUÉS DE LEER                   │
+  │    INT 21h, AH=3Eh (CLOSE)                          │
+  └──────────────┬──────────────────────────────────────┘
+                 |
+                 v
+         ┌───────┴───────┐
+         │ ¿Bytes leídos │
+         │ > 0?          │
+         └───┬───────┬───┘
+             │       │
+          SI │       │ NO
+             │       │
+             v       v
+  ┌──────────────┐ ┌─────────────────┐
+  │ 10. MOSTRAR  │ │ Mostrar         │
+  │ CONTENIDO    │ │ "Archivo vacío" │
+  │ Imprimir     │ └────────┬────────┘
+  │ bufferLectura│          │
+  │ + CRLF       │          │
+  └──────┬───────┘          │
+         └──────────────────┘
+                 |
+                 v
+  ┌─────────────────────────────────────────────────────┐
+  │ 11. TERMINAR PROGRAMA                               │
+  │     Mostrar "Fin del programa"                      │
+  │     INT 21h, AX=4C00h (EXIT)                        │
+  └─────────────────────────────────────────────────────┘
+       |
+       v
+    [FIN]
+
+
+================================================================================
+SERVICIOS DOS UTILIZADOS (INT 21h)
+================================================================================
+
+┌────────┬──────────────────────────────────────────────────────────┐
+│ AH=2Ah │ Get Date - Obtener fecha del sistema                     │
+│        │ Salida: CX=año, DH=mes, DL=día, AL=día de la semana      │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AH=39h │ MKDIR - Crear directorio                                 │
+│        │ Entrada: DS:DX = puntero a ruta ASCIIZ                   │
+│        │ Salida: CF=0 si OK, CF=1 si error (AX=código error)      │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AH=3Ch │ CREATE - Crear o truncar archivo                         │
+│        │ Entrada: CX=atributos, DS:DX = puntero a ruta ASCIIZ     │
+│        │ Salida: CF=0 si OK (AX=handle), CF=1 si error            │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AH=3Dh │ OPEN - Abrir archivo existente                           │
+│        │ Entrada: AL=modo (0=R, 1=W, 2=R/W), DS:DX = ruta ASCIIZ  │
+│        │ Salida: CF=0 si OK (AX=handle), CF=1 si error            │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AH=3Eh │ CLOSE - Cerrar archivo                                   │
+│        │ Entrada: BX=handle                                       │
+│        │ Salida: CF=0 si OK, CF=1 si error                        │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AH=3Fh │ READ - Leer de archivo                                   │
+│        │ Entrada: BX=handle, CX=bytes, DS:DX = buffer             │
+│        │ Salida: CF=0 si OK (AX=bytes leídos), CF=1 si error     │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AH=40h │ WRITE - Escribir a archivo                               │
+│        │ Entrada: BX=handle, CX=bytes, DS:DX = buffer             │
+│        │ Salida: CF=0 si OK (AX=bytes escritos), CF=1 si error   │
+├────────┼──────────────────────────────────────────────────────────┤
+│ AX=4300h│ Get File Attributes - Obtener atributos de archivo/dir │
+│        │ Entrada: DS:DX = puntero a ruta ASCIIZ                   │
+│        │ Salida: CF=0 si existe (CX=atributos), CF=1 si no existe│
+├────────┼──────────────────────────────────────────────────────────┤
+│ AX=4C00h│ EXIT - Terminar programa                                │
+│        │ Entrada: AL=código de salida (normalmente 0)             │
+└────────┴──────────────────────────────────────────────────────────┘
+
+
+================================================================================
+PROCEDIMIENTOS PRINCIPALES
+================================================================================
+
+┌────────────────────┬────────────────────────────────────────────────┐
+│ ImprimirCadena     │ Imprime cadena terminada en '$'                │
+│                    │ Entrada: DX = puntero a cadena                 │
+│                    │ Usa: INT 21h, AH=09h                           │
+├────────────────────┼────────────────────────────────────────────────┤
+│ ImprimirCRLF       │ Imprime salto de línea (CR+LF)                 │
+│                    │ Usa: INT 21h, AH=02h (dos veces)               │
+├────────────────────┼────────────────────────────────────────────────┤
+│ ImprimirBuffer     │ Imprime CX bytes desde DS:SI                   │
+│                    │ Entrada: CX = bytes, SI = puntero             │
+│                    │ Usa: INT 21h, AH=02h (en bucle)                │
+├────────────────────┼────────────────────────────────────────────────┤
+│ DosDigitos         │ Convierte AL (0..99) a 2 dígitos ASCII         │
+│                    │ Entrada: AL = valor, DI = destino              │
+│                    │ Salida: [DI]=decenas, [DI+1]=unidades, DI+=2   │
+│                    │ Usa: AAM (ASCII Adjust after Multiply)         │
+├────────────────────┼────────────────────────────────────────────────┤
+│ CuatroDigitos      │ Convierte AX (0..9999) a 4 dígitos ASCII       │
+│                    │ Entrada: AX = valor, DI = destino              │
+│                    │ Salida: escribe 4 caracteres, DI += 4          │
+│                    │ Usa: divisiones sucesivas (1000, 100, 10)      │
+├────────────────────┼────────────────────────────────────────────────┤
+│ ConstruirFecha     │ Construye DD/MM/AAAA + CRLF en bufferFecha     │
+│                    │ Usa: INT 21h AH=2Ah, DosDigitos, CuatroDigitos │
+│                    │ Salida: longitudFecha = bytes totales          │
+└────────────────────┴────────────────────────────────────────────────┘
+
+
+================================================================================
+VARIABLES PRINCIPALES
+================================================================================
+
+┌──────────────────┬────────┬────────────────────────────────────────────┐
+│ Nombre           │ Tipo   │ Descripción                                │
+├──────────────────┼────────┼────────────────────────────────────────────┤
+│ rutaDirectorio   │ DB     │ 'C:\emu8086\MyBuild\Rodrigo', 0            │
+│ rutaArchivo      │ DB     │ 'C:\emu8086\MyBuild\Rodrigo\Torres.txt', 0 │
+│ bufferFecha      │ DB 16  │ Buffer para construir fecha DD/MM/AAAA     │
+│ longitudFecha    │ DW     │ Longitud en bytes de la fecha construida   │
+│ manejador        │ DW     │ Handle del archivo abierto                 │
+│ bytesLeidos      │ DW     │ Cantidad de bytes leídos del archivo       │
+│ bufferLectura    │ DB 128 │ Buffer para leer contenido del archivo     │
+└──────────────────┴────────┴────────────────────────────────────────────┘
+
+
+================================================================================
+MANEJO DE ERRORES Y BANDERA CF (Carry Flag)
+================================================================================
+
+El programa detecta errores cuando la bandera CF se activa (CF=1) después de
+llamar a servicios DOS. Los mensajes incluyen:
+
+1. DIRECTORIO:
+   - Si CF=1 tras MKDIR, verifica con Get File Attributes:
+     * Si existe → "Directorio existente, la bandera CF se ha activado"
+     * Si no existe → "ERROR al crear directorio, la bandera CF se ha activado"
+
+2. ARCHIVO:
+   - Si CF=1 tras CREATE:
+     * Intenta OPEN con modo escritura
+     * Si funciona → "Archivo existente (CREATE falló), CF activada"
+     * Si falla → "ERROR al crear/escribir/cerrar archivo"
+   
+   - Verifica bytes escritos = bytes esperados (para detectar disco lleno)
+
+3. LECTURA:
+   - Si CF=1 tras OPEN o READ → "ERROR al abrir/leer archivo"
+   - Si bytes leídos = 0 → "Aviso: el archivo está vacío"
+
+
+================================================================================
+NOTAS PEDAGÓGICAS
+================================================================================
+
+1. MODELO .COM:
+   - Usa ORG 100h (espacio reservado para PSP - Program Segment Prefix)
+   - Un solo segmento para código y datos (CS=DS=ES=SS)
+   - Tamaño máximo: 64 KB - 256 bytes
+   - JMP INICIO evita ejecutar datos como código
+
+2. CONVERSIÓN HEXADECIMAL → ASCII:
+   - AAM: convierte AL a BCD (AH=decenas, AL=unidades)
+   - Agregar '0' (30h) convierte BCD a ASCII visible
+
+3. ESTRUCTURA DIDÁCTICA:
+   - DATOS primero: fácil ver qué usa el programa
+   - PROCEDIMIENTOS después: herramientas/funciones reutilizables
+   - CÓDIGO PRINCIPAL al final: lógica del flujo principal
+   - Nombres en español para audiencia hispanohablante
+
+4. SEGURIDAD:
+   - Todas las operaciones en C:\emu8086\MyBuild\ (aislado)
+   - Cierre de archivos incluso en caso de error
+   - Validaciones: CF, bytes escritos, bytes leídos
+
+================================================================================
+FIN DEL DIAGRAMA DE FLUJO
+================================================================================
