@@ -12,6 +12,7 @@ JMP INICIO
 ; ============================================================
 rutaDirectorio db 'C:\emu8086\MyBuild\Rodrigo', 0
 rutaArchivo    db 'C:\emu8086\MyBuild\Rodrigo\Torres.txt', 0
+rutaPadre      db 'C:\emu8086\MyBuild', 0
 
 msgEncabezado  db 'ACTIVIAD05_PBN - Directorios y Archivos', 0Dh, 0Ah, '$'
 msgCrearDir    db 0Dh, 0Ah, 'Creando directorio: C:\emu8086\MyBuild\Rodrigo', 0Dh, 0Ah, '$'
@@ -24,6 +25,10 @@ msgCrearArchivo db 0Dh, 0Ah, 'Creando archivo y escribiendo fecha...', 0Dh, 0Ah,
 msgArchivoOk    db 'Escritura OK.', 0Dh, 0Ah, '$'
 msgArchivoError db 'ERROR al crear/escribir/cerrar archivo.', 0Dh, 0Ah, '$'
 msgArchivoExiste db 'Archivo existente (CREATE fallo), la bandera CF se ha activado. Se abrira para escribir.', 0Dh, 0Ah, '$'
+
+msgCambiarDir   db 'Regresando al directorio padre...', 0Dh, 0Ah, '$'
+msgDirCambiado  db 'Directorio cambiado a: C:\emu8086\MyBuild', 0Dh, 0Ah, '$'
+msgErrorCambio  db 'ERROR al cambiar de directorio.', 0Dh, 0Ah, '$'
 
 msgLeerArchivo  db 0Dh, 0Ah, 'Leyendo archivo...', 0Dh, 0Ah, '$'
 msgContenidoLeido db 'Contenido leido:', 0Dh, 0Ah, '$'
@@ -262,6 +267,21 @@ HACER_ESCRITURA:
     jc  ARCHIVO_ERROR
 
     lea dx, msgArchivoOk
+    call ImprimirCadena
+
+    ; Cambiar al directorio padre
+    lea dx, msgCambiarDir
+    call ImprimirCadena
+    lea dx, rutaPadre
+    mov ah, 3Bh                       ; CHDIR (Change Directory)
+    int 21h
+    jc  ERROR_CAMBIO_DIR
+    lea dx, msgDirCambiado
+    call ImprimirCadena
+    jmp LEER_ARCHIVO
+
+ERROR_CAMBIO_DIR:
+    lea dx, msgErrorCambio
     call ImprimirCadena
     jmp LEER_ARCHIVO
 
