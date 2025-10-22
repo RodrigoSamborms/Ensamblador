@@ -1,0 +1,445 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+ACTIVIDAD05_PBN.com -- emu8086 assembler version: 4.08  
+ 
+[ 21/10/2025  --  05:24:02 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       ; ACTIVIAD05_PBN.asm - Manejo de directorios y archivos (tipo .COM)
+[   2]        :                                       ; Autor: Rodrigo Samborms
+[   3]        :                                       ; Fecha: 21 de Octubre, 2025
+[   4]        :                                       
+[   5]        :                                       ORG 100h                                  ; Programas .COM inician en 100h
+[   6]        :                                       
+[   7]        :                                       ; Saltar sobre datos y procedimientos
+[   8]    0100: E9 5C 04                              JMP INICIO
+[   9]        :                                       
+[  10]        :                                       ; ============================================================
+[  11]        :                                       ; DATOS DEL PROGRAMA
+[  12]        :                                       ; ============================================================
+[  13]    0103: 43 3A 5C 65 6D 75 38 30 38 36 5C 4D   rutaDirectorio db 'C:\emu8086\MyBuild\Rodrigo', 0
+                79 42 75 69 6C 64 5C 52 6F 64 72 69 
+                67 6F 00                            
+[  14]    011E: 43 3A 5C 65 6D 75 38 30 38 36 5C 4D   rutaArchivo    db 'C:\emu8086\MyBuild\Rodrigo\Torres.txt', 0
+                79 42 75 69 6C 64 5C 52 6F 64 72 69 
+                67 6F 5C 54 6F 72 72 65 73 2E 74 78 
+                74 00                               
+[  15]    0144: 43 3A 5C 65 6D 75 38 30 38 36 5C 4D   rutaPadre      db 'C:\emu8086\MyBuild', 0
+                79 42 75 69 6C 64 00                
+[  16]        :                                       
+[  17]    0157: 41 43 54 49 56 49 41 44 30 35 5F 50   msgEncabezado  db 'ACTIVIAD05_PBN - Directorios y Archivos', 0Dh, 0Ah, '$'
+                42 4E 20 2D 20 44 69 72 65 63 74 6F 
+                72 69 6F 73 20 79 20 41 72 63 68 69 
+                76 6F 73 0D 0A 24                   
+[  18]    0181: 0D 0A 43 72 65 61 6E 64 6F 20 64 69   msgCrearDir    db 0Dh, 0Ah, 'Creando directorio: C:\emu8086\MyBuild\Rodrigo', 0Dh, 0Ah, '$'
+                72 65 63 74 6F 72 69 6F 3A 20 43 3A 
+                5C 65 6D 75 38 30 38 36 5C 4D 79 42 
+                75 69 6C 64 5C 52 6F 64 72 69 67 6F 
+                0D 0A 24                            
+[  19]    01B4: 44 69 72 65 63 74 6F 72 69 6F 20 63   msgDirCreado   db 'Directorio creado (o ya existente).', 0Dh, 0Ah, '$'
+                72 65 61 64 6F 20 28 6F 20 79 61 20 
+                65 78 69 73 74 65 6E 74 65 29 2E 0D 
+                0A 24                               
+[  20]    01DA: 45 52 52 4F 52 20 61 6C 20 63 72 65   msgDirError    db 'ERROR al crear directorio.', 0Dh, 0Ah, '$'
+                61 72 20 64 69 72 65 63 74 6F 72 69 
+                6F 2E 0D 0A 24                      
+[  21]    01F7: 44 69 72 65 63 74 6F 72 69 6F 20 65   msgDirExiste   db 'Directorio existente, la bandera CF se ha activado.', 0Dh, 0Ah, '$'
+                78 69 73 74 65 6E 74 65 2C 20 6C 61 
+                20 62 61 6E 64 65 72 61 20 43 46 20 
+                73 65 20 68 61 20 61 63 74 69 76 61 
+                64 6F 2E 0D 0A 24                   
+[  22]    022D: 45 52 52 4F 52 20 61 6C 20 63 72 65   msgDirErrorCF  db 'ERROR al crear directorio, la bandera CF se ha activado.', 0Dh, 0Ah, '$'
+                61 72 20 64 69 72 65 63 74 6F 72 69 
+                6F 2C 20 6C 61 20 62 61 6E 64 65 72 
+                61 20 43 46 20 73 65 20 68 61 20 61 
+                63 74 69 76 61 64 6F 2E 0D 0A 24    
+[  23]        :                                       
+[  24]    0268: 0D 0A 43 72 65 61 6E 64 6F 20 61 72   msgCrearArchivo db 0Dh, 0Ah, 'Creando archivo y escribiendo fecha...', 0Dh, 0Ah, '$'
+                63 68 69 76 6F 20 79 20 65 73 63 72 
+                69 62 69 65 6E 64 6F 20 66 65 63 68 
+                61 2E 2E 2E 0D 0A 24                
+[  25]    0293: 45 73 63 72 69 74 75 72 61 20 4F 4B   msgArchivoOk    db 'Escritura OK.', 0Dh, 0Ah, '$'
+                2E 0D 0A 24                         
+[  26]    02A3: 45 52 52 4F 52 20 61 6C 20 63 72 65   msgArchivoError db 'ERROR al crear/escribir/cerrar archivo.', 0Dh, 0Ah, '$'
+                61 72 2F 65 73 63 72 69 62 69 72 2F 
+                63 65 72 72 61 72 20 61 72 63 68 69 
+                76 6F 2E 0D 0A 24                   
+[  27]    02CD: 41 72 63 68 69 76 6F 20 65 78 69 73   msgArchivoExiste db 'Archivo existente (CREATE fallo), la bandera CF se ha activado. Se abrira para escribir.', 0Dh, 0Ah, '$'
+                74 65 6E 74 65 20 28 43 52 45 41 54 
+                45 20 66 61 6C 6C 6F 29 2C 20 6C 61 
+                20 62 61 6E 64 65 72 61 20 43 46 20 
+                73 65 20 68 61 20 61 63 74 69 76 61 
+                64 6F 2E 20 53 65 20 61 62 72 69 72 
+                61 20 70 61 72 61 20 65 73 63 72 69 
+                62 69 72 2E 0D 0A 24                
+[  28]        :                                       
+[  29]    0328: 52 65 67 72 65 73 61 6E 64 6F 20 61   msgCambiarDir   db 'Regresando al directorio padre...', 0Dh, 0Ah, '$'
+                6C 20 64 69 72 65 63 74 6F 72 69 6F 
+                20 70 61 64 72 65 2E 2E 2E 0D 0A 24 
+                                                    
+[  30]    034C: 44 69 72 65 63 74 6F 72 69 6F 20 63   msgDirCambiado  db 'Directorio cambiado a: C:\emu8086\MyBuild', 0Dh, 0Ah, '$'
+                61 6D 62 69 61 64 6F 20 61 3A 20 43 
+                3A 5C 65 6D 75 38 30 38 36 5C 4D 79 
+                42 75 69 6C 64 0D 0A 24             
+[  31]    0378: 45 52 52 4F 52 20 61 6C 20 63 61 6D   msgErrorCambio  db 'ERROR al cambiar de directorio.', 0Dh, 0Ah, '$'
+                62 69 61 72 20 64 65 20 64 69 72 65 
+                63 74 6F 72 69 6F 2E 0D 0A 24       
+[  32]        :                                       
+[  33]    039A: 0D 0A 4C 65 79 65 6E 64 6F 20 61 72   msgLeerArchivo  db 0Dh, 0Ah, 'Leyendo archivo...', 0Dh, 0Ah, '$'
+                63 68 69 76 6F 2E 2E 2E 0D 0A 24    
+[  34]    03B1: 43 6F 6E 74 65 6E 69 64 6F 20 6C 65   msgContenidoLeido db 'Contenido leido:', 0Dh, 0Ah, '$'
+                69 64 6F 3A 0D 0A 24                
+[  35]    03C4: 45 52 52 4F 52 20 61 6C 20 61 62 72   msgLeerError    db 'ERROR al abrir/leer archivo.', 0Dh, 0Ah, '$'
+                69 72 2F 6C 65 65 72 20 61 72 63 68 
+                69 76 6F 2E 0D 0A 24                
+[  36]    03E3: 41 76 69 73 6F 3A 20 65 6C 20 61 72   msgArchivoVacio db 'Aviso: el archivo esta vacio.', 0Dh, 0Ah, '$'
+                63 68 69 76 6F 20 65 73 74 61 20 76 
+                61 63 69 6F 2E 0D 0A 24             
+[  37]        :                                       
+[  38]    0403: 0D 0A 46 69 6E 20 64 65 6C 20 70 72   msgFin         db 0Dh, 0Ah, 'Fin del programa.', 0Dh, 0Ah, '$'
+                6F 67 72 61 6D 61 2E 0D 0A 24       
+[  39]        :                                       
+[  40]        :                                       ; Buffer para fecha en formato DD/MM/AAAA + CRLF
+[  41]    0419: 00 00 00 00 00 00 00 00 00 00 00 00   bufferFecha   db 16 dup(0)
+                00 00 00 00                         
+[  42]    0429: 00 00                                 longitudFecha dw 0
+[  43]        :                                       
+[  44]    042B: 00 00                                 manejador   dw 0
+[  45]    042D: 00 00                                 bytesLeidos dw 0
+[  46]    042F: 00 00 00 00 00 00 00 00 00 00 00 00   bufferLectura db 128 dup(0)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00             
+[  47]        :                                       
+[  48]        :                                       ; ============================================================
+[  49]        :                                       ; PROCEDIMIENTOS
+[  50]        :                                       ; ============================================================
+[  51]        :                                       
+[  52]        :                                       ; Imprime cadena terminada en '$' apuntada por DX
+[  53]    04AF:                                       ImprimirCadena PROC
+[  54]    04AF: 50                                    push ax
+[  55]    04B0: B4 09                                 mov ah, 09h
+[  56]    04B2: CD 21                                 int 21h
+[  57]    04B4: 58                                    pop ax
+[  58]    04B5: C3                                    ret
+[  59]        :                                       ImprimirCadena ENDP
+[  60]        :                                       
+[  61]        :                                       ; Imprime CRLF
+[  62]    04B6:                                       ImprimirCRLF PROC
+[  63]    04B6: 50                                    push ax
+[  64]    04B7: 52                                    push dx
+[  65]    04B8: BA 00 00                              mov dx, 0
+[  66]    04BB: B2 0D                                 mov dl, 0Dh
+[  67]    04BD: B4 02                                 mov ah, 02h
+[  68]    04BF: CD 21                                 int 21h
+[  69]    04C1: B2 0A                                 mov dl, 0Ah
+[  70]    04C3: B4 02                                 mov ah, 02h
+[  71]    04C5: CD 21                                 int 21h
+[  72]    04C7: 5A                                    pop dx
+[  73]    04C8: 58                                    pop ax
+[  74]    04C9: C3                                    ret
+[  75]        :                                       ImprimirCRLF ENDP
+[  76]        :                                       
+[  77]        :                                       ; Imprime CX bytes de DS:SI
+[  78]    04CA:                                       ImprimirBuffer PROC
+[  79]    04CA: 50                                    push ax
+[  80]    04CB: 52                                    push dx
+[  81]    04CC: 51                                    push cx
+[  82]    04CD: 56                                    push si
+[  83]    04CE:                                       @@loop:
+[  84]    04CE: 83 F9 00                              cmp cx, 0
+[  85]    04D1: 74 0A                                 je @@done
+[  86]    04D3: AC                                    lodsb
+[  87]    04D4: 8A D0                                 mov dl, al
+[  88]    04D6: B4 02                                 mov ah, 02h
+[  89]    04D8: CD 21                                 int 21h
+[  90]    04DA: 49                                    dec cx
+[  91]    04DB: EB F1                                 jmp @@loop
+[  92]    04DD:                                       @@done:
+[  93]    04DD: 5E                                    pop si
+[  94]    04DE: 59                                    pop cx
+[  95]    04DF: 5A                                    pop dx
+[  96]    04E0: 58                                    pop ax
+[  97]    04E1: C3                                    ret
+[  98]        :                                       ImprimirBuffer ENDP
+[  99]        :                                       
+[ 100]        :                                       ; Convierte en AL (0..99) a dos digitos ASCII con cero a la izquierda, escribe en [DI] y avanza DI
+[ 101]    04E2:                                       DosDigitos PROC
+[ 102]        :                                       ; Entrada: AL = valor 0..99, DI = destino
+[ 103]        :                                       ; Salida: [DI]=tensASCII, [DI+1]=unitsASCII, DI += 2, AX modificado
+[ 104]    04E2: D4 0A                                 aam                 ; AH = AL/10, AL = AL%10 (base 10)
+[ 105]    04E4: 80 C4 30                              add ah, '0'
+[ 106]    04E7: 04 30                                 add al, '0'
+[ 107]    04E9: 88 25                                 mov [di], ah
+[ 108]    04EB: 88 45 01                              mov [di+1], al
+[ 109]    04EE: 83 C7 02                              add di, 2
+[ 110]    04F1: C3                                    ret
+[ 111]        :                                       DosDigitos ENDP
+[ 112]        :                                       
+[ 113]        :                                       ; Convierte AX (0..9999) a 4 digitos ASCII, escribe en [DI] y avanza DI
+[ 114]    04F2:                                       CuatroDigitos PROC
+[ 115]        :                                       ; Entrada: AX = valor, DI = destino
+[ 116]        :                                       ; Salida: escribe 4 ASCII, DI += 4, AX, BX, DX modificados
+[ 117]    04F2: 53                                    push bx
+[ 118]    04F3: 52                                    push dx
+[ 119]    04F4: BB E8 03                              mov bx, 1000
+[ 120]    04F7: 33 D2                                 xor dx, dx
+[ 121]    04F9: F7 F3                                 div bx             ; AX/1000 -> AX=thousands, DX=rem
+[ 122]    04FB: 04 30                                 add al, '0'
+[ 123]    04FD: 88 05                                 mov [di], al
+[ 124]    04FF: 47                                    inc di
+[ 125]    0500: 8B C2                                 mov ax, dx
+[ 126]    0502: BB 64 00                              mov bx, 100
+[ 127]    0505: 33 D2                                 xor dx, dx
+[ 128]    0507: F7 F3                                 div bx             ; hundreds
+[ 129]    0509: 04 30                                 add al, '0'
+[ 130]    050B: 88 05                                 mov [di], al
+[ 131]    050D: 47                                    inc di
+[ 132]    050E: 8B C2                                 mov ax, dx
+[ 133]    0510: BB 0A 00                              mov bx, 10
+[ 134]    0513: 33 D2                                 xor dx, dx
+[ 135]    0515: F7 F3                                 div bx             ; tens
+[ 136]    0517: 04 30                                 add al, '0'        ; AL = tens digit
+[ 137]    0519: 88 05                                 mov [di], al
+[ 138]    051B: 47                                    inc di
+[ 139]    051C: 8A C2                                 mov al, dl         ; DL = units remainder
+[ 140]    051E: 04 30                                 add al, '0'
+[ 141]    0520: 88 05                                 mov [di], al
+[ 142]    0522: 47                                    inc di
+[ 143]    0523: 5A                                    pop dx
+[ 144]    0524: 5B                                    pop bx
+[ 145]    0525: C3                                    ret
+[ 146]        :                                       CuatroDigitos ENDP
+[ 147]        :                                       
+[ 148]        :                                       ; Construye fecha en dateBuf como DD/MM/AAAA seguido de CRLF, y deja longitud en dateLen
+[ 149]    0526:                                       ConstruirFecha PROC
+[ 150]    0526: 50                                    push ax
+[ 151]    0527: 53                                    push bx
+[ 152]    0528: 51                                    push cx
+[ 153]    0529: 52                                    push dx
+[ 154]    052A: 57                                    push di
+[ 155]    052B: B4 2A                                 mov ah, 2Ah        ; DOS Get Date
+[ 156]    052D: CD 21                                 int 21h            ; CX=year, DH=month, DL=day
+[ 157]    052F: BF 19 04                              lea di, bufferFecha
+[ 158]    0532: 8A C2                                 mov al, dl         ; day
+[ 159]    0534: E8 AB FF                              call DosDigitos
+[ 160]    0537: C6 05 2F                              mov byte ptr [di], '/'
+[ 161]    053A: 47                                    inc di
+[ 162]    053B: 8A C6                                 mov al, dh         ; month
+[ 163]    053D: E8 A2 FF                              call DosDigitos
+[ 164]    0540: C6 05 2F                              mov byte ptr [di], '/'
+[ 165]    0543: 47                                    inc di
+[ 166]    0544: 8B C1                                 mov ax, cx         ; year
+[ 167]    0546: E8 A9 FF                              call CuatroDigitos
+[ 168]        :                                       ; CRLF
+[ 169]    0549: C6 05 0D                              mov byte ptr [di], 0Dh
+[ 170]    054C: 47                                    inc di
+[ 171]    054D: C6 05 0A                              mov byte ptr [di], 0Ah
+[ 172]    0550: 47                                    inc di
+[ 173]        :                                       ; dateLen = DI - dateBuf
+[ 174]    0551: 8B C7                                 mov ax, di
+[ 175]    0553: 2D 19 04                              sub ax, offset bufferFecha
+[ 176]    0556: A3 29 04                              mov [longitudFecha], ax
+[ 177]    0559: 5F                                    pop di
+[ 178]    055A: 5A                                    pop dx
+[ 179]    055B: 59                                    pop cx
+[ 180]    055C: 5B                                    pop bx
+[ 181]    055D: 58                                    pop ax
+[ 182]    055E: C3                                    ret
+[ 183]        :                                       ConstruirFecha ENDP
+[ 184]        :                                       
+[ 185]        :                                       ; ============================================================
+[ 186]        :                                       ; CODIGO PRINCIPAL
+[ 187]        :                                       ; ============================================================
+[ 188]    055F:                                       INICIO:
+[ 189]        :                                       ; Asegurar DS = CS (modelo .COM)
+[ 190]    055F: 0E                                    push cs
+[ 191]    0560: 1F                                    pop ds
+[ 192]        :                                       
+[ 193]        :                                       ; Encabezado
+[ 194]    0561: BA 57 01                              lea dx, msgEncabezado
+[ 195]    0564: E8 48 FF                              call ImprimirCadena
+[ 196]        :                                       
+[ 197]        :                                       ; Crear directorio en C:\emu8086\MyBuild\ACTIVIAD05
+[ 198]    0567: BA 81 01                              lea dx, msgCrearDir
+[ 199]    056A: E8 42 FF                              call ImprimirCadena
+[ 200]    056D: BA 03 01                              lea dx, rutaDirectorio
+[ 201]    0570: B4 39                                 mov ah, 39h                       ; MKDIR DS:DX -> ASCIIZ
+[ 202]    0572: CD 21                                 int 21h
+[ 203]    0574: 73 1A                                 jnc DIR_CREADO
+[ 204]        :                                       ; CF=1 -> verificar si ya existe con Get File Attributes (43h)
+[ 205]    0576: BA 03 01                              lea dx, rutaDirectorio
+[ 206]    0579: B8 00 43                              mov ax, 4300h                     ; Get File Attributes of dirPath
+[ 207]    057C: CD 21                                 int 21h
+[ 208]    057E: 72 08                                 jc  DIR_ERROR_CF                  ; no existe u otro error
+[ 209]        :                                       ; Existe -> notificar CF activada por existencia
+[ 210]    0580: BA F7 01                              lea dx, msgDirExiste
+[ 211]    0583: E8 29 FF                              call ImprimirCadena
+[ 212]    0586: EB 0E                                 jmp DESPUES_DIR
+[ 213]    0588:                                       DIR_ERROR_CF:
+[ 214]    0588: BA 2D 02                              lea dx, msgDirErrorCF
+[ 215]    058B: E8 21 FF                              call ImprimirCadena
+[ 216]    058E: EB 06                                 jmp DESPUES_DIR
+[ 217]    0590:                                       DIR_CREADO:
+[ 218]    0590: BA B4 01                              lea dx, msgDirCreado
+[ 219]    0593: E8 19 FF                              call ImprimirCadena
+[ 220]    0596:                                       DESPUES_DIR:
+[ 221]        :                                       
+[ 222]        :                                       ; Crear archivo y escribir contenido
+[ 223]    0596: BA 68 02                              lea dx, msgCrearArchivo
+[ 224]    0599: E8 13 FF                              call ImprimirCadena
+[ 225]        :                                       
+[ 226]        :                                       ; Construir contenido de fecha en dateBuf
+[ 227]    059C: E8 87 FF                              call ConstruirFecha
+[ 228]        :                                       
+[ 229]        :                                       ; Create (turnca si existe podria requerir 3Ch Entonces escribimos; 3Ch Falla si existe)
+[ 230]        :                                       ; Intento 1: crear con 3Ch; si falla porque existe, abrimos con 3Dh modo escritura (2) y truncar no es directo en DOS clásico.
+[ 231]        :                                       ; Para simplicidad: si 3Ch falla, intentamos abrir (3Dh, modo escritura=2) y sobreescribimos desde el principio.
+[ 232]    059F: B9 00 00                              mov cx, 0                         ; atributos normales
+[ 233]    05A2: BA 1E 01                              lea dx, rutaArchivo
+[ 234]    05A5: B4 3C                                 mov ah, 3Ch                       ; CREATE
+[ 235]    05A7: CD 21                                 int 21h
+[ 236]    05A9: 72 05                                 jc  INTENTAR_ABRIR_ESCRITURA
+[ 237]    05AB: A3 2B 04                              mov [manejador], ax
+[ 238]    05AE: EB 14                                 jmp HACER_ESCRITURA
+[ 239]        :                                       
+[ 240]    05B0:                                       INTENTAR_ABRIR_ESCRITURA:
+[ 241]    05B0: B0 02                                 mov al, 2                         ; modo 2 = read/write
+[ 242]    05B2: BA 1E 01                              lea dx, rutaArchivo
+[ 243]    05B5: B4 3D                                 mov ah, 3Dh                       ; OPEN
+[ 244]    05B7: CD 21                                 int 21h
+[ 245]    05B9: 72 57                                 jc  ARCHIVO_ERROR
+[ 246]    05BB: A3 2B 04                              mov [manejador], ax
+[ 247]        :                                       ; Si llegamos aqui, el CREATE fallo pero el OPEN funciono => el archivo ya existia
+[ 248]    05BE: BA CD 02                              lea dx, msgArchivoExiste
+[ 249]    05C1: E8 EB FE                              call ImprimirCadena
+[ 250]        :                                       ; situarse al inicio (por defecto al abrir está al inicio)
+[ 251]        :                                       
+[ 252]    05C4:                                       HACER_ESCRITURA:
+[ 253]    05C4: 8B 1E 2B 04                           mov bx, [manejador]
+[ 254]    05C8: B4 40                                 mov ah, 40h                       ; WRITE
+[ 255]    05CA: 8B 0E 29 04                           mov cx, [longitudFecha]
+[ 256]    05CE: BA 19 04                              lea dx, bufferFecha
+[ 257]    05D1: CD 21                                 int 21h
+[ 258]    05D3: 72 33                                 jc  ARCHIVO_ERROR_CERRAR
+[ 259]        :                                       ; Verificar bytes escritos
+[ 260]    05D5: 3B C1                                 cmp ax, cx
+[ 261]    05D7: 75 2F                                 jne ARCHIVO_ERROR_CERRAR
+[ 262]        :                                       
+[ 263]        :                                       ; Cerrar
+[ 264]    05D9: 8B 1E 2B 04                           mov bx, [manejador]
+[ 265]    05DD: B4 3E                                 mov ah, 3Eh
+[ 266]    05DF: CD 21                                 int 21h
+[ 267]    05E1: 72 2F                                 jc  ARCHIVO_ERROR
+[ 268]        :                                       
+[ 269]    05E3: BA 93 02                              lea dx, msgArchivoOk
+[ 270]    05E6: E8 C6 FE                              call ImprimirCadena
+[ 271]        :                                       
+[ 272]        :                                       ; Cambiar al directorio padre
+[ 273]    05E9: BA 28 03                              lea dx, msgCambiarDir
+[ 274]    05EC: E8 C0 FE                              call ImprimirCadena
+[ 275]    05EF: BA 44 01                              lea dx, rutaPadre
+[ 276]    05F2: B4 3B                                 mov ah, 3Bh                       ; CHDIR (Change Directory)
+[ 277]    05F4: CD 21                                 int 21h
+[ 278]    05F6: 72 08                                 jc  ERROR_CAMBIO_DIR
+[ 279]    05F8: BA 4C 03                              lea dx, msgDirCambiado
+[ 280]    05FB: E8 B1 FE                              call ImprimirCadena
+[ 281]    05FE: EB 1A                                 jmp LEER_ARCHIVO
+[ 282]        :                                       
+[ 283]    0600:                                       ERROR_CAMBIO_DIR:
+[ 284]    0600: BA 78 03                              lea dx, msgErrorCambio
+[ 285]    0603: E8 A9 FE                              call ImprimirCadena
+[ 286]    0606: EB 12                                 jmp LEER_ARCHIVO
+[ 287]        :                                       
+[ 288]    0608:                                       ARCHIVO_ERROR_CERRAR:
+[ 289]        :                                       ; Intentar cerrar si había handle válido
+[ 290]    0608: 50                                    push ax
+[ 291]    0609: 8B 1E 2B 04                           mov bx, [manejador]
+[ 292]    060D: B4 3E                                 mov ah, 3Eh
+[ 293]    060F: CD 21                                 int 21h
+[ 294]    0611: 58                                    pop ax
+[ 295]    0612:                                       ARCHIVO_ERROR:
+[ 296]    0612: BA A3 02                              lea dx, msgArchivoError
+[ 297]    0615: E8 97 FE                              call ImprimirCadena
+[ 298]    0618: EB 64                                 jmp FIN
+[ 299]        :                                       
+[ 300]    061A:                                       LEER_ARCHIVO:
+[ 301]    061A: BA 9A 03                              lea dx, msgLeerArchivo
+[ 302]    061D: E8 8F FE                              call ImprimirCadena
+[ 303]        :                                       
+[ 304]        :                                       ; Abrir solo lectura
+[ 305]    0620: B0 00                                 mov al, 0                         ; modo lectura
+[ 306]    0622: BA 1E 01                              lea dx, rutaArchivo
+[ 307]    0625: B4 3D                                 mov ah, 3Dh
+[ 308]    0627: CD 21                                 int 21h
+[ 309]    0629: 72 4D                                 jc  LECTURA_ERROR
+[ 310]    062B: A3 2B 04                              mov [manejador], ax
+[ 311]        :                                       
+[ 312]        :                                       ; Leer hasta 128 bytes
+[ 313]    062E: 8B 1E 2B 04                           mov bx, [manejador]
+[ 314]    0632: B9 80 00                              mov cx, 128
+[ 315]    0635: BA 2F 04                              lea dx, bufferLectura
+[ 316]    0638: B4 3F                                 mov ah, 3Fh
+[ 317]    063A: CD 21                                 int 21h
+[ 318]    063C: 72 30                                 jc  LECTURA_ERROR_CERRAR
+[ 319]    063E: A3 2D 04                              mov [bytesLeidos], ax
+[ 320]        :                                       
+[ 321]        :                                       ; Cerrar
+[ 322]    0641: 8B 1E 2B 04                           mov bx, [manejador]
+[ 323]    0645: B4 3E                                 mov ah, 3Eh
+[ 324]    0647: CD 21                                 int 21h
+[ 325]        :                                       
+[ 326]        :                                       ; Mostrar contenido
+[ 327]    0649: BA B1 03                              lea dx, msgContenidoLeido
+[ 328]    064C: E8 60 FE                              call ImprimirCadena
+[ 329]    064F: A1 2D 04                              mov ax, [bytesLeidos]
+[ 330]    0652: 3D 00 00                              cmp ax, 0
+[ 331]    0655: 74 0F                                 je ARCHIVO_VACIO
+[ 332]    0657: 8B 0E 2D 04                           mov cx, [bytesLeidos]
+[ 333]    065B: BE 2F 04                              lea si, bufferLectura
+[ 334]    065E: E8 69 FE                              call ImprimirBuffer
+[ 335]    0661: E8 52 FE                              call ImprimirCRLF
+[ 336]    0664: EB 18                                 jmp FIN
+[ 337]        :                                       
+[ 338]    0666:                                       ARCHIVO_VACIO:
+[ 339]    0666: BA E3 03                              lea dx, msgArchivoVacio
+[ 340]    0669: E8 43 FE                              call ImprimirCadena
+[ 341]    066C: EB 10                                 jmp FIN
+[ 342]        :                                       
+[ 343]    066E:                                       LECTURA_ERROR_CERRAR:
+[ 344]        :                                       ; Cerrar si se abrió
+[ 345]    066E: 50                                    push ax
+[ 346]    066F: 8B 1E 2B 04                           mov bx, [manejador]
+[ 347]    0673: B4 3E                                 mov ah, 3Eh
+[ 348]    0675: CD 21                                 int 21h
+[ 349]    0677: 58                                    pop ax
+[ 350]    0678:                                       LECTURA_ERROR:
+[ 351]    0678: BA C4 03                              lea dx, msgLeerError
+[ 352]    067B: E8 31 FE                              call ImprimirCadena
+[ 353]        :                                       
+[ 354]    067E:                                       FIN:
+[ 355]    067E: BA 03 04                              lea dx, msgFin
+[ 356]    0681: E8 2B FE                              call ImprimirCadena
+[ 357]    0684: B8 00 4C                              mov ax, 4C00h
+[ 358]    0687: CD 21                                 int 21h
+[ 359]        :                                       
+[ 360]        :                                       
+[ 361]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
