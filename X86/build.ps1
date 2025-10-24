@@ -88,6 +88,16 @@ function Build-AsmFile {
     
     Write-Host "`n=== Compilando $File ===" -ForegroundColor Cyan
     
+    # Detectar si es aplicación GUI (nombres que contienen "Window")
+    $subsystem = "console"
+    $libraries = "kernel32.lib"
+    
+    if ($BaseName -match "Window") {
+        $subsystem = "windows"
+        $libraries = "kernel32.lib user32.lib gdi32.lib"
+        Write-Host "Detectado: Aplicación GUI (subsistema Windows)" -ForegroundColor Magenta
+    }
+    
     # Paso 1: Ensamblar
     Write-Host "Ensamblando..." -ForegroundColor Yellow
     & $MASM32 /c /coff /Zi /Fo"$ObjFile" "$File"
@@ -99,7 +109,8 @@ function Build-AsmFile {
     
     # Paso 2: Enlazar
     Write-Host "Enlazando..." -ForegroundColor Yellow
-    & $LINK32 /subsystem:console /out:"$ExeFile" "$ObjFile" /libpath:"$LIBPATH" kernel32.lib
+    $libArray = $libraries -split ' '
+    & $LINK32 /subsystem:$subsystem /out:"$ExeFile" "$ObjFile" /libpath:"$LIBPATH" @libArray
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Fallo al enlazar $ObjFile" -ForegroundColor Red
@@ -138,12 +149,19 @@ if ($AsmFile -eq "") {
     
 } else {
     # Compilar archivo específico
-    if (-not (Test-Path $AsmFile)) {
-        Write-Host "ERROR: No se encuentra el archivo $AsmFile" -ForegroundColor Red
+    # Manejar rutas relativas y absolutas
+    $FullAsmPath = if ([System.IO.Path]::IsPathRooted($AsmFile)) {
+        $AsmFile
+    } else {
+        Join-Path (Get-Location).Path $AsmFile
+    }
+    
+    if (-not (Test-Path $FullAsmPath)) {
+        Write-Host "ERROR: No se encuentra el archivo $FullAsmPath" -ForegroundColor Red
         exit 1
     }
     
-    if (Build-AsmFile ([System.IO.Path]::GetFullPath($AsmFile)) $ResolvedOutDir) {
+    if (Build-AsmFile $FullAsmPath $ResolvedOutDir) {
         exit 0
     } else {
         exit 1

@@ -26,7 +26,14 @@ Para hacerlo permanente, agrega la ruta en Variables de entorno del sistema.
 
 ## Métodos de Compilación
 
-Este directorio permite compilar de tres formas:
+Este directorio ofrece **múltiples métodos de compilación** para adaptarse a diferentes flujos de trabajo:
+
+| Método | Plataforma | Uso Principal | Ventajas |
+|--------|-----------|---------------|----------|
+| **VS Code Tasks** (Ctrl+Shift+B) | Windows | Desarrollo en VS Code | Integración directa, rápido |
+| **build.ps1** | Windows | Línea de comandos PowerShell | Scripts automatizados, CI/CD |
+| **Makefile** | WSL (Linux) | Usuarios de Linux/make | Estándar Unix, portable |
+| **Manual** | Windows | Aprendizaje, depuración | Control total del proceso |
 
 ### Opción 0: Tareas de VS Code (Ctrl+Shift+B)
 
@@ -80,29 +87,71 @@ Detalles técnicos:
 - Mensajes con colores para fácil lectura
 - Manejo de errores detallado
 - Puede procesar múltiples archivos
+- **Detección automática de aplicaciones GUI**: Si el nombre del archivo contiene "Window", automáticamente:
+  - Usa `/subsystem:windows` en lugar de `/subsystem:console`
+  - Enlaza con `kernel32.lib`, `user32.lib` y `gdi32.lib`
+  - Muestra mensaje "Detectado: Aplicación GUI (subsistema Windows)"
 
-### Opción 2: Makefile
+### Opción 2: Makefile (WSL - Debian/Ubuntu)
+
+El Makefile está optimizado para usarse **exclusivamente en WSL** (Windows Subsystem for Linux).
+
+**Requisitos:**
+- WSL con Debian/Ubuntu instalado
+- GNU Make (`sudo apt install make` si no está instalado)
+- Acceso a las herramientas de Visual Studio desde WSL (rutas `/mnt/c/...`)
+
+**Características del Makefile:**
+- Detección automática de aplicaciones GUI (nombres con "Window")
+- Conversión automática de rutas Linux→Windows usando `wslpath`
+- Soporte para directorio de salida (`OUTDIR`)
+- Colores ANSI en la salida
+- Enlaza automáticamente las bibliotecas correctas según el tipo de aplicación
 
 **Compilar el programa por defecto (suma.asm):**
-```powershell
-make
+```bash
+wsl make
 ```
 
 **Compilar otro archivo específico:**
-```powershell
-make PROG=nombre_sin_extension
+```bash
+wsl make PROG=nombre_sin_extension
 ```
-Ejemplo: para compilar `programa.asm`, usa `make PROG=programa`
+Ejemplos:
+```bash
+# Compilar sumaMejorada.asm
+wsl make PROG=sumaMejorada
+
+# Compilar SumaMejoradaWindow.asm (detecta automáticamente que es GUI)
+wsl make PROG=SumaMejoradaWindow
+```
+
+**Especificar directorio de salida:**
+```bash
+wsl make PROG=suma OUTDIR=build
+wsl make PROG=SumaMejoradaWindow OUTDIR=build
+```
 
 **Limpiar archivos generados:**
-```powershell
-make clean
+```bash
+wsl make clean
+# O limpiar una carpeta específica
+wsl make OUTDIR=build clean
 ```
 
 **Compilar y ejecutar:**
-```powershell
-make run
+```bash
+wsl make run
+# O con configuración personalizada
+wsl make PROG=SumaMejoradaWindow OUTDIR=build run
 ```
+
+**Nota sobre `wslpath`:**
+El Makefile usa `wslpath` para convertir rutas entre Linux y Windows automáticamente:
+- Rutas Linux: `/mnt/c/Users/...`
+- Rutas Windows: `C:\Users\...`
+
+Esto permite que las herramientas de Windows (ml.exe, link.exe) funcionen correctamente desde WSL.
 
 ### Opción 3: Compilación Manual
 
@@ -130,16 +179,120 @@ Después de la compilación exitosa, se generarán:
 
 ## Ejemplo Completo
 
+### Aplicación de Consola (suma.asm)
+
+**Con PowerShell:**
 ```powershell
-# Compilar con el script de PowerShell
-.\build.ps1 suma.asm
+# Compilar
+.\build.ps1 suma.asm -OutDir .\build
 
-# Ejecutar el programa
-.\suma.exe
-
-# Limpiar archivos generados (si usas Makefile)
-make clean
+# Ejecutar
+.\build\suma.exe
 ```
+
+**Con Makefile (WSL):**
+```bash
+# Compilar
+wsl make PROG=suma OUTDIR=build
+
+# Ejecutar
+wsl make PROG=suma OUTDIR=build run
+```
+
+**Salida esperada:**
+```
+El resultado de 7 + 4 es: 11
+```
+
+### Aplicación de Consola Interactiva (sumaMejorada.asm)
+
+**Con PowerShell:**
+```powershell
+# Compilar
+.\build.ps1 sumaMejorada.asm -OutDir .\build
+
+# Ejecutar
+.\build\sumaMejorada.exe
+```
+
+**Con Makefile (WSL):**
+```bash
+# Compilar
+wsl make PROG=sumaMejorada OUTDIR=build
+
+# Ejecutar
+wsl make PROG=sumaMejorada OUTDIR=build run
+```
+
+**Salida esperada:**
+```
+# El programa pedirá:
+Ingrese el primer número: 15
+Ingrese el segundo número: 27
+Resultado: 42
+```
+
+### Aplicación GUI (SumaMejoradaWindow.asm)
+
+**Con PowerShell:**
+```powershell
+# Compilar (detecta automáticamente que es GUI)
+.\build.ps1 SumaMejoradaWindow.asm -OutDir .\build
+
+# Ejecutar (abre una ventana)
+.\build\SumaMejoradaWindow.exe
+```
+
+**Con Makefile (WSL):**
+```bash
+# Compilar (detecta automáticamente que es GUI)
+wsl make PROG=SumaMejoradaWindow OUTDIR=build
+
+# Ejecutar (abre una ventana)
+wsl make PROG=SumaMejoradaWindow OUTDIR=build run
+```
+
+**Con VS Code (el más rápido):**
+```
+1. Abre SumaMejoradaWindow.asm
+2. Presiona Ctrl+Shift+B para compilar
+3. Ejecuta: .\build\SumaMejoradaWindow.exe
+```
+
+### Limpiar archivos generados
+
+**Con PowerShell (Windows):**
+```powershell
+.\build.ps1 -Clean -OutDir .\build
+```
+
+**Con Makefile (WSL):**
+```bash
+wsl make OUTDIR=build clean
+```
+
+## Comparación: PowerShell vs Makefile
+
+Ambos métodos ofrecen las mismas funcionalidades, elige según tu entorno:
+
+| Característica | build.ps1 (Windows) | Makefile (WSL) |
+|----------------|---------------------|----------------|
+| **Comando típico** | `.\build.ps1 suma.asm -OutDir .\build` | `wsl make PROG=suma OUTDIR=build` |
+| **Detección GUI** | ✅ Automática (nombres con "Window") | ✅ Automática (nombres con "Window") |
+| **Directorio salida** | `-OutDir .\build` | `OUTDIR=build` |
+| **Limpiar** | `.\build.ps1 -Clean -OutDir .\build` | `wsl make OUTDIR=build clean` |
+| **Ejecutar** | `.\build\programa.exe` | `wsl make PROG=programa OUTDIR=build run` |
+| **Colores** | ✅ Si (Write-Host con colores) | ✅ Si (códigos ANSI) |
+| **Conversión rutas** | N/A (rutas Windows nativas) | ✅ Automática con `wslpath` |
+| **Plataforma** | Windows (PowerShell) | WSL (Bash/sh) |
+| **Integración VS Code** | ✅ Via tasks.json | ⚠️ Manual (no tasks) |
+
+**Recomendaciones:**
+- **Windows puro**: Usa `build.ps1` o VS Code tasks (Ctrl+Shift+B)
+- **WSL/Linux**: Usa `Makefile` con `wsl make`
+- **CI/CD Windows**: Usa `build.ps1`
+- **CI/CD Linux/WSL**: Usa `Makefile`
+- **Desarrollo VS Code**: Usa tasks (Ctrl+Shift+B) que llama a `build.ps1`
 
 ## Estructura de un Programa MASM Típico
 
@@ -175,9 +328,96 @@ Los programas aquí usan sintaxis MASM para Windows modernos, que difiere de la 
 | Llamadas sistema | `invoke ExitProcess` | `INT 21h` |
 | Bibliotecas | `kernel32.lib` | N/A (solo BIOS/DOS) |
 
+## Aplicaciones GUI vs Consola en MASM
+
+### Diferencias Principales
+
+| Aspecto | Aplicación de Consola | Aplicación GUI |
+|---------|----------------------|----------------|
+| **Subsistema** | `/subsystem:console` | `/subsystem:windows` |
+| **Bibliotecas** | `kernel32.lib` | `kernel32.lib`, `user32.lib`, `gdi32.lib` |
+| **Entrada/Salida** | ReadConsoleA, WriteConsoleA | Controles de Windows (EDIT, BUTTON) |
+| **Interfaz** | Terminal de texto | Ventanas gráficas |
+| **Bucle principal** | Secuencial | Bucle de mensajes (GetMessage/DispatchMessage) |
+| **Eventos** | N/A | WM_CREATE, WM_COMMAND, WM_CLOSE, etc. |
+| **APIs principales** | GetStdHandle, ReadFile, WriteFile | CreateWindowExA, RegisterClassExA, ShowWindow |
+
+### Convención de Nombres
+
+El script `build.ps1` y el `Makefile` detectan automáticamente aplicaciones GUI cuando el nombre del archivo contiene "Window":
+- `suma.asm` → Consola
+- `sumaMejorada.asm` → Consola
+- `SumaMejoradaWindow.asm` → GUI ✓
+- `CalculadoraWindow.asm` → GUI ✓
+
+## Herramientas WSL: wslpath
+
+Si usas el Makefile en WSL, la herramienta `wslpath` convierte automáticamente entre rutas Linux y Windows:
+
+**Sintaxis:**
+```bash
+# Linux → Windows
+wsl wslpath -w '/mnt/c/Users/sambo/Documents'
+# Salida: C:\Users\sambo\Documents
+
+# Windows → Linux
+wsl wslpath -u 'C:\Users\sambo\Documents'
+# Salida: /mnt/c/Users/sambo/Documents
+```
+
+**Uso en el Makefile:**
+El Makefile usa `wslpath` internamente para:
+1. Convertir rutas de bibliotecas (`LIBPATH`) para el linker de Windows
+2. Convertir rutas de ejecutables al usar `make run`
+
+Ejemplo del Makefile:
+```makefile
+# Ruta Linux
+LIBPATH_LINUX = /mnt/c/Program Files (x86)/Windows Kits/10/Lib/...
+
+# Convertir a ruta Windows
+LIBPATH_WIN := $(shell wslpath -w '$(LIBPATH_LINUX)')
+# Resultado: C:\Program Files (x86)\Windows Kits\10\Lib\...
+```
+
+Esto permite que las herramientas de Windows (ml.exe, link.exe) ejecutadas desde WSL reciban rutas en el formato correcto.
+- `CalculadoraWindow.asm` → GUI ✓
+
 ## Proyectos Incluidos
 
+### Aplicaciones de Consola
+
 - **suma.asm** - Suma simple de dos números (7 + 4)
+  - Tipo: Consola
+  - Subsistema: console
+  - Bibliotecas: kernel32.lib
+
+- **sumaMejorada.asm** - Programa interactivo que solicita dos números al usuario
+  - Tipo: Consola
+  - Subsistema: console
+  - Características:
+    - Lee entrada del usuario mediante ReadConsoleA
+    - Convierte texto a números (AsciiToInt)
+    - Suma los valores
+    - Convierte resultado a texto (IntToAscii)
+    - Muestra el resultado
+  - Bibliotecas: kernel32.lib
+
+### Aplicaciones GUI (Interfaz Gráfica)
+
+- **SumaMejoradaWindow.asm** - Calculadora con interfaz gráfica de Windows
+  - Tipo: Aplicación GUI
+  - Subsistema: windows
+  - Características:
+    - Ventana con título "Calculadora - Suma de Numeros"
+    - Dos campos de texto para ingresar números
+    - Botón "Sumar" para ejecutar la operación
+    - Campo de resultado (solo lectura)
+    - Utiliza Win32 API (CreateWindowExA, GetDlgItemInt, SetDlgItemInt)
+    - Sin dependencias de MASM32 - usa solo APIs estándar de Windows
+  - Bibliotecas: kernel32.lib, user32.lib, gdi32.lib
+  - Compilación: El script `build.ps1` detecta automáticamente que es GUI y usa el subsistema correcto
+  - Ejecución: `.\build\SumaMejoradaWindow.exe`
 
 ## Solución de Problemas
 
