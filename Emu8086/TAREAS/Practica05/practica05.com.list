@@ -1,0 +1,237 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+practica05.com -- emu8086 assembler version: 4.08  
+ 
+[ 05/11/2025  --  03:26:38 a. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "practica05.asm"
+[   2]        :                                       include 'emu8086.inc'
+[   3]        :                                       
+[   4]        :                                       org 100h
+[   5]    0100: E9 E6 00                              jmp Principal
+[   6]        :                                       
+[   7]        :                                       ;Mensajes
+[   8]    0103: 41 6C 75 6D 6E 6F 3A 20 52 6F 64 72   msj0 db "Alumno: Rodrigo Torres Rivera",0
+                69 67 6F 20 54 6F 72 72 65 73 20 52 
+                69 76 65 72 61 00                   
+[   9]    0121: 45 73 63 72 69 62 65 20 75 6E 20 6E   msj1 db "Escribe un numero de 16 bits en HEX usando mayusculas (ejemp FFF) ",0
+                75 6D 65 72 6F 20 64 65 20 31 36 20 
+                62 69 74 73 20 65 6E 20 48 45 58 20 
+                75 73 61 6E 64 6F 20 6D 61 79 75 73 
+                63 75 6C 61 73 20 28 65 6A 65 6D 70 
+                20 46 46 46 29 20 00                
+[  10]    0164: 0D 0A 45 6C 20 6E 75 6D 65 72 6F 20   msj2 db 13, 10,"El numero escrito fue: $";,0
+                65 73 63 72 69 74 6F 20 66 75 65 3A 
+                20 24                               
+[  11]    017E: 0D 0A 00                              nuevlin db 13,10,0
+[  12]        :                                       ;Variables
+[  13]    0181: 00 00 00 00 00                        buffer  db 5 dup(?)  ;tomando el caracter
+[  14]    0186:                                       bufferlong equ ($ - buffer -1) ;tam del buffer
+[  15]        :                                       tammax  equ 5        ;para el "ENTER"
+[  16]        :                                       ;funciones
+[  17]    0186: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[  18]    019A: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[  19]        :                                       
+[  20]        :                                       ;Subrutinas
+[  21]        :                                       
+[  22]        :                                       
+[  23]        :                                       
+[  24]    01E9:                                       Principal:
+[  25]    01E9: 0E                                    push cs
+[  26]    01EA: 1F                                    pop ds
+[  27]        :                                       ;Preguntar datos msj1
+[  28]    01EB: BE 03 01                              lea si, msj0
+[  29]    01EE: E8 97 FF                              call print_string
+[  30]        :                                       ;salto de linea
+[  31]    01F1: BE 7E 01                              lea si, nuevlin
+[  32]    01F4: E8 91 FF                              call print_string
+[  33]        :                                       ;Preguntar datos msj1
+[  34]    01F7: BE 21 01                              lea si, msj1
+[  35]    01FA: E8 8B FF                              call print_string
+[  36]        :                                       ;leer los datos en buffer
+[  37]    01FD: BF 81 01                              lea di, buffer
+[  38]    0200: BA 05 00                              mov dx, tammax
+[  39]    0203: E8 96 FF                              call get_string
+[  40]        :                                       
+[  41]        :                                       ;salto de linea
+[  42]    0206: BE 7E 01                              lea si, nuevlin
+[  43]    0209: E8 7C FF                              call print_string
+[  44]        :                                       
+[  45]        :                                       ;--Inicia Convertir el dato del buffer a formato BCD
+[  46]    020C: BE 81 01                              mov si, offset buffer ;inicio del buffer
+[  47]    020F: B9 04 00                              mov cx, bufferlong    ;incializamos contador
+[  48]    0212:                                       Convertir:
+[  49]    0212: 8A 04                                 mov al, [si]
+[  50]        :                                       
+[  51]        :                                       ;mov ah, 0Eh ;funcion 14 de int 10h
+[  52]        :                                       ;mov al, [si] ;hecho antes
+[  53]    0214: 2C 30                                 sub al, 30h;
+[  54]        :                                       ;int 10h     ;int imprimir un caracter
+[  55]    0216: 88 04                                 mov [si], al ;guardamos el valor convertido
+[  56]        :                                       
+[  57]    0218: 46                                    inc si      ;siguiente caracter
+[  58]    0219: E2 F7                                 loop convertir ;CX decrementa y repite lazo
+[  59]        :                                       
+[  60]        :                                       
+[  61]    021B: BE 81 01                              mov si, offset buffer ;inicio del buffer
+[  62]    021E: B9 04 00                              mov cx, bufferlong    ;incializamos contador
+[  63]    0221: 2B C0                                 sub ax, ax            ;AX = 0000_0000
+[  64]    0223:                                       Invertir:                 ;metemos el buffer
+[  65]    0223: 8A 04                                 mov al, [si]          ;en la pila para
+[  66]    0225: 50                                    push ax               ;invertir el numero
+[  67]        :                                       
+[  68]    0226: 46                                    inc si
+[  69]    0227: E2 FA                                 loop Invertir ;
+[  70]        :                                       
+[  71]    0229: BE 81 01                              mov si, offset buffer ;inicio del buffer
+[  72]    022C: B9 04 00                              mov cx, bufferlong    ;incializamos contador
+[  73]    022F: 2B C0                                 sub ax, ax            ;AX = 0000_0000
+[  74]    0231:                                       Rellenar:               ;recuperamos de la
+[  75]    0231: 58                                    pop ax              ;pila el buffer
+[  76]    0232: 88 04                                 mov [si], al        ;invertido ahora
+[  77]    0234: 46                                    inc si
+[  78]    0235: E2 FA                                 loop Rellenar
+[  79]        :                                       ;----Termina Convertir el dato del buffer a formato BCD
+[  80]        :                                       
+[  81]    0237: BE 81 01                              mov si, offset buffer ;inicio del buffer
+[  82]    023A: B9 04 00                              mov cx, bufferlong    ;incializamos contador
+[  83]        :                                       
+[  84]        :                                       ;mov ah, 1
+[  85]        :                                       ;int 21h
+[  86]        :                                       ;Mostrar datos msj2
+[  87]    023D: BA 64 01                              lea dx, msj2        ;EL USO DE LA FUNCION
+[  88]    0240: B4 09                                 mov ah, 9           ;PRINT_STRING CAUSA
+[  89]    0242: CD 21                                 int 21h             ;ERRORES RAROS
+[  90]        :                                       ;call print_string
+[  91]        :                                       
+[  92]    0244:                                       Decimal:
+[  93]    0244: 2B C0                                 sub ax, ax
+[  94]    0246: 8A 04                                 mov al, [si]
+[  95]        :                                       ;mov al, [si] ;hecho antes
+[  96]    0248: 04 30                                 add al, 30h;
+[  97]    024A:                                       num15:
+[  98]    024A: 3D 46 00                              cmp ax, 46h
+[  99]    024D: 75 15                                 jne num14:
+[ 100]    024F: B4 0E                                 mov ah, 0Eh
+[ 101]    0251: B0 31                                 mov al, 31h
+[ 102]    0253: CD 10                                 int 10h
+[ 103]    0255: B4 0E                                 mov ah, 0Eh
+[ 104]    0257: B0 35                                 mov al, 35h
+[ 105]    0259: CD 10                                 int 10h
+[ 106]    025B: B4 0E                                 mov ah, 0Eh
+[ 107]    025D: B0 20                                 mov al, 32      ;espacio en blanco
+[ 108]    025F: CD 10                                 int 10h
+[ 109]    0261: E9 87 00                              jmp siguiente
+[ 110]    0264:                                       num14:
+[ 111]    0264: 3D 45 00                              cmp ax, 45h
+[ 112]    0267: 75 14                                 jne num13:
+[ 113]    0269: B4 0E                                 mov ah, 0Eh
+[ 114]    026B: B0 31                                 mov al, 31h
+[ 115]    026D: CD 10                                 int 10h
+[ 116]    026F: B4 0E                                 mov ah, 0Eh
+[ 117]    0271: B0 34                                 mov al, 34h
+[ 118]    0273: CD 10                                 int 10h
+[ 119]    0275: B4 0E                                 mov ah, 0Eh
+[ 120]    0277: B0 20                                 mov al, 32      ;espacio en blanco
+[ 121]    0279: CD 10                                 int 10h
+[ 122]    027B: EB 6E                                 jmp siguiente
+[ 123]    027D:                                       num13:
+[ 124]    027D: 3D 44 00                              cmp ax, 44h
+[ 125]    0280: 75 14                                 jne num12:
+[ 126]    0282: B4 0E                                 mov ah, 0Eh
+[ 127]    0284: B0 31                                 mov al, 31h
+[ 128]    0286: CD 10                                 int 10h
+[ 129]    0288: B4 0E                                 mov ah, 0Eh
+[ 130]    028A: B0 33                                 mov al, 33h
+[ 131]    028C: CD 10                                 int 10h
+[ 132]    028E: B4 0E                                 mov ah, 0Eh
+[ 133]    0290: B0 20                                 mov al, 32      ;espacio en blanco
+[ 134]    0292: CD 10                                 int 10h
+[ 135]    0294: EB 55                                 jmp siguiente
+[ 136]    0296:                                       num12:
+[ 137]    0296: 3D 43 00                              cmp ax, 43h
+[ 138]    0299: 75 14                                 jne num11:
+[ 139]    029B: B4 0E                                 mov ah, 0Eh
+[ 140]    029D: B0 31                                 mov al, 31h
+[ 141]    029F: CD 10                                 int 10h
+[ 142]    02A1: B4 0E                                 mov ah, 0Eh
+[ 143]    02A3: B0 32                                 mov al, 32h
+[ 144]    02A5: CD 10                                 int 10h
+[ 145]    02A7: B4 0E                                 mov ah, 0Eh
+[ 146]    02A9: B0 20                                 mov al, 32      ;espacio en blanco
+[ 147]    02AB: CD 10                                 int 10h
+[ 148]    02AD: EB 3C                                 jmp siguiente
+[ 149]    02AF:                                       num11:
+[ 150]    02AF: 3D 42 00                              cmp ax, 42h
+[ 151]    02B2: 75 14                                 jne num10:
+[ 152]    02B4: B4 0E                                 mov ah, 0Eh
+[ 153]    02B6: B0 31                                 mov al, 31h
+[ 154]    02B8: CD 10                                 int 10h
+[ 155]    02BA: B4 0E                                 mov ah, 0Eh
+[ 156]    02BC: B0 31                                 mov al, 31h
+[ 157]    02BE: CD 10                                 int 10h
+[ 158]    02C0: B4 0E                                 mov ah, 0Eh
+[ 159]    02C2: B0 20                                 mov al, 32      ;espacio en blanco
+[ 160]    02C4: CD 10                                 int 10h
+[ 161]    02C6: EB 23                                 jmp siguiente
+[ 162]    02C8:                                       num10:
+[ 163]    02C8: 3D 41 00                              cmp ax, 41h
+[ 164]    02CB: 75 14                                 jne numrest:
+[ 165]    02CD: B4 0E                                 mov ah, 0Eh
+[ 166]    02CF: B0 31                                 mov al, 31h
+[ 167]    02D1: CD 10                                 int 10h
+[ 168]    02D3: B4 0E                                 mov ah, 0Eh
+[ 169]    02D5: B0 30                                 mov al, 30h
+[ 170]    02D7: CD 10                                 int 10h
+[ 171]    02D9: B4 0E                                 mov ah, 0Eh
+[ 172]    02DB: B0 20                                 mov al, 32      ;espacio en blanco
+[ 173]    02DD: CD 10                                 int 10h
+[ 174]    02DF: EB 0A                                 jmp siguiente
+[ 175]    02E1:                                       numrest:
+[ 176]    02E1: B4 0E                                 mov ah, 0Eh ;funcion 14 de int 10h
+[ 177]    02E3: CD 10                                 int 10h     ;int imprimir un caracter
+[ 178]        :                                       ;mov [si], al ;guardamos el valor convertido
+[ 179]    02E5: B4 0E                                 mov ah, 0Eh
+[ 180]    02E7: B0 20                                 mov al, 20h
+[ 181]    02E9: CD 10                                 int 10h
+[ 182]    02EB:                                       siguiente:
+[ 183]    02EB: 46                                    inc si      ;siguiente caracter
+[ 184]    02EC: 49 E3 03 E9 52 FF                     loop Decimal ;CX decrementa y repite lazo
+[ 185]        :                                       
+[ 186]        :                                       
+[ 187]        :                                       ;Mostrar el resultado msj2
+[ 188]        :                                       ;lea si, msj2
+[ 189]        :                                       ;call print_string
+[ 190]        :                                       
+[ 191]        :                                       ;lea si, buffer
+[ 192]        :                                       ;call print_string
+[ 193]        :                                       
+[ 194]        :                                       ;Salir al Sistema Operativo
+[ 195]    02F2: B8 00 4C                              mov ax, 4c00h
+[ 196]    02F5: CD 21                                 int 21h
+[ 197]    02F7: C3                                    ret
+[ 198]        :                                       
+[ 199]        :                                       
+[ 200]        :                                       
+[ 201]        :                                       
+[ 202]        :                                       
+[ 203]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
