@@ -1,0 +1,218 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+prac7.exe -- emu8086 assembler version: 4.08  
+ 
+[ 12/11/2024  --  03:45:22 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "practica07"
+[   2]        :                                       include 'emu8086.inc'
+[   3]        :                                       
+[   4]        :                                       .MODEL SMALL
+[   5]        :                                       .STACK 100h
+[   6]        :                                       .DATA
+[   7]    0100: 43 68 72 69 73 74 6F 70 68 65 72 20   nombre_alumno DB 'Christopher Lopez Avina', '$'
+                4C 6F 70 65 7A 20 41 76 69 6E 61 24 
+                                                    
+[   8]    0118: 00 00 00 00 00 00 00 00 00 00 00 00   nombre_entrada DB 100 DUP(0)             ; Espacio para el nombre del archivo .asm ingresado
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[   9]    017C: 2E 6C 73 74 00                        extension_lst DB '.lst', 0                ; Extensión para el archivo de salida
+[  10]    0181: 49 6E 67 72 65 73 65 20 65 6C 20 6E   mensaje_ingrese DB 'Ingrese el nombre del archivo .asm (con ruta completa): $'
+                6F 6D 62 72 65 20 64 65 6C 20 61 72 
+                63 68 69 76 6F 20 2E 61 73 6D 20 28 
+                63 6F 6E 20 72 75 74 61 20 63 6F 6D 
+                70 6C 65 74 61 29 3A 20 24          
+[  11]    01BA: 45 72 72 6F 72 20 61 6C 20 61 62 72   mensaje_error DB 'Error al abrir o crear el archivo.$' ; Mensaje de error en caso de fallo
+                69 72 20 6F 20 63 72 65 61 72 20 65 
+                6C 20 61 72 63 68 69 76 6F 2E 24    
+[  12]    01DD: 00 00                                 contador_caracteres DW 0                  ; Contador de caracteres acumulado
+[  13]        :                                       
+[  14]        :                                       ; Buffers de entrada y salida
+[  15]    01DF: 00 00 00 00 00 00 00 00 00 00 00 00   buffer_linea DB 128 DUP(0)                ; Buffer para almacenar cada linea leida
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00             
+[  16]    025F: 00 00 00 00 00 00 00 00 00 00 00 00   buffer_salida DB 128 DUP(0)               ; Buffer para construir la linea de salida
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00             
+[  17]        :                                       
+[  18]        :                                       .CODE
+[  19]    02E0:                                       MAIN:
+[  20]    02E0: B8 10 00                              MOV AX, @DATA
+[  21]    02E3: 8E D8                                 MOV DS, AX
+[  22]    02E5: 8E C0                                 MOV ES, AX
+[  23]        :                                       
+[  24]        :                                       ; Imprimir el nombre del alumno
+[  25]    02E7: B4 09                                 MOV AH, 09h
+[  26]    02E9: BA 00 00                              MOV DX, OFFSET nombre_alumno
+[  27]    02EC: CD 21                                 INT 21h
+[  28]    02EE: B4 09                                 MOV AH, 09h
+[  29]    02F0: BA 81 00                              MOV DX, OFFSET mensaje_ingrese
+[  30]    02F3: CD 21                                 INT 21h
+[  31]        :                                       
+[  32]        :                                       ; Leer el nombre del archivo de entrada
+[  33]    02F5: B4 0A                                 MOV AH, 0Ah             ; Leer una línea del teclado
+[  34]    02F7: BA 18 00                              MOV DX, OFFSET nombre_entrada
+[  35]    02FA: CD 21                                 INT 21h
+[  36]        :                                       
+[  37]        :                                       ; Cambiar la extension de .asm a .lst para el archivo de salida
+[  38]    02FC: BF 18 00                              LEA DI, nombre_entrada
+[  39]    02FF: BF 18 00                              MOV DI, OFFSET nombre_entrada
+[  40]    0302: 03 7D 01                              ADD DI, [DI + 1]  ; ; Desplazar a la posicion del ultimo caracter ingresado
+[  41]    0305: 83 EF 03                              SUB DI, 3                   ; Ubicar el ".asm"
+[  42]    0308: B9 04 00                              MOV CX, 4                   ; Longitud de ".lst"
+[  43]    030B: BE 7C 00                              LEA SI, extension_lst
+[  44]    030E: F3 A4                                 REP MOVSB                   ; Cambiar la extension
+[  45]        :                                       
+[  46]        :                                       ; Abrir el archivo de entrada en modo lectura
+[  47]    0310: B4 3D                                 MOV AH, 3Dh                 ; Interrupcion para abrir archivo
+[  48]    0312: B0 00                                 MOV AL, 0                   ; Modo de solo lectura
+[  49]    0314: BA 18 00                              MOV DX, OFFSET nombre_entrada
+[  50]    0317: CD 21                                 INT 21h
+[  51]    0319: 72 56                                 JC ERROR_ABRIR              ; Salir si hay error
+[  52]    031B: 8B D8                                 MOV BX, AX                  ; Guardar el handle del archivo en BX
+[  53]        :                                       
+[  54]        :                                       ; Crear el archivo de salida
+[  55]    031D: B4 3C                                 MOV AH, 3Ch                 ; Interrupcion para crear archivo
+[  56]    031F: B9 00 00                              MOV CX, 0                   ; Atributos (archivo normal)
+[  57]    0322: BA 18 00                              MOV DX, OFFSET nombre_entrada
+[  58]    0325: CD 21                                 INT 21h
+[  59]    0327: 72 51                                 JC ERROR_CREAR              ; Salir si hay error
+[  60]    0329: 8B C8                                 MOV CX, AX                  ; Guardar el handle de archivo de salida en CX
+[  61]        :                                       
+[  62]        :                                       ; Procesar cada linea del archivo de entrada
+[  63]    032B:                                       PROCESAR_LINEA:
+[  64]    032B: B4 3F                                 MOV AH, 3Fh                 ; Leer del archivo
+[  65]    032D: 8B DB                                 MOV BX, BX                  ; Usar el handle del archivo de entrada
+[  66]    032F: B9 80 00                              MOV CX, 128                 ; Leer hasta 128 caracteres (una linea)
+[  67]    0332: BA DF 00                              MOV DX, OFFSET buffer_linea
+[  68]    0335: CD 21                                 INT 21h
+[  69]    0337: 72 30                                 JC FIN_ARCHIVO              ; Si error, fin del archivo
+[  70]        :                                       
+[  71]    0339: BE DF 00                              MOV SI, OFFSET buffer_linea
+[  72]    033C: 33 D2                                 XOR DX, DX                  ; DX servira como contador de longitud de linea
+[  73]        :                                       
+[  74]        :                                       ; Calcular longitud de la linea leida
+[  75]    033E:                                       CONTAR_CARACTERES:
+[  76]    033E: 8A 04                                 MOV AL, [SI]                ; Obtener carácter de la linea
+[  77]    0340: 3C 0D                                 CMP AL, 0Dh                 ; Comparar con fin de linea
+[  78]    0342: 74 04                                 JE FIN_CONTAR               ; Saltar si es fin de linea
+[  79]    0344: 42                                    INC DX                      ; Incrementar contador
+[  80]    0345: 46                                    INC SI
+[  81]    0346: EB F6                                 JMP CONTAR_CARACTERES
+[  82]        :                                       
+[  83]    0348:                                       FIN_CONTAR:
+[  84]    0348: 01 16 DD 00                           ADD contador_caracteres, DX ; Sumar longitud de linea al contador total
+[  85]        :                                       
+[  86]        :                                       ; Preparar la linea de salida con el contador
+[  87]    034C: BF 5F 01                              MOV DI, OFFSET buffer_salida
+[  88]    034F: A1 DD 00                              MOV AX, contador_caracteres ; AX contiene el contador actual
+[  89]    0352: E8 2E 00                              CALL CONVERTIR_A_HEX
+[  90]        :                                       
+[  91]        :                                       ; Copiar linea original al buffer de salida
+[  92]    0355: BE DF 00                              MOV SI, OFFSET buffer_linea
+[  93]    0358: 8B CA                                 MOV CX, DX
+[  94]    035A: F3 A4                                 REP MOVSB
+[  95]        :                                       
+[  96]        :                                       ; Escribir linea de salida en archivo de salida
+[  97]    035C: B4 40                                 MOV AH, 40h                 ; Escribir en archivo
+[  98]    035E: 8B D9                                 MOV BX, CX                  ; Handle del archivo de salida
+[  99]    0360: BA 5F 01                              MOV DX, OFFSET buffer_salida
+[ 100]    0363: 8B CF                                 MOV CX, DI
+[ 101]    0365: CD 21                                 INT 21h
+[ 102]        :                                       
+[ 103]    0367: EB C2                                 JMP PROCESAR_LINEA          ; Leer la siguiente línea
+[ 104]        :                                       
+[ 105]    0369:                                       FIN_ARCHIVO:
+[ 106]    0369: B8 00 4C                              MOV AX, 4C00h               ; Terminar programa
+[ 107]    036C: BC F8 FF                              MOV SP, 0FFF8h              ; SP en FFF8h para finalizar correctamente
+[ 108]    036F: CD 21                                 INT 21h
+[ 109]        :                                       
+[ 110]    0371:                                       ERROR_ABRIR:
+[ 111]    0371: B4 09                                 MOV AH, 09h
+[ 112]    0373: BA BA 00                              MOV DX, OFFSET mensaje_error
+[ 113]    0376: CD 21                                 INT 21h
+[ 114]    0378: EB EF                                 JMP FIN_ARCHIVO
+[ 115]        :                                       
+[ 116]    037A:                                       ERROR_CREAR:
+[ 117]    037A: B4 09                                 MOV AH, 09h
+[ 118]    037C: BA BA 00                              MOV DX, OFFSET mensaje_error
+[ 119]    037F: CD 21                                 INT 21h
+[ 120]    0381: EB E6                                 JMP FIN_ARCHIVO
+[ 121]        :                                       
+[ 122]        :                                       ; Conversion de numero a string (4 digitos, hexadecimal)
+[ 123]    0383:                                       CONVERTIR_A_HEX:
+[ 124]        :                                       ; (Funcion que convierte AX a una cadena en hexadecimal en DI)
+[ 125]    0383: C3                                    RET
+[ 126]        :                                       
+[ 127]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 84      -   bytes on last page (l.byte)
+0003: 01      -   bytes on last page (h.byte)
+0004: 03      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: 4A      -   check sum (l.byte)
+0013: 98      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 2E      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 01      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 2E      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================

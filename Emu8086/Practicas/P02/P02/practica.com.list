@@ -1,0 +1,96 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+practica.com -- emu8086 assembler version: 4.08  
+ 
+[ 05/09/2024  --  11:55:10 a. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "practica02"
+[   2]        :                                       
+[   3]        :                                       ; este programa imprime dos mensajes en la pantalla
+[   4]        :                                       ; escribiendo directamente en la memoria de video.
+[   5]        :                                       ; en la memoria vga: el primer byte es el caracter ascii,
+[   6]        :                                       ; el siguiente byte son los atributos del caracter.
+[   7]        :                                       ; los atributos del caracter es un valor de 8 bits,
+[   8]        :                                       ; los 4 bits altos ponen el color del fondo
+[   9]        :                                       ; y los 4 bits bajos ponen el color de la letra.
+[  10]        :                                       
+[  11]        :                                       ; hex    bin        color
+[  12]        :                                       ;
+[  13]        :                                       ; 0      0000      black
+[  14]        :                                       ; 1      0001      blue
+[  15]        :                                       ; 2      0010      green
+[  16]        :                                       ; 3      0011      cyan
+[  17]        :                                       ; 4      0100      red
+[  18]        :                                       ; 5      0101      magenta
+[  19]        :                                       ; 6      0110      brown
+[  20]        :                                       ; 7      0111      light gray
+[  21]        :                                       ; 8      1000      dark gray
+[  22]        :                                       ; 9      1001      light blue
+[  23]        :                                       ; a      1010      light green
+[  24]        :                                       ; b      1011      light cyan
+[  25]        :                                       ; c      1100      light red
+[  26]        :                                       ; d      1101      light magenta
+[  27]        :                                       ; e      1110      yellow
+[  28]        :                                       ; f      1111      white
+[  29]        :                                       
+[  30]        :                                       org 100h
+[  31]        :                                       
+[  32]        :                                       ; Guardar los datos en los registros de proposito general
+[  33]    0100: BA 75 21                              mov dx, 2175h      ; 16 bits mas significativos del codigo de alumno (217527185 -> 2175)
+[  34]    0103: B9 85 71                              mov cx, 7185h     ; 16 bits menos significativos del codigo de alumno (217527185 -> 7185)
+[  35]        :                                       
+[  36]    0106: BB 01 00                              mov bx, 0001h      ; 16 bits mas significativos del NRC del curso (84374 -> 0001)
+[  37]    0109: B8 36 49                              mov ax, 4936h      ; 16 bits menos significativos del NRC del curso (84374 -> 4936)
+[  38]        :                                       
+[  39]        :                                       
+[  40]        :                                       ; Mostrar en pantalla los datos del alumno
+[  41]    010C: B0 01                                 mov al, 1
+[  42]    010E: B7 00                                 mov bh, 0
+[  43]    0110: B3 1F                                 mov bl, 0001_1111b  ; color del texto blanco, fondo negro
+[  44]    0112: B9 17 00                              mov cx, msg2 - offset msg1  ; tamano del mensaje 1
+[  45]    0115: B2 07                                 mov dl, 7
+[  46]    0117: B6 0B                                 mov dh, 11
+[  47]    0119: 0E                                    push cs
+[  48]    011A: 07                                    pop es
+[  49]    011B: BD 35 01                              mov bp, offset msg1
+[  50]    011E: B4 13                                 mov ah, 13h
+[  51]    0120: CD 10                                 int 10h
+[  52]        :                                       
+[  53]    0122: B9 32 00                              mov cx, msgend - offset msg2  ; tamano del mensaje 2
+[  54]    0125: B2 24                                 mov dl, 36
+[  55]    0127: B6 0D                                 mov dh, 13
+[  56]    0129: BD 4C 01                              mov bp, offset msg2
+[  57]    012C: B4 13                                 mov ah, 13h
+[  58]    012E: CD 10                                 int 10h
+[  59]        :                                       
+[  60]        :                                       ; Ajustar el registro SP para que tenga el valor FFF8
+[  61]    0130: BC F8 FF                              mov sp, 0FFF8h
+[  62]        :                                       
+[  63]        :                                       ; Finalizar el programa con int 0x20
+[  64]    0133: CD 20                                 int 20h
+[  65]        :                                       
+[  66]    0135: 43 68 72 69 73 74 6F 70 68 65 72 20   msg1    db "Christopher Lopez Avina"
+                4C 6F 70 65 7A 20 41 76 69 6E 61    
+[  67]    014C: 43 6F 64 69 67 6F 20 64 65 6C 20 61   msg2    db "Codigo del alumno: 217527185, NRC del curso: 84374"
+                6C 75 6D 6E 6F 3A 20 32 31 37 35 32 
+                37 31 38 35 2C 20 4E 52 43 20 64 65 
+                6C 20 63 75 72 73 6F 3A 20 38 34 33 
+                37 34                               
+[  68]        :                                       
+[  69]    017E:                                       msgend:
+[  70]    017E: B4 00                                 mov ah,0
+[  71]    0180: CD 16                                 int 16h
+[  72]    0182: CD 20                                 int 20h
+[  73]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

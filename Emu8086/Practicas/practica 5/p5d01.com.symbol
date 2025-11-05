@@ -1,0 +1,41 @@
+< THE SYMBOL TABLE >  p5d01.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+CADNUM                   	00103     	1         	VAR       	(NOSEG)   
+N16                      	00109     	1         	VAR       	(NOSEG)   
+C16                      	0010B     	1         	VAR       	(NOSEG)   
+B                        	0010D     	1         	VAR       	(NOSEG)   
+MSG1                     	0010E     	-1        	LABEL     	(NOSEG)   
+MSG2                     	0012D     	-1        	LABEL     	(NOSEG)   
+MSG3                     	00159     	-1        	LABEL     	(NOSEG)   
+MSG4                     	0018B     	-1        	LABEL     	(NOSEG)   
+MSG5                     	001B9     	-1        	LABEL     	(NOSEG)   
+MSG6                     	001E4     	-1        	LABEL     	(NOSEG)   
+MSG7                     	00213     	-1        	LABEL     	(NOSEG)   
+MSG8                     	00231     	-1        	LABEL     	(NOSEG)   
+MSG_TAIL                 	00254     	-1        	LABEL     	(NOSEG)   
+HEX2DEC                  	00254     	-1        	LABEL     	(NOSEG)   
+NUMBYTE                  	00296     	-1        	LABEL     	(NOSEG)   
+ASC2NUM                  	002AE     	-1        	LABEL     	(NOSEG)   
+F_ASC                    	002BC     	-1        	LABEL     	(NOSEG)   
+GET_STRING               	002BF     	-1        	NEAR      	(NOSEG)   
+WAIT_FOR_KEY_LOC1TMP     	002CC     	-1        	LABEL     	(NOSEG)   
+ADD_TO_BUFFER_LOC2TMP    	002F6     	-1        	LABEL     	(NOSEG)   
+EXIT_LOC2TMP             	00304     	-1        	LABEL     	(NOSEG)   
+EMPTY_BUFFER_LOC1TMP     	00307     	-1        	LABEL     	(NOSEG)   
+SKIP_PROC_GET_STRING_LOC1TMP	0030C     	-1        	LABEL     	(NOSEG)   
+PRINT_STRING             	0030E     	-1        	NEAR      	(NOSEG)   
+NEXT_CHAR_LOC3TMP        	00310     	-1        	LABEL     	(NOSEG)   
+PRINTED_LOC3TMP          	0031D     	-1        	LABEL     	(NOSEG)   
+SKIP_PROC_PRINT_STRING_LOC3TMP	00320     	-1        	LABEL     	(NOSEG)   
+START                    	00320     	-1        	LABEL     	(NOSEG)   
+MAIN                     	003B4     	-1        	LABEL     	(NOSEG)   
+S_DCL_LOC4TMP            	003C6     	1         	VAR       	(NOSEG)   
+SKIP_DCL_LOC4TMP         	003C9     	-1        	LABEL     	(NOSEG)   
+NEXT_CHAR_LOC4TMP        	003CC     	-1        	LABEL     	(NOSEG)   
+PRINTED_LOC4TMP          	003DA     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 20/03/2024  --  20:05:13 ] 
+< END >
+ 

@@ -1,0 +1,257 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+practica5.com -- emu8086 assembler version: 4.08  
+ 
+[ 20/10/2024  --  04:30:01 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "practica05"
+[   2]        :                                       include 'emu8086.inc'
+[   3]        :                                       
+[   4]        :                                       org 100h
+[   5]    0100: 33 C0                                 _set_string: xor ax,ax
+[   6]    0102: BF AC 03                              lea di,input
+[   7]    0105: BE B0 03                              lea si,n16
+[   8]    0108: BA 05 00                              mov dx,5
+[   9]        :                                       
+[  10]        :                                       
+[  11]    010B: 50 53 52 B4 02 B6 04 B2 12 B7 00 CD   GOTOXY  18,4
+                10 5A 5B 58                         
+[  12]    011B: 50 56 EB 18 4C 6F 70 65 7A 20 41 76   PRINT   "Lopez Avina Christopher"
+                69 6E 61 20 43 68 72 69 73 74 6F 70 
+                68 65 72 00 BE 1F 01 2E 8A 04 3C 00 
+                74 07 46 B4 0E CD 10 EB F2 5E 58    
+[  13]    014A: 50 53 52 B4 02 B6 07 B2 0F B7 00 CD   GOTOXY  15,7
+                10 5A 5B 58                         
+[  14]    015A: 50 56 EB 1C 49 6E 67 72 65 73 61 20   PRINT   "Ingresa numero de 16 bits: "
+                6E 75 6D 65 72 6F 20 64 65 20 31 36 
+                20 62 69 74 73 3A 20 00 BE 5E 01 2E 
+                8A 04 3C 00 74 07 46 B4 0E CD 10 EB 
+                F2 5E 58                            
+[  15]    018D: E8 2D 02                              call get_string
+[  16]    0190:                                       MAIN:
+[  17]    0190: E8 43 01                              call PRIMERDEC
+[  18]        :                                       
+[  19]    0193: 33 C9                                 xor cx,cx
+[  20]    0195: A1 B2 03                              mov ax,b
+[  21]    0198: B5 00                                 mov ch,0
+[  22]    019A: B9 02 00                              mov cx,2
+[  23]        :                                       
+[  24]    019D: E8 FC 01                              call HEXDEC
+[  25]    01A0: B0 00                                 mov al,0
+[  26]    01A2: A2 BB 03                              mov decimal[5],al
+[  27]    01A5: B8 00 00                              mov ax,0
+[  28]    01A8: BB 00 00                              mov bx,0
+[  29]    01AB: A1 B4 03                              mov ax,tmp
+[  30]    01AE: BB 10 27                              mov bx,10000
+[  31]    01B1: BA 00 00                              mov dx,0
+[  32]    01B4: F7 F3                                 div bx
+[  33]    01B6: A2 B6 03                              mov decimal[0],al
+[  34]        :                                       
+[  35]    01B9: BB 00 00                              mov bx,0
+[  36]    01BC: B8 00 00                              mov ax,0
+[  37]    01BF: B3 0A                                 mov bl,10
+[  38]    01C1: A0 B6 03                              mov al,decimal[0]
+[  39]    01C4: 89 1E B2 03                           mov b,bx
+[  40]    01C8: F7 26 B2 03                           mul b
+[  41]    01CC: A3 B2 03                              mov b,ax
+[  42]        :                                       
+[  43]    01CF: BB E8 03                              mov bx,1000
+[  44]    01D2: A1 B2 03                              mov ax,b
+[  45]    01D5: 89 1E B2 03                           mov b,bx
+[  46]    01D9: F7 26 B2 03                           mul b
+[  47]    01DD: A3 B2 03                              mov b,ax
+[  48]    01E0: A1 B4 03                              mov ax,tmp
+[  49]    01E3: 2B 06 B2 03                           sub ax,b
+[  50]    01E7: A3 B4 03                              mov tmp,ax
+[  51]        :                                       
+[  52]    01EA: A1 B4 03                              mov ax,tmp
+[  53]    01ED: BB E8 03                              mov bx,1000
+[  54]    01F0: F7 F3                                 div bx
+[  55]    01F2: A2 B7 03                              mov decimal[1],al
+[  56]        :                                       
+[  57]    01F5: B8 00 00                              mov ax,0
+[  58]    01F8: A0 B7 03                              mov al,decimal[1]
+[  59]    01FB: BB E8 03                              mov bx,1000
+[  60]    01FE: 89 1E B2 03                           mov b,bx
+[  61]    0202: F7 26 B2 03                           mul b
+[  62]    0206: A3 B2 03                              mov b,ax
+[  63]    0209: A1 B4 03                              mov ax,tmp
+[  64]    020C: 2B 06 B2 03                           sub ax,b
+[  65]    0210: A3 B4 03                              mov tmp,ax
+[  66]        :                                       
+[  67]    0213: BB 64 00                              mov bx,100
+[  68]    0216: A1 B4 03                              mov ax,tmp
+[  69]    0219: F7 F3                                 div bx
+[  70]    021B: A2 B8 03                              mov decimal[2],al
+[  71]        :                                       
+[  72]    021E: B8 00 00                              mov ax,0
+[  73]    0221: BB 00 00                              mov bx,0
+[  74]    0224: A0 B8 03                              mov al,decimal[2]
+[  75]    0227: BB 64 00                              mov bx,100
+[  76]    022A: 89 1E B2 03                           mov b,bx
+[  77]    022E: F7 26 B2 03                           mul b
+[  78]    0232: A3 B2 03                              mov b,ax
+[  79]    0235: A1 B4 03                              mov ax,tmp
+[  80]    0238: 2B 06 B2 03                           sub ax,b
+[  81]    023C: A3 B4 03                              mov tmp,ax
+[  82]        :                                       
+[  83]    023F: B8 00 00                              mov ax,0
+[  84]    0242: BB 0A 00                              mov bx,10
+[  85]    0245: A1 B4 03                              mov ax,tmp
+[  86]    0248: F7 F3                                 div bx
+[  87]    024A: A2 B9 03                              mov decimal[3],al
+[  88]        :                                       
+[  89]    024D: B8 00 00                              mov ax,0
+[  90]    0250: A0 B9 03                              mov al,decimal[3]
+[  91]    0253: BB 0A 00                              mov bx,10
+[  92]    0256: 89 1E B2 03                           mov b,bx
+[  93]    025A: F7 26 B2 03                           mul b
+[  94]    025E: A3 B2 03                              mov b,ax
+[  95]    0261: A1 B4 03                              mov ax,tmp
+[  96]    0264: 2B 06 B2 03                           sub ax,b
+[  97]    0268: A3 B4 03                              mov tmp,ax
+[  98]    026B: A1 B4 03                              mov ax,tmp
+[  99]    026E: A2 BA 03                              mov decimal[4],al
+[ 100]        :                                       
+[ 101]    0271: B8 00 00                              mov ax, 0
+[ 102]    0274: B4 30                                 mov ah, 30h
+[ 103]        :                                       
+[ 104]        :                                       
+[ 105]    0276: 00 26 B6 03                           add decimal[0], ah
+[ 106]    027A: 00 26 B7 03                           add decimal[1], ah
+[ 107]    027E: 00 26 B8 03                           add decimal[2], ah
+[ 108]    0282: 00 26 B9 03                           add decimal[3], ah
+[ 109]    0286: 00 26 BA 03                           add decimal[4], ah
+[ 110]        :                                       
+[ 111]        :                                       ; MOSTRAR ARREGLO
+[ 112]        :                                       
+[ 113]    028A: 50 53 52 B4 02 B6 09 B2 15 B7 00 CD   GOTOXY 21,9
+                10 5A 5B 58                         
+[ 114]    029A: 50 56 EB 1A 45 6C 20 6E 75 6D 65 72   print "El numero convertido es: "
+                6F 20 63 6F 6E 76 65 72 74 69 64 6F 
+                20 65 73 3A 20 00 BE 9E 02 2E 8A 04 
+                3C 00 74 07 46 B4 0E CD 10 EB F2 5E 
+                58                                  
+[ 115]        :                                       
+[ 116]    02CB: BF B6 03                              lea di, decimal
+[ 117]    02CE: BE B6 03                              lea si, decimal
+[ 118]        :                                       
+[ 119]    02D1: E8 38 01                              call print_string ;
+[ 120]        :                                       
+[ 121]    02D4: CD 20                                 int 20h
+[ 122]        :                                       ; DECIMALES CMP ENTRE RANGOS
+[ 123]        :                                       
+[ 124]    02D6:                                       PRIMERDEC:
+[ 125]    02D6: 80 2E AC 03 30                        sub input[0], 30h
+[ 126]    02DB: 80 3E AC 03 09                        cmp input[0], 9h
+[ 127]    02E0: 7E 11                                 jle SEGUNDODEC
+[ 128]    02E2: 80 2E AC 03 07                        sub input[0], 7h
+[ 129]    02E7: 80 3E AC 03 0F                        cmp input[0], 15
+[ 130]    02EC: 7E 05                                 jle SEGUNDODEC
+[ 131]    02EE: 80 2E AC 03 20                        sub input[0], 20h
+[ 132]        :                                       
+[ 133]    02F3:                                       SEGUNDODEC:
+[ 134]    02F3: 80 2E AD 03 30                        sub input[1],30h
+[ 135]    02F8: 80 3E AD 03 09                        cmp input[1],9h
+[ 136]    02FD: 7E 11                                 jle TERCERDEC
+[ 137]    02FF: 80 2E AD 03 07                        sub input[1],7h
+[ 138]    0304: 80 3E AD 03 0F                        cmp input[1],15
+[ 139]    0309: 7E 05                                 jle TERCERDEC
+[ 140]    030B: 80 2E AD 03 20                        sub input[1],20h
+[ 141]        :                                       
+[ 142]    0310:                                       TERCERDEC:
+[ 143]    0310: 80 2E AE 03 30                        sub input[2],30h
+[ 144]    0315: 80 3E AE 03 09                        cmp input[2],9h
+[ 145]    031A: 7E 11                                 jle CUARTODEC
+[ 146]    031C: 80 2E AE 03 07                        sub input[2],7h
+[ 147]    0321: 80 3E AE 03 0F                        cmp input[2],15
+[ 148]    0326: 7E 05                                 jle CUARTODEC
+[ 149]    0328: 80 2E AE 03 20                        sub input[2],20h
+[ 150]        :                                       
+[ 151]    032D:                                       CUARTODEC:
+[ 152]        :                                       
+[ 153]    032D: 80 2E AF 03 30                        sub input[3],30h
+[ 154]    0332: 80 3E AF 03 09                        cmp input[3],9h
+[ 155]    0337: 7E 11                                 jle FINCONV
+[ 156]    0339: 80 2E AF 03 07                        sub input[3],7h
+[ 157]    033E: 80 3E AF 03 0F                        cmp input[3],15
+[ 158]    0343: 7E 05                                 jle FINCONV
+[ 159]    0345: 80 2E AF 03 20                        sub input[3],20h
+[ 160]        :                                       
+[ 161]    034A:                                       FINCONV:
+[ 162]    034A: C3                                    ret
+[ 163]        :                                       ;Hex a Dec
+[ 164]        :                                       
+[ 165]    034B:                                       INIHEX: ; Apartado del Primer Dato
+[ 166]        :                                       
+[ 167]    034B: F7 26 B2 03                           mul b
+[ 168]    034F: E2 FA                                 loop INIHEX
+[ 169]    0351: A3 B2 03                              mov b,ax
+[ 170]    0354: 8A 1E AC 03                           mov bl,input[0]
+[ 171]    0358: 89 1E B4 03                           mov tmp,bx
+[ 172]        :                                       
+[ 173]    035C: F7 26 B4 03                           mul tmp
+[ 174]    0360: A3 B4 03                              mov tmp,ax
+[ 175]    0363: C3                                    ret
+[ 176]        :                                       
+[ 177]    0364:                                       RESHEX: ; Apartado resto
+[ 178]        :                                       
+[ 179]    0364: B8 10 00                              mov ax,16
+[ 180]    0367: A3 B2 03                              mov b,ax
+[ 181]    036A: F7 26 B2 03                           mul b
+[ 182]    036E: 8A 1E AD 03                           mov bl,input[1]
+[ 183]    0372: 89 1E B2 03                           mov b,bx
+[ 184]    0376: F7 26 B2 03                           mul b
+[ 185]    037A: A3 B2 03                              mov b,ax
+[ 186]    037D: 01 06 B4 03                           add tmp,ax
+[ 187]        :                                       
+[ 188]    0381: B8 10 00                              mov ax,16
+[ 189]    0384: 8A 1E AE 03                           mov bl,input[2]
+[ 190]    0388: 89 1E B2 03                           mov b,bx
+[ 191]    038C: F7 26 B2 03                           mul b
+[ 192]    0390: 01 06 B4 03                           add tmp,ax
+[ 193]        :                                       
+[ 194]    0394: A0 AF 03                              mov al,input[3]
+[ 195]    0397: 01 06 B4 03                           add tmp,ax
+[ 196]    039B: C3                                    ret
+[ 197]    039C:                                       HEXDEC:
+[ 198]        :                                       
+[ 199]    039C: E8 AC FF                              call INIHEX
+[ 200]    039F: E8 C2 FF                              call RESHEX
+[ 201]    03A2: BF B6 03                              lea di,decimal ; Preparamos la salida de datos por print
+[ 202]    03A5: BE B0 03                              lea si,n16
+[ 203]    03A8: BA 06 00                              mov dx,6 ; Buffer
+[ 204]        :                                       
+[ 205]    03AB: C3                                    ret
+[ 206]        :                                       
+[ 207]        :                                       
+[ 208]        :                                       
+[ 209]    03AC: 00 00 00 00                           input db 0,0,0,0
+[ 210]    03B0: 00 00                                 n16 db 0,0
+[ 211]    03B2: 10 00                                 b dw 16
+[ 212]    03B4: 00 00                                 tmp dw 0
+[ 213]    03B6: 00 00 00 00 00                        decimal db 0,0,0,0,0
+[ 214]        :                                       
+[ 215]    03BB: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[ 216]    040A: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[ 217]        :                                       END ; directive to stop the compiler.
+[ 218]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

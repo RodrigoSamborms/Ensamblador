@@ -1,0 +1,22 @@
+< THE SYMBOL TABLE >  p4d01.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+DATO1                    	00103     	2         	VAR       	(NOSEG)   
+EXPONENTE                	00105     	2         	VAR       	(NOSEG)   
+RESULTADO                	00107     	2         	VAR       	(NOSEG)   
+AUX                      	0010B     	2         	VAR       	(NOSEG)   
+AUX2                     	0010F     	2         	VAR       	(NOSEG)   
+MSG1                     	00111     	-1        	LABEL     	(NOSEG)   
+MSG2                     	00130     	-1        	LABEL     	(NOSEG)   
+MSG3                     	0013B     	-1        	LABEL     	(NOSEG)   
+MSG4                     	0015F     	-1        	LABEL     	(NOSEG)   
+MSG5                     	00187     	-1        	LABEL     	(NOSEG)   
+MSG_TAIL                 	001AE     	-1        	LABEL     	(NOSEG)   
+MULT                     	001AE     	-1        	LABEL     	(NOSEG)   
+START                    	001BF     	-1        	LABEL     	(NOSEG)   
+MAIN                     	00235     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 06/03/2024  --  19:10:29 ] 
+< END >
+ 

@@ -1,0 +1,165 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+p4d01.com -- emu8086 assembler version: 4.08  
+ 
+[ 06/03/2024  --  19:10:29 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "p4d01"
+[   2]        :                                       
+[   3]        :                                       ;   Este programa realiza el calculo de la potencia de un
+[   4]        :                                       ;   numero de 16 bits. El resultado se guardara en 32 bits
+[   5]        :                                       ;   utilizand el formato big endian
+[   6]        :                                       
+[   7]        :                                       org  100h
+[   8]    0100: E9 BC 00                              jmp start
+[   9]        :                                       
+[  10]        :                                       ;Variables de entrada
+[  11]    0103: 00 00                                 Dato1           dw      ?
+[  12]    0105: 00 00                                 Exponente       dw      ?
+[  13]    0107: 00 00 00 00                           Resultado       dw      0,0
+[  14]    010B: 00 00 00 00                           aux             dw      0,0
+[  15]    010F: 00 00                                 aux2            dw      0
+[  16]        :                                       
+[  17]        :                                       ;mensajes a imprimir en pantalla
+[  18]    0111: 42 72 79 61 6E 20 45 64 75 61 72 64   msg1:   db "Bryan Eduardo Zarate Miramontes"
+                6F 20 5A 61 72 61 74 65 20 4D 69 72 
+                61 6D 6F 6E 74 65 73                
+[  19]    0130: 53 65 63 63 69 6F 6E 20 44 30 31      msg2:   db "Seccion D01"
+[  20]    013B: 44 61 74 6F 31 20 76 61 72 69 61 62   msg3:   db "Dato1 variable de entrada de 16 bits"
+                6C 65 20 64 65 20 65 6E 74 72 61 64 
+                61 20 64 65 20 31 36 20 62 69 74 73 
+                                                    
+[  21]    015F: 45 78 70 6F 6E 65 6E 74 65 20 76 61   msg4:   db "Exponente variable de entrada de 16 bits"
+                72 69 61 62 6C 65 20 64 65 20 65 6E 
+                74 72 61 64 61 20 64 65 20 31 36 20 
+                62 69 74 73                         
+[  22]    0187: 52 65 73 75 6C 74 61 64 6F 20 76 61   msg5:   db "Resultado variable de salida de 32 bits"
+                72 69 61 62 6C 65 20 64 65 20 73 61 
+                6C 69 64 61 20 64 65 20 33 32 20 62 
+                69 74 73                            
+[  23]    01AE:                                       msg_tail:
+[  24]        :                                       
+[  25]        :                                       ;tamanio de mensajes
+[  26]        :                                       msg1_size = msg2 - msg1
+[  27]        :                                       msg2_size = msg3 - msg2
+[  28]        :                                       msg3_size = msg4 - msg3
+[  29]        :                                       msg4_size = msg5 - msg4
+[  30]        :                                       msg5_size = msg_tail - msg5
+[  31]        :                                       
+[  32]        :                                       
+[  33]        :                                       ;Subrutina de multiplicacion
+[  34]    01AE:                                       mult:
+[  35]    01AE: 8B 1E 03 01                           mov     bx,[Dato1]
+[  36]    01B2: 8B 0E 05 01                           mov     cx,[Exponente]
+[  37]    01B6: 89 1E 0D 01                           mov     [aux + 2],bx
+[  38]    01BA: 83 F9 01                              cmp     cx,1
+[  39]    01BD: 7F 76                                 jg      main
+[  40]        :                                       ;_______________________________________
+[  41]        :                                       
+[  42]        :                                       ;Depuracion de variables
+[  43]    01BF:                                       start:
+[  44]    01BF: 33 C0                                 xor     ax, ax
+[  45]    01C1: A3 07 01                              mov     [Resultado],ax
+[  46]    01C4: A3 09 01                              mov     [Resultado+2],ax
+[  47]    01C7: A1 03 01                              mov     ax,[Dato1]
+[  48]        :                                       
+[  49]        :                                       ;_______________________________________
+[  50]        :                                       
+[  51]        :                                       
+[  52]        :                                       ;impresion de mensajes en pantalla
+[  53]        :                                       
+[  54]        :                                       ;Mensaje 1
+[  55]    01CA: BA 05 07                              mov dx, 0705h
+[  56]    01CD: BB 00 00                              mov bx, 0
+[  57]    01D0: B3 9F                                 mov bl, 10011111b
+[  58]    01D2: B9 1F 00                              mov cx, msg1_size
+[  59]    01D5: B0 01                                 mov al, 01b
+[  60]    01D7: BD 11 01                              mov bp, msg1
+[  61]    01DA: B4 13                                 mov ah, 13h
+[  62]    01DC: CD 10                                 int 10h
+[  63]        :                                       
+[  64]        :                                       ;Mensaje 2
+[  65]    01DE: BA 05 09                              mov dx, 0905h
+[  66]    01E1: BB 00 00                              mov bx, 0
+[  67]    01E4: B3 9F                                 mov bl, 10011111b
+[  68]    01E6: B9 0B 00                              mov cx, msg2_size
+[  69]    01E9: B0 01                                 mov al, 01b
+[  70]    01EB: BD 30 01                              mov bp, msg2
+[  71]    01EE: B4 13                                 mov ah, 13h
+[  72]    01F0: CD 10                                 int 10h
+[  73]        :                                       
+[  74]        :                                       ;Mensaje 3
+[  75]    01F2: BA 05 0B                              mov dx, 0B05h
+[  76]    01F5: BB 00 00                              mov bx, 0
+[  77]    01F8: B3 9F                                 mov bl, 10011111b
+[  78]    01FA: B9 24 00                              mov cx, msg3_size
+[  79]    01FD: B0 01                                 mov al, 01b
+[  80]    01FF: BD 3B 01                              mov bp, msg3
+[  81]    0202: B4 13                                 mov ah, 13h
+[  82]    0204: CD 10                                 int 10h
+[  83]        :                                       
+[  84]        :                                       ;Mensaje 4
+[  85]    0206: BA 05 0D                              mov dx, 0D05h
+[  86]    0209: BB 00 00                              mov bx, 0
+[  87]    020C: B3 9F                                 mov bl, 10011111b
+[  88]    020E: B9 28 00                              mov cx, msg4_size
+[  89]    0211: B0 01                                 mov al, 01b
+[  90]    0213: BD 5F 01                              mov bp, msg4
+[  91]    0216: B4 13                                 mov ah, 13h
+[  92]    0218: CD 10                                 int 10h
+[  93]        :                                       
+[  94]        :                                       ;Mensaje 5
+[  95]    021A: BA 05 0F                              mov dx, 0F05h
+[  96]    021D: BB 00 00                              mov bx, 0
+[  97]    0220: B3 9F                                 mov bl, 10011111b
+[  98]    0222: B9 27 00                              mov cx, msg5_size
+[  99]    0225: B0 01                                 mov al, 01b
+[ 100]    0227: BD 87 01                              mov bp, msg5
+[ 101]    022A: B4 13                                 mov ah, 13h
+[ 102]    022C: CD 10                                 int 10h
+[ 103]        :                                       
+[ 104]        :                                       ;_____________________________________
+[ 105]        :                                       
+[ 106]        :                                       
+[ 107]        :                                       ;Pulse una tecla para continuar
+[ 108]    022E: B4 00                                 mov ah, 0
+[ 109]    0230: CD 16                                 int 10110b
+[ 110]    0232: E9 79 FF                              jmp     mult
+[ 111]        :                                       
+[ 112]        :                                       
+[ 113]        :                                       ;Programa principal
+[ 114]    0235:                                       main:
+[ 115]    0235: A1 0D 01                              mov     ax,[aux + 2]
+[ 116]    0238: F7 E3                                 mul     bx
+[ 117]    023A: 89 16 0F 01                           mov     [aux2],dx
+[ 118]    023E: A3 09 01                              mov     [Resultado + 2],ax
+[ 119]    0241: A1 0B 01                              mov     ax,[aux]
+[ 120]    0244: F7 E3                                 mul     bx
+[ 121]    0246: 8B 16 0F 01                           mov     dx,[aux2]
+[ 122]    024A: 03 D0                                 add     dx,ax
+[ 123]    024C: 89 16 07 01                           mov     [Resultado],dx
+[ 124]    0250: A1 07 01                              mov     ax,[Resultado]
+[ 125]    0253: A3 0B 01                              mov     [aux],ax
+[ 126]    0256: A1 09 01                              mov     ax,[Resultado + 2]
+[ 127]    0259: A3 0D 01                              mov     [aux + 2],ax
+[ 128]    025C: 83 C1 FF                              add     cx,-1
+[ 129]    025F: 83 F9 01                              cmp     cx,1
+[ 130]    0262: 7F D1                                 jg      main
+[ 131]        :                                       
+[ 132]    0264: CD 20                                 int 20h
+[ 133]        :                                       
+[ 134]        :                                       
+[ 135]        :                                       end
+[ 136]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

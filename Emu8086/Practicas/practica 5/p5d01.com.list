@@ -1,0 +1,263 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+p5d01.com -- emu8086 assembler version: 4.08  
+ 
+[ 20/03/2024  --  20:05:13 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "p5d01"
+[   2]        :                                       include 'emu8086.inc'
+[   3]        :                                       
+[   4]        :                                       org 0100h
+[   5]    0100: E9 1D 02                              jmp start
+[   6]        :                                       
+[   7]        :                                       ;declaracion de variables
+[   8]    0103: 30 30 30 30 30 00                     cadnum  db      "00000", 0
+[   9]    0109: 00 00                                 n16     db      ?,?
+[  10]    010B: 00 00                                 c16     db      ?,?
+[  11]    010D: 00                                    b       db      ?
+[  12]        :                                       
+[  13]        :                                       ;____________________________________________
+[  14]        :                                       
+[  15]        :                                       ;mensajes a imprimir en pantalla
+[  16]    010E: 42 72 79 61 6E 20 45 64 75 61 72 64   msg1:   db "Bryan Eduardo Zarate Miramontes"
+                6F 20 5A 61 72 61 74 65 20 4D 69 72 
+                61 6D 6F 6E 74 65 73                
+[  17]    012D: 45 73 74 65 20 70 72 6F 67 72 61 6D   msg2:   db "Este programa convierte un numero de 2 bytes"
+                61 20 63 6F 6E 76 69 65 72 74 65 20 
+                75 6E 20 6E 75 6D 65 72 6F 20 64 65 
+                20 32 20 62 79 74 65 73             
+[  18]    0159: 69 6E 67 72 65 73 61 64 61 20 70 6F   msg3:   db "ingresada por el usuario de hexadecimal a decimal."
+                72 20 65 6C 20 75 73 75 61 72 69 6F 
+                20 64 65 20 68 65 78 61 64 65 63 69 
+                6D 61 6C 20 61 20 64 65 63 69 6D 61 
+                6C 2E                               
+[  19]    018B: 53 69 20 65 6C 20 76 61 6C 6F 72 20   msg4:   db "Si el valor ingresado es menor a 4 digitos, es"
+                69 6E 67 72 65 73 61 64 6F 20 65 73 
+                20 6D 65 6E 6F 72 20 61 20 34 20 64 
+                69 67 69 74 6F 73 2C 20 65 73       
+[  20]    01B9: 6E 65 63 65 73 61 72 69 6F 20 72 65   msg5:   db "necesario rellenar con ceros a la izquierda"
+                6C 6C 65 6E 61 72 20 63 6F 6E 20 63 
+                65 72 6F 73 20 61 20 6C 61 20 69 7A 
+                71 75 69 65 72 64 61                
+[  21]    01E4: 45 6A 65 6D 70 6C 6F 3A 20 76 61 6C   msg6:   db "Ejemplo: valor a ingresar 10h, se ingresa 0010h"
+                6F 72 20 61 20 69 6E 67 72 65 73 61 
+                72 20 31 30 68 2C 20 73 65 20 69 6E 
+                67 72 65 73 61 20 30 30 31 30 68    
+[  22]    0213: 49 6E 67 72 65 73 65 20 75 6E 20 76   msg7:	db "Ingrese un valor hexadecimal: "
+                61 6C 6F 72 20 68 65 78 61 64 65 63 
+                69 6D 61 6C 3A 20                   
+[  23]    0231: 45 6C 20 6E 75 6D 65 72 6F 20 63 6F   msg8:   db "El numero convertido a decimal es: "
+                6E 76 65 72 74 69 64 6F 20 61 20 64 
+                65 63 69 6D 61 6C 20 65 73 3A 20    
+[  24]    0254:                                       msg_tail:
+[  25]        :                                       
+[  26]        :                                       ;tamanio de mensajes
+[  27]        :                                       msg1_size = msg2 - msg1
+[  28]        :                                       msg2_size = msg3 - msg2
+[  29]        :                                       msg3_size = msg4 - msg3
+[  30]        :                                       msg4_size = msg5 - msg4
+[  31]        :                                       msg5_size = msg6 - msg5
+[  32]        :                                       msg6_size = msg7 - msg6
+[  33]        :                                       msg7_size = msg8 - msg7
+[  34]        :                                       msg8_size = msg_tail - msg8
+[  35]        :                                       
+[  36]        :                                       ;____________________________________________
+[  37]        :                                       
+[  38]        :                                       ;declaracion de subrutinas
+[  39]        :                                       
+[  40]    0254:                                       Hex2Dec:
+[  41]    0254: 8A 26 09 01                           mov     ah,n16[0]
+[  42]    0258: A0 0A 01                              mov     al,n16[1]
+[  43]        :                                       ;primera division
+[  44]    025B: BB 0A 00                              mov     bx, 10
+[  45]    025E: 33 D2                                 xor     dx, dx
+[  46]    0260: F7 F3                                 div     bx
+[  47]    0262: 80 C2 30                              add     dl,48
+[  48]    0265: 88 16 07 01                           mov     cadnum[4], dl
+[  49]        :                                       ;segunda division
+[  50]    0269: 33 D2                                 xor     dx, dx
+[  51]    026B: F7 F3                                 div     bx
+[  52]    026D: 80 C2 30                              add     dl,48
+[  53]    0270: 88 16 06 01                           mov     cadnum[3], dl
+[  54]        :                                       ;tercera division
+[  55]    0274: 33 D2                                 xor     dx, dx
+[  56]    0276: F7 F3                                 div     bx
+[  57]    0278: 80 C2 30                              add     dl,48
+[  58]    027B: 88 16 05 01                           mov     cadnum[2], dl
+[  59]        :                                       ;cuarta division
+[  60]    027F: 33 D2                                 xor     dx, dx
+[  61]    0281: F7 F3                                 div     bx
+[  62]    0283: 80 C2 30                              add     dl,48
+[  63]    0286: 88 16 04 01                           mov     cadnum[1], dl
+[  64]        :                                       ;quinta division
+[  65]    028A: 33 D2                                 xor     dx, dx
+[  66]    028C: F7 F3                                 div     bx
+[  67]    028E: 80 C2 30                              add     dl,48
+[  68]    0291: 88 16 03 01                           mov     cadnum[0], dl
+[  69]    0295: C3                                    ret
+[  70]        :                                       
+[  71]    0296:                                       numbyte:
+[  72]    0296: E8 15 00                              call    asc2num
+[  73]    0299: B3 10                                 mov     bl,16
+[  74]    029B: F6 E3                                 mul     bl
+[  75]    029D: A2 0D 01                              mov     [b],al
+[  76]    02A0: 47                                    inc     di
+[  77]    02A1: 8A 05                                 mov     al,[di]
+[  78]    02A3: E8 08 00                              call    asc2num
+[  79]    02A6: 02 06 0D 01                           add     al,[b]
+[  80]    02AA: A2 0D 01                              mov     [b],al
+[  81]    02AD: C3                                    ret
+[  82]        :                                       
+[  83]    02AE:                                       asc2num:
+[  84]    02AE: 2C 30                                 sub     al,48
+[  85]    02B0: 3C 09                                 cmp     al,9
+[  86]    02B2: 7E 08                                 jle     f_asc
+[  87]    02B4: 2C 07                                 sub     al,7
+[  88]    02B6: 3C 0F                                 cmp     al,15
+[  89]    02B8: 7E 02                                 jle     f_asc
+[  90]    02BA: 2C 20                                 sub     al,32
+[  91]    02BC: C3                                    f_asc:  ret
+[  92]        :                                       ;____________________________________________
+[  93]        :                                       
+[  94]        :                                       ;subrutinas de libreria de emu8086.inc
+[  95]    02BD: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[  96]    030C: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[  97]        :                                       
+[  98]        :                                       ;____________________________________________
+[  99]        :                                       
+[ 100]    0320:                                       start:
+[ 101]        :                                       ;configuracion de la consola para 80x25
+[ 102]    0320: B8 03 10                              mov ax, 1003h
+[ 103]    0323: BB 00 00                              mov bx, 0
+[ 104]    0326: CD 10                                 int 10h
+[ 105]        :                                       ;____________________________________________
+[ 106]        :                                       
+[ 107]        :                                       ;impresion de mensajes en pantalla
+[ 108]        :                                       
+[ 109]        :                                       ;Mensaje 1
+[ 110]    0328: BA 05 03                              mov dx, 0305h
+[ 111]    032B: BB 00 00                              mov bx, 0
+[ 112]    032E: B3 9F                                 mov bl, 10011111b
+[ 113]    0330: B9 1F 00                              mov cx, msg1_size
+[ 114]    0333: B0 01                                 mov al, 01b
+[ 115]    0335: BD 0E 01                              mov bp, msg1
+[ 116]    0338: B4 13                                 mov ah, 13h
+[ 117]    033A: CD 10                                 int 10h
+[ 118]        :                                       
+[ 119]        :                                       ;Mensaje 2
+[ 120]    033C: BA 05 05                              mov dx, 0505h
+[ 121]    033F: BB 00 00                              mov bx, 0
+[ 122]    0342: B3 9F                                 mov bl, 10011111b
+[ 123]    0344: B9 2C 00                              mov cx, msg2_size
+[ 124]    0347: B0 01                                 mov al, 01b
+[ 125]    0349: BD 2D 01                              mov bp, msg2
+[ 126]    034C: B4 13                                 mov ah, 13h
+[ 127]    034E: CD 10                                 int 10h
+[ 128]        :                                       
+[ 129]        :                                       ;Mensaje 3
+[ 130]    0350: BA 05 07                              mov dx, 0705h
+[ 131]    0353: BB 00 00                              mov bx, 0
+[ 132]    0356: B3 9F                                 mov bl, 10011111b
+[ 133]    0358: B9 32 00                              mov cx, msg3_size
+[ 134]    035B: B0 01                                 mov al, 01b
+[ 135]    035D: BD 59 01                              mov bp, msg3
+[ 136]    0360: B4 13                                 mov ah, 13h
+[ 137]    0362: CD 10                                 int 10h
+[ 138]        :                                       
+[ 139]        :                                       ;Mensaje 4
+[ 140]    0364: BA 05 09                              mov dx, 0905h
+[ 141]    0367: BB 00 00                              mov bx, 0
+[ 142]    036A: B3 9F                                 mov bl, 10011111b
+[ 143]    036C: B9 2E 00                              mov cx, msg4_size
+[ 144]    036F: B0 01                                 mov al, 01b
+[ 145]    0371: BD 8B 01                              mov bp, msg4
+[ 146]    0374: B4 13                                 mov ah, 13h
+[ 147]    0376: CD 10                                 int 10h
+[ 148]        :                                       
+[ 149]        :                                       ;Mensaje 5
+[ 150]    0378: BA 05 0B                              mov dx, 0B05h
+[ 151]    037B: BB 00 00                              mov bx, 0
+[ 152]    037E: B3 9F                                 mov bl, 10011111b
+[ 153]    0380: B9 2B 00                              mov cx, msg5_size
+[ 154]    0383: B0 01                                 mov al, 01b
+[ 155]    0385: BD B9 01                              mov bp, msg5
+[ 156]    0388: B4 13                                 mov ah, 13h
+[ 157]    038A: CD 10                                 int 10h
+[ 158]        :                                       
+[ 159]        :                                       ;Mensaje 6
+[ 160]    038C: BA 05 0D                              mov dx, 0D05h
+[ 161]    038F: BB 00 00                              mov bx, 0
+[ 162]    0392: B3 9F                                 mov bl, 10011111b
+[ 163]    0394: B9 2F 00                              mov cx, msg6_size
+[ 164]    0397: B0 01                                 mov al, 01b
+[ 165]    0399: BD E4 01                              mov bp, msg6
+[ 166]    039C: B4 13                                 mov ah, 13h
+[ 167]    039E: CD 10                                 int 10h
+[ 168]        :                                       
+[ 169]        :                                       ;Mensaje 7
+[ 170]    03A0: BA 05 0F                              mov dx, 0F05h
+[ 171]    03A3: BB 00 00                              mov bx, 0
+[ 172]    03A6: B3 9F                                 mov bl, 10011111b
+[ 173]    03A8: B9 1E 00                              mov cx, msg7_size
+[ 174]    03AB: B0 01                                 mov al, 01b
+[ 175]    03AD: BD 13 02                              mov bp, msg7
+[ 176]    03B0: B4 13                                 mov ah, 13h
+[ 177]    03B2: CD 10                                 int 10h
+[ 178]        :                                       ;_____________________________________
+[ 179]        :                                       
+[ 180]    03B4:                                       main:
+[ 181]    03B4: 33 C0                                 xor     ax,ax
+[ 182]    03B6: BF 03 01                              lea     di,cadnum
+[ 183]    03B9: BE 09 01                              lea     si,n16
+[ 184]    03BC: BA 05 00                              mov     dx,5
+[ 185]    03BF: E8 FD FE                              call    get_string
+[ 186]    03C2: 50 56 EB 03 0D 0A 00 BE C6 03 2E 8A   printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 187]    03DC: 8A 05                                 mov     al,[di]
+[ 188]    03DE: E8 B5 FE                              call    numbyte
+[ 189]    03E1: A0 0D 01                              mov     al,[b]
+[ 190]    03E4: 88 04                                 mov     [si],al
+[ 191]    03E6: 46                                    inc     si
+[ 192]    03E7: 47                                    inc     di
+[ 193]    03E8: 8A 05                                 mov     al,[di]
+[ 194]    03EA: E8 A9 FE                              call    numbyte
+[ 195]    03ED: A0 0D 01                              mov     al,[b]
+[ 196]    03F0: 88 04                                 mov     [si],al
+[ 197]    03F2: E8 5F FE                              call    Hex2Dec
+[ 198]        :                                       
+[ 199]        :                                       ;Mensaje 8
+[ 200]    03F5: BA 05 11                              mov dx, 1105h
+[ 201]    03F8: BB 00 00                              mov bx, 0
+[ 202]    03FB: B3 9F                                 mov bl, 10011111b
+[ 203]    03FD: B9 23 00                              mov cx, msg8_size
+[ 204]    0400: B0 01                                 mov al, 01b
+[ 205]    0402: BD 31 02                              mov bp, msg8
+[ 206]    0405: B4 13                                 mov ah, 13h
+[ 207]    0407: CD 10                                 int 10h
+[ 208]        :                                       
+[ 209]    0409: BE 03 01                              lea     si,cadnum
+[ 210]    040C: E8 FF FE                              	call    PRINT_STRING
+[ 211]        :                                       	
+[ 212]    040F: CD 20                                 int 20h
+[ 213]        :                                       end
+[ 214]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

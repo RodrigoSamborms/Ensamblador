@@ -1,0 +1,595 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+practica6.com -- emu8086 assembler version: 4.08  
+ 
+[ 03/12/2024  --  11:26:28 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "practica06"
+[   2]        :                                       include 'emu8086.inc'
+[   3]        :                                       
+[   4]        :                                       
+[   5]        :                                       org  100h
+[   6]    0100: E9 99 04                              jmp msg
+[   7]        :                                       ;mensajes del programa
+[   8]    0103: 43 68 72 69 73 74 6F 70 68 65 72 20   msg1: db "Christopher Lopez Avina"
+                4C 6F 70 65 7A 20 41 76 69 6E 61    
+[   9]    011A: 45 6C 20 70 72 6F 67 72 61 6D 61 20   msg2: db "El programa guarda una ecuacion introducida por el usuario"
+                67 75 61 72 64 61 20 75 6E 61 20 65 
+                63 75 61 63 69 6F 6E 20 69 6E 74 72 
+                6F 64 75 63 69 64 61 20 70 6F 72 20 
+                65 6C 20 75 73 75 61 72 69 6F       
+[  10]    0154: 79 20 73 65 20 72 65 61 6C 69 7A 61   msg3: db "y se realiza correctamente. "
+                20 63 6F 72 72 65 63 74 61 6D 65 6E 
+                74 65 2E 20                         
+[  11]    0170: 73 6F 6C 6F 20 73 65 20 61 64 6D 69   msg4: db "solo se admiten como maximo 20 caracteres, valores"
+                74 65 6E 20 63 6F 6D 6F 20 6D 61 78 
+                69 6D 6F 20 32 30 20 63 61 72 61 63 
+                74 65 72 65 73 2C 20 76 61 6C 6F 72 
+                65 73                               
+[  12]    01A2: 65 6E 74 65 72 6F 73 20 79 20 64 65   msg5: db "enteros y de cuatro digitos como maximo y trabaja unicamente "
+                20 63 75 61 74 72 6F 20 64 69 67 69 
+                74 6F 73 20 63 6F 6D 6F 20 6D 61 78 
+                69 6D 6F 20 79 20 74 72 61 62 61 6A 
+                61 20 75 6E 69 63 61 6D 65 6E 74 65 
+                20                                  
+[  13]    01DF: 63 6F 6E 20 6C 6F 73 20 6F 70 65 72   msg6: db "con los operadores aritmeticos basicos (+ , - , * , /)"
+                61 64 6F 72 65 73 20 61 72 69 74 6D 
+                65 74 69 63 6F 73 20 62 61 73 69 63 
+                6F 73 20 28 2B 20 2C 20 2D 20 2C 20 
+                2A 20 2C 20 2F 29                   
+[  14]    0215: 49 6E 74 72 6F 64 75 7A 63 61 20 6C   msg7: db "Introduzca la ecuacion: "
+                61 20 65 63 75 61 63 69 6F 6E 3A 20 
+                                                    
+[  15]    022D: 45 6C 20 72 65 73 75 6C 74 61 64 6F   msg8: db "El resultado de la ecuacion es: "
+                20 64 65 20 6C 61 20 65 63 75 61 63 
+                69 6F 6E 20 65 73 3A 20             
+[  16]    024D: 30 30 30 30 30 00                     cadenaFinal db "00000", 0
+[  17]    0253: 45 63 75 61 63 69 6F 6E 20 65 72 72   msgerr: db "Ecuacion erronea"
+                6F 6E 65 61                         
+[  18]    0263:                                       msgend:
+[  19]        :                                       
+[  20]        :                                       msg1_size = msg2 - msg1
+[  21]        :                                       msg2_size = msg3 - msg2
+[  22]        :                                       msg3_size = msg4 - msg3
+[  23]        :                                       msg4_size = msg5 - msg4
+[  24]        :                                       msg5_size = msg6 - msg5
+[  25]        :                                       msg6_size = msg7 - msg6
+[  26]        :                                       msg7_size = msg8 - msg7
+[  27]        :                                       msg8_size = cadenaFinal - msg8
+[  28]        :                                       cadf_size = msgerr - cadenaFinal
+[  29]        :                                       msgerr_size = msgend - msgerr
+[  30]        :                                       
+[  31]        :                                       ;variables del programa
+[  32]        :                                       
+[  33]    0263: 00 00 00 00 00 00 00 00 00 00 00 00   datos       dw 11 dup (0)
+                00 00 00 00 00 00 00 00 00 00       
+[  34]    0279: 00 00 00 00 00 00 00 00 00 00 00 00   cadena      db 20 dup (0)
+                00 00 00 00 00 00 00 00             
+[  35]    028D: 00 00 00 00 00 00 00 00 00 00 00      operadores  db 11 dup (0)
+[  36]    0298: 00                                    aux         db (0)
+[  37]    0299: 00 00                                 oper        dw (0)
+[  38]    029B: 00 00                                 corrida     dw 0x0
+[  39]    029D: 00 00 00 00 00 00 00 00 00 00 00 00   decimal     dw 11 dup (0)
+                00 00 00 00 00 00 00 00 00 00       
+[  40]    02B3: 00 00 00 00                           componente  db ? , ? , ? , ?
+[  41]    02B7: 00                                    den         db ?
+[  42]    02B8: 00 00                                 num         dw ?
+[  43]    02BA: 00 00                                 res         dw ?
+[  44]    02BC: 00 00                                 cos         dw ?
+[  45]    02BE: 00 00                                 aux2        dw ?
+[  46]    02C0: 00 00 00 00 00                        resultado   db ? , ? , ? , ? , ?
+[  47]        :                                       
+[  48]        :                                       ;Inicio del programa
+[  49]    02C5:                                       start:
+[  50]        :                                       
+[  51]    02C5: B4 0E                                 mov ah, 0xe
+[  52]    02C7: B0 0A                                 mov al, 0xa
+[  53]    02C9: CD 10                                 int 10H
+[  54]    02CB: CD 10                                 int 10H
+[  55]    02CD: B0 0D                                 mov al, 0xd
+[  56]    02CF: CD 10                                 int 10H
+[  57]    02D1: B0 09                                 mov al, 0x9
+[  58]    02D3: CD 10                                 int 10H
+[  59]    02D5: BF 79 02                              lea di, cadena
+[  60]    02D8: B9 14 00                              mov cx, 20
+[  61]        :                                       
+[  62]    02DB:                                       capturar:
+[  63]        :                                       
+[  64]    02DB: 83 F9 01                              cmp cx, 0x1
+[  65]    02DE: 7C 2F                                 jl finCad
+[  66]    02E0: B4 00                                 mov ah,0
+[  67]    02E2: CD 16                                 int 16h
+[  68]    02E4: 3C 0D                                 cmp al, 0Dh
+[  69]    02E6: 74 27                                 je finCad
+[  70]    02E8: 3C 08                                 cmp al, 08H
+[  71]    02EA: 74 0A                                 je borrar
+[  72]    02EC: B4 0E                                 mov ah,0Eh
+[  73]        :                                       
+[  74]    02EE: CD 10                                 int 10H
+[  75]    02F0: 88 05                                 mov [di], al
+[  76]    02F2: 47                                    inc di
+[  77]    02F3: 49                                    dec cx
+[  78]    02F4: EB E5                                 jmp capturar
+[  79]        :                                       
+[  80]    02F6:                                       borrar:
+[  81]        :                                       
+[  82]    02F6: 83 F9 14                              cmp cx, 20
+[  83]    02F9: 74 E0                                 jz capturar
+[  84]    02FB: 4F                                    dec di
+[  85]    02FC: 41                                    inc cx
+[  86]    02FD: B4 0E                                 mov ah, 0Eh
+[  87]    02FF: CD 10                                 int 10H
+[  88]    0301: B0 20                                 mov al, 0x20
+[  89]    0303: B4 0E                                 mov ah, 0x0e
+[  90]    0305: CD 10                                 int 10h
+[  91]    0307: B0 08                                 mov al, 08H
+[  92]    0309: B4 0E                                 mov ah, 0Eh
+[  93]    030B: CD 10                                 int 10H
+[  94]    030D: EB CC                                 jmp capturar
+[  95]        :                                       
+[  96]    030F:                                       finCad:
+[  97]    030F: BF 63 02                              lea di, datos
+[  98]    0312: BE 79 02                              lea si, cadena
+[  99]    0315: B9 14 00                              mov cx, 20
+[ 100]        :                                       
+[ 101]    0318:                                       siguiente:
+[ 102]    0318: 33 C0                                 xor ax, ax
+[ 103]    031A: 8A 04                                 mov al, [si]
+[ 104]    031C: E8 64 02                              call ascToNum
+[ 105]    031F: 46                                    inc si
+[ 106]    0320: 3C 00                                 cmp al, 0x0
+[ 107]    0322: 7C 17                                 jl finOper
+[ 108]    0324: A2 98 02                              mov [aux], al
+[ 109]    0327: 33 C0                                 xor ax, ax
+[ 110]    0329: 33 DB                                 xor bx, bx
+[ 111]    032B: A1 99 02                              mov ax, [oper]
+[ 112]    032E: B3 10                                 mov bl, 0x10
+[ 113]    0330: F7 E3                                 mul bx
+[ 114]    0332: 02 06 98 02                           add al, [aux]
+[ 115]    0336: A3 99 02                              mov [oper], ax
+[ 116]    0339: E2 DD                                 loop siguiente
+[ 117]        :                                       
+[ 118]        :                                       
+[ 119]    033B:                                       finOper:
+[ 120]    033B: FF 06 9B 02                           inc corrida
+[ 121]    033F: A2 98 02                              mov [aux], al
+[ 122]    0342: 33 C0                                 xor ax, ax
+[ 123]    0344: A1 99 02                              mov ax, [oper]
+[ 124]    0347: 89 05                                 mov [di], ax
+[ 125]    0349: 47                                    inc di
+[ 126]    034A: 47                                    inc di
+[ 127]    034B: 80 3E 98 02 D0                        cmp [aux], -48
+[ 128]    0350: 74 12                                 jz finOperandos
+[ 129]    0352: C7 06 99 02 00 00                     mov [oper], 0x0
+[ 130]    0358: C6 06 98 02 00                        mov [aux], 0x0
+[ 131]    035D: 83 F9 00                              cmp cx, 0x0
+[ 132]    0360: 74 02                                 jz finOperandos
+[ 133]    0362: E2 B4                                 loop siguiente
+[ 134]        :                                       
+[ 135]    0364:                                       finOperandos:
+[ 136]    0364: BF 8D 02                              lea di, operadores
+[ 137]    0367: BE 79 02                              lea si, cadena
+[ 138]    036A: B9 14 00                              mov cx, 20
+[ 139]        :                                       
+[ 140]    036D:                                       operators:
+[ 141]    036D: 33 C0                                 xor ax, ax
+[ 142]    036F: 8A 04                                 mov al, [si]
+[ 143]    0371: 46                                    inc si
+[ 144]    0372: 3C 2A                                 cmp al, '*'
+[ 145]    0374: 74 0E                                 je pilaOperadores
+[ 146]    0376: 3C 2F                                 cmp al, '/'
+[ 147]    0378: 74 0A                                 je pilaOperadores
+[ 148]    037A: 3C 2B                                 cmp al, '+'
+[ 149]    037C: 74 06                                 je pilaOperadores
+[ 150]    037E: 3C 2D                                 cmp al, '-'
+[ 151]    0380: 74 02                                 je pilaOperadores
+[ 152]    0382: E2 E9                                 loop operators
+[ 153]        :                                       
+[ 154]    0384:                                       pilaOperadores:
+[ 155]    0384: 88 05                                 mov [di], al
+[ 156]    0386: 47                                    inc di
+[ 157]    0387: 83 F9 00                              cmp cx, 0x0
+[ 158]    038A: 74 02                                 jz cad
+[ 159]    038C: E2 DF                                 loop operators
+[ 160]        :                                       
+[ 161]    038E:                                       cad:
+[ 162]    038E: BF 9D 02                              lea di, decimal
+[ 163]    0391: BE 63 02                              lea si, datos
+[ 164]    0394: 8B 0E 9B 02                           mov cx, [corrida]
+[ 165]    0398: C6 06 B7 02 10                        mov [den], 0x10
+[ 166]        :                                       
+[ 167]        :                                       
+[ 168]    039D:                                       decToHex:
+[ 169]    039D: 8B 04                                 mov ax, [si]
+[ 170]    039F: A3 B8 02                              mov [num], ax
+[ 171]    03A2: 46                                    inc si
+[ 172]    03A3: 46                                    inc si
+[ 173]    03A4: 60                                    pusha
+[ 174]    03A5: BF B6 02                              lea di, componente+3
+[ 175]        :                                       
+[ 176]    03A8:                                       retry:
+[ 177]    03A8: E8 AB 01                              call division
+[ 178]    03AB: 33 C0                                 xor ax, ax
+[ 179]    03AD: 33 DB                                 xor bx, bx
+[ 180]    03AF: 33 D2                                 xor dx, dx
+[ 181]    03B1: A1 BA 02                              mov ax, [res]
+[ 182]    03B4: 88 05                                 mov [di], al
+[ 183]    03B6: 4F                                    dec di
+[ 184]    03B7: 33 C0                                 xor ax, ax
+[ 185]    03B9: A1 BC 02                              mov ax, [cos]
+[ 186]    03BC: A3 B8 02                              mov [num], ax
+[ 187]    03BF: 8A 1E B7 02                           mov bl, [den]
+[ 188]    03C3: 3B C3                                 cmp ax, bx
+[ 189]    03C5: 7C 02                                 jl finHex
+[ 190]    03C7: EB DF                                 jmp retry
+[ 191]        :                                       
+[ 192]    03C9:                                       finHex:
+[ 193]    03C9: 88 05                                 mov [di], al
+[ 194]    03CB: BE B3 02                              lea si, componente
+[ 195]    03CE: 33 C0                                 xor ax, ax
+[ 196]    03D0: 33 DB                                 xor bx, bx
+[ 197]    03D2: 8A 04                                 mov al, [si]
+[ 198]    03D4: BB E8 03                              mov bx, 1000
+[ 199]    03D7: F7 E3                                 mul bx
+[ 200]    03D9: A3 BE 02                              mov [aux2], ax
+[ 201]    03DC: 46                                    inc si
+[ 202]    03DD: 33 C0                                 xor ax, ax
+[ 203]    03DF: 33 DB                                 xor bx, bx
+[ 204]    03E1: 8A 04                                 mov al, [si]
+[ 205]    03E3: B3 64                                 mov bl, 100
+[ 206]    03E5: F7 E3                                 mul bx
+[ 207]    03E7: 33 DB                                 xor bx, bx
+[ 208]    03E9: 8B 1E BE 02                           mov bx, [aux2]
+[ 209]    03ED: 13 D8                                 adc bx, ax
+[ 210]    03EF: 89 1E BE 02                           mov [aux2], bx
+[ 211]    03F3: 46                                    inc si
+[ 212]    03F4: 33 C0                                 xor ax, ax
+[ 213]    03F6: 33 DB                                 xor bx, bx
+[ 214]    03F8: 8A 04                                 mov al, [si]
+[ 215]        :                                       
+[ 216]    03FA: B3 0A                                 mov bl, 10
+[ 217]    03FC: F7 E3                                 mul bx
+[ 218]    03FE: 33 DB                                 xor bx, bx
+[ 219]    0400: 8B 1E BE 02                           mov bx, [aux2]
+[ 220]    0404: 13 D8                                 adc bx, ax
+[ 221]    0406: 89 1E BE 02                           mov [aux2], bx
+[ 222]    040A: 46                                    inc si
+[ 223]        :                                       
+[ 224]    040B: 33 C0                                 xor ax, ax
+[ 225]    040D: 33 DB                                 xor bx, bx
+[ 226]    040F: A1 BE 02                              mov ax, [aux2]
+[ 227]    0412: 8A 1C                                 mov bl, [si]
+[ 228]    0414: 13 C3                                 adc ax, bx
+[ 229]    0416: A3 BE 02                              mov [aux2], ax
+[ 230]        :                                       
+[ 231]    0419: E8 51 01                              call limpiarArreglo
+[ 232]    041C: 61                                    popa
+[ 233]    041D: A1 BE 02                              mov ax, [aux2]
+[ 234]    0420: 89 05                                 mov [di], ax
+[ 235]    0422: 47                                    inc di
+[ 236]    0423: 47                                    inc di
+[ 237]    0424: 49 E3 03 E9 73 FF                     loop decToHex
+[ 238]    042A: BE 9D 02                              lea si, decimal
+[ 239]    042D: BF 8D 02                              lea di, operadores
+[ 240]    0430: 8B 0E 9B 02                           mov cx, [corrida]
+[ 241]        :                                       
+[ 242]    0434:                                       dm:
+[ 243]    0434: 8A 05                                 mov al, [di]
+[ 244]    0436: 3C 2A                                 cmp al, '*'
+[ 245]    0438: 74 13                                 je multiplica
+[ 246]    043A: 3C 2F                                 cmp al, '/'
+[ 247]    043C: 74 2B                                 je divide
+[ 248]    043E: 83 F9 00                              cmp cx, 0x0
+[ 249]    0441: 74 44                                 jz findm
+[ 250]    0443: 47                                    inc di
+[ 251]    0444: 46                                    inc si
+[ 252]    0445: 46                                    inc si
+[ 253]    0446: E2 EC                                 loop dm
+[ 254]    0448: 83 F9 00                              cmp cx, 0x0
+[ 255]    044B: 74 3A                                 jz findm
+[ 256]        :                                       
+[ 257]        :                                       
+[ 258]    044D:                                       multiplica:
+[ 259]    044D: 33 C0                                 xor ax, ax
+[ 260]    044F: 33 DB                                 xor bx, bx
+[ 261]    0451: 8B 04                                 mov ax, [si]
+[ 262]    0453: 46                                    inc si
+[ 263]    0454: 46                                    inc si
+[ 264]    0455: 8B 1C                                 mov bx, [si]
+[ 265]    0457: F7 E3                                 mul bx
+[ 266]    0459: 4E                                    dec si
+[ 267]    045A: 4E                                    dec si
+[ 268]    045B: 89 04                                 mov [si],ax
+[ 269]    045D: 46                                    inc si
+[ 270]    045E: 46                                    inc si
+[ 271]    045F: E8 95 00                              call refrescar
+[ 272]    0462: 4E                                    dec si
+[ 273]    0463: 4E                                    dec si
+[ 274]    0464: E8 7D 00                              call refOpers
+[ 275]    0467: E2 CB                                 loop dm
+[ 276]        :                                       
+[ 277]    0469:                                       divide:
+[ 278]    0469: 33 C0                                 xor ax, ax
+[ 279]    046B: 33 D2                                 xor dx, dx
+[ 280]    046D: 33 DB                                 xor bx, bx
+[ 281]    046F: 8B 04                                 mov ax, [si]
+[ 282]    0471: 46                                    inc si
+[ 283]    0472: 46                                    inc si
+[ 284]    0473: 8B 1C                                 mov bx, [si]
+[ 285]    0475: F7 F3                                 div bx
+[ 286]    0477: 4E                                    dec si
+[ 287]    0478: 4E                                    dec si
+[ 288]    0479: 89 04                                 mov [si], ax
+[ 289]    047B: 46                                    inc si
+[ 290]    047C: 46                                    inc si
+[ 291]    047D: E8 77 00                              call refrescar
+[ 292]    0480: 4E                                    dec si
+[ 293]    0481: 4E                                    dec si
+[ 294]    0482: E8 5F 00                              call refOpers
+[ 295]    0485: E2 AD                                 loop dm
+[ 296]        :                                       
+[ 297]    0487:                                       findm:
+[ 298]    0487: BE 9D 02                              lea si, decimal
+[ 299]    048A: BF 8D 02                              lea di, operadores
+[ 300]    048D: 8B 0E 9B 02                           mov cx, [corrida]
+[ 301]        :                                       
+[ 302]        :                                       
+[ 303]    0491:                                       sumRes:
+[ 304]    0491: 8A 05                                 mov al, [di]
+[ 305]    0493: 3C 2B                                 cmp al, '+'
+[ 306]    0495: 74 13                                 je suma
+[ 307]    0497: 3C 2D                                 cmp al, '-'
+[ 308]    0499: 74 2B                                 je resta
+[ 309]    049B: 83 F9 00                              cmp cx, 0x0
+[ 310]    049E: 74 6B                                 jz conversor:
+[ 311]    04A0: 47                                    inc di
+[ 312]    04A1: 46                                    inc si
+[ 313]    04A2: 46                                    inc si
+[ 314]    04A3: E2 EC                                 loop sumRes
+[ 315]    04A5: 83 F9 00                              cmp cx, 0x0
+[ 316]    04A8: 74 61                                 jz conversor:
+[ 317]        :                                       
+[ 318]    04AA:                                       suma:
+[ 319]    04AA: 33 C0                                 xor ax, ax
+[ 320]    04AC: 33 DB                                 xor bx, bx
+[ 321]    04AE: 8B 04                                 mov ax, [si]
+[ 322]    04B0: 46                                    inc si
+[ 323]    04B1: 46                                    inc si
+[ 324]    04B2: 8B 1C                                 mov bx, [si]
+[ 325]    04B4: 03 C3                                 add ax, bx
+[ 326]    04B6: 4E                                    dec si
+[ 327]    04B7: 4E                                    dec si
+[ 328]    04B8: 89 04                                 mov [si], ax
+[ 329]    04BA: 46                                    inc si
+[ 330]    04BB: 46                                    inc si
+[ 331]    04BC: E8 38 00                              call refrescar
+[ 332]    04BF: 4E                                    dec si
+[ 333]    04C0: 4E                                    dec si
+[ 334]    04C1: E8 20 00                              call refOpers
+[ 335]    04C4: E2 CB                                 loop sumRes
+[ 336]        :                                       
+[ 337]    04C6:                                       resta:
+[ 338]    04C6: 33 C0                                 xor ax, ax
+[ 339]    04C8: 33 D2                                 xor dx, dx
+[ 340]    04CA: 33 DB                                 xor bx, bx
+[ 341]    04CC: 8B 04                                 mov ax, [si]
+[ 342]    04CE: 46                                    inc si
+[ 343]    04CF: 46                                    inc si
+[ 344]    04D0: 8B 1C                                 mov bx, [si]
+[ 345]    04D2: 2B C3                                 sub ax, bx
+[ 346]    04D4: 4E                                    dec si
+[ 347]    04D5: 4E                                    dec si
+[ 348]    04D6: 89 04                                 mov [si],ax
+[ 349]    04D8: 46                                    inc si
+[ 350]    04D9: 46                                    inc si
+[ 351]    04DA: E8 1A 00                              call refrescar
+[ 352]    04DD: 4E                                    dec si
+[ 353]        :                                       
+[ 354]    04DE: 4E                                    dec si
+[ 355]    04DF: E8 02 00                              call refOpers
+[ 356]    04E2: E2 AD                                 loop sumRes
+[ 357]        :                                       
+[ 358]    04E4:                                       refOpers:
+[ 359]    04E4: 60                                    pusha
+[ 360]    04E5: B9 0B 00                              mov cx, 11
+[ 361]        :                                       
+[ 362]    04E8:                                       retryOp:
+[ 363]    04E8: 8B 45 01                              mov ax, [di+1]
+[ 364]    04EB: 89 05                                 mov [di], ax
+[ 365]    04ED: 3D 00 00                              cmp ax, 0x0
+[ 366]    04F0: 74 03                                 jz finRetry
+[ 367]    04F2: 47                                    inc di
+[ 368]    04F3: E2 F3                                 loop retryOp
+[ 369]        :                                       
+[ 370]    04F5:                                       finRetry:
+[ 371]    04F5: 61                                    popa
+[ 372]    04F6: C3                                    ret
+[ 373]        :                                       
+[ 374]    04F7:                                       refrescar:
+[ 375]    04F7: 60                                    pusha
+[ 376]    04F8: B9 0B 00                              mov cx, 11
+[ 377]        :                                       
+[ 378]    04FB:                                       repet:
+[ 379]    04FB: 8B 44 02                              mov ax, [si+2]
+[ 380]    04FE: 89 04                                 mov [si], ax
+[ 381]    0500: 3D 00 00                              cmp ax, 0x0
+[ 382]    0503: 74 04                                 jz finRep
+[ 383]    0505: 46                                    inc si
+[ 384]    0506: 46                                    inc si
+[ 385]    0507: E2 F2                                 loop repet
+[ 386]        :                                       
+[ 387]    0509:                                       finRep:
+[ 388]    0509: 61                                    popa
+[ 389]    050A: C3                                    ret
+[ 390]        :                                       
+[ 391]        :                                       
+[ 392]    050B:                                       conversor:
+[ 393]    050B: 33 C0                                 xor ax, ax
+[ 394]    050D: 33 DB                                 xor bx, bx
+[ 395]    050F: BE 9D 02                              lea si, decimal
+[ 396]    0512: BF C4 02                              lea di, resultado+4
+[ 397]    0515: C6 06 B7 02 0A                        mov [den], 0x0a
+[ 398]    051A: 8B 04                                 mov ax, [si]
+[ 399]    051C: A3 B8 02                              mov [num], ax
+[ 400]        :                                       
+[ 401]    051F:                                       convertirDecimal:
+[ 402]    051F: E8 34 00                              call division
+[ 403]    0522: 33 C0                                 xor ax, ax
+[ 404]    0524: 8A 06 BA 02                           mov al, b.[res]
+[ 405]    0528: 88 05                                 mov [di], al
+[ 406]    052A: 4F                                    dec di
+[ 407]    052B: 33 DB                                 xor bx, bx
+[ 408]    052D: A1 BC 02                              mov ax, [cos]
+[ 409]    0530: A3 B8 02                              mov [num], ax
+[ 410]    0533: 33 DB                                 xor bx, bx
+[ 411]    0535: 8A 1E B7 02                           mov bl, [den]
+[ 412]    0539: 3B C3                                 cmp ax, bx
+[ 413]    053B: 7E 02                                 jle finDecimal
+[ 414]    053D: EB E0                                 jmp convertirDecimal
+[ 415]        :                                       
+[ 416]    053F:                                       finDecimal:
+[ 417]    053F: 88 05                                 mov [di], al
+[ 418]    0541: 33 C9                                 xor cx, cx
+[ 419]    0543: B1 05                                 mov cl, 0x5
+[ 420]    0545: BE C0 02                              lea si, resultado
+[ 421]    0548: BF 4D 02                              lea di, cadenaFinal
+[ 422]        :                                       
+[ 423]    054B:                                       copiar:
+[ 424]    054B: 8A 04                                 mov al, [si]
+[ 425]    054D: 00 05                                 add [di], al
+[ 426]    054F: 46                                    inc si
+[ 427]    0550: 47                                    inc di
+[ 428]    0551: E2 F8                                 loop copiar
+[ 429]    0553: E9 C1 00                              jmp fin
+[ 430]        :                                       
+[ 431]    0556:                                       division:
+[ 432]    0556: 60                                    pusha
+[ 433]    0557: 33 C0                                 xor ax, ax
+[ 434]    0559: 33 DB                                 xor bx, bx
+[ 435]    055B: A1 B8 02                              mov ax,[num]
+[ 436]    055E: 8A 1E B7 02                           mov bl, [den]
+[ 437]        :                                       
+[ 438]    0562: F7 F3                                 div bx
+[ 439]    0564: A3 BC 02                              mov [cos], ax
+[ 440]    0567: 89 16 BA 02                           mov [res], dx
+[ 441]    056B: 61                                    popa
+[ 442]    056C: C3                                    ret
+[ 443]        :                                       
+[ 444]    056D:                                       limpiarArreglo:
+[ 445]    056D: 60                                    pusha
+[ 446]    056E: BE B3 02                              lea si, componente
+[ 447]    0571: C6 04 00                              mov [si], 0x0
+[ 448]    0574: 46                                    inc si
+[ 449]    0575: C6 04 00                              mov [si], 0x0
+[ 450]    0578: 46                                    inc si
+[ 451]    0579: C6 04 00                              mov [si], 0x0
+[ 452]    057C: 46                                    inc si
+[ 453]    057D: C6 04 00                              mov [si], 0x0
+[ 454]    0580: 46                                    inc si
+[ 455]    0581: 61                                    popa
+[ 456]    0582: C3                                    ret
+[ 457]        :                                       
+[ 458]    0583:                                       ascToNum:
+[ 459]    0583: 2C 30                                 sub al, 48
+[ 460]    0585: 3C 09                                 cmp al, 0x9
+[ 461]    0587: 7F 01                                 jnle error
+[ 462]    0589: C3                                    ret
+[ 463]        :                                       
+[ 464]    058A:                                       error:
+[ 465]    058A: B0 01                                 mov al, 1
+[ 466]    058C: B7 00                                 mov bh, 0
+[ 467]    058E: B2 03                                 mov dl, 3
+[ 468]    0590: B6 0A                                 mov dh, 10
+[ 469]    0592: B9 10 00                              mov cx, msgerr_size
+[ 470]    0595: BD 53 02                              mov bp, offset msgerr
+[ 471]    0598: B4 13                                 mov ah, 13h
+[ 472]    059A: CD 10                                 int 10h
+[ 473]        :                                       
+[ 474]    059C:                                       msg:
+[ 475]    059C: BA 08 03                              mov dx, 0308h
+[ 476]    059F: BB 00 00                              mov bx, 0
+[ 477]    05A2: B3 9F                                 mov bl, 10011111b
+[ 478]    05A4: B9 17 00                              mov cx, msg1_size
+[ 479]    05A7: B0 01                                 mov al, 01b
+[ 480]    05A9: BD 03 01                              mov bp, msg1
+[ 481]    05AC: B4 13                                 mov ah, 13h
+[ 482]    05AE: CD 10                                 int 10h
+[ 483]        :                                       
+[ 484]    05B0: BA 08 05                              mov dx, 0508h
+[ 485]    05B3: BB 00 00                              mov bx, 0
+[ 486]    05B6: B3 9F                                 mov bl, 10011111b
+[ 487]    05B8: B9 3A 00                              mov cx, msg2_size
+[ 488]    05BB: B0 01                                 mov al, 01b
+[ 489]    05BD: BD 1A 01                              mov bp, msg2
+[ 490]    05C0: B4 13                                 mov ah, 13h
+[ 491]    05C2: CD 10                                 int 10h
+[ 492]        :                                       
+[ 493]    05C4: BA 08 07                              mov dx, 0708h
+[ 494]    05C7: BB 00 00                              mov bx, 0
+[ 495]    05CA: B3 9F                                 mov bl, 10011111b
+[ 496]    05CC: B9 1C 00                              mov cx, msg3_size
+[ 497]    05CF: B0 01                                 mov al, 01b
+[ 498]    05D1: BD 54 01                              mov bp, msg3
+[ 499]    05D4: B4 13                                 mov ah, 13h
+[ 500]    05D6: CD 10                                 int 10h
+[ 501]        :                                       
+[ 502]    05D8: BA 08 09                              mov dx, 0908h
+[ 503]    05DB: BB 00 00                              mov bx, 0
+[ 504]    05DE: B3 9F                                 mov bl, 10011111b
+[ 505]    05E0: B9 32 00                              mov cx, msg4_size
+[ 506]    05E3: B0 01                                 mov al, 01b
+[ 507]    05E5: BD 70 01                              mov bp, msg4
+[ 508]    05E8: B4 13                                 mov ah, 13h
+[ 509]    05EA: CD 10                                 int 10h
+[ 510]        :                                       
+[ 511]    05EC: BA 08 0B                              mov dx, 0B08h
+[ 512]    05EF: BB 00 00                              mov bx, 0
+[ 513]    05F2: B3 9F                                 mov bl, 10011111b
+[ 514]    05F4: B9 3D 00                              mov cx, msg5_size
+[ 515]    05F7: B0 01                                 mov al, 01b
+[ 516]    05F9: BD A2 01                              mov bp, msg5
+[ 517]    05FC: B4 13                                 mov ah, 13h
+[ 518]    05FE: CD 10                                 int 10h
+[ 519]        :                                       
+[ 520]    0600: BA 08 0D                              mov dx, 0D08h
+[ 521]    0603: BB 00 00                              mov bx, 0
+[ 522]    0606: B3 9F                                 mov bl, 10011111b
+[ 523]    0608: B9 36 00                              mov cx, msg6_size
+[ 524]    060B: B0 01                                 mov al, 01b
+[ 525]    060D: BD DF 01                              mov bp, msg6
+[ 526]    0610: B4 13                                 mov ah, 13h
+[ 527]    0612: CD 10                                 int 10h
+[ 528]        :                                       
+[ 529]    0614: E9 AE FC                              jmp start
+[ 530]        :                                       
+[ 531]    0617:                                       fin:
+[ 532]    0617: BA 08 11                              mov dx, 1108h
+[ 533]    061A: BB 00 00                              mov bx, 0
+[ 534]    061D: B3 9F                                 mov bl, 10011111b
+[ 535]    061F: B9 18 00                              mov cx, msg7_size
+[ 536]    0622: B0 01                                 mov al, 01b
+[ 537]    0624: BD 15 02                              mov bp, msg7
+[ 538]    0627: B4 13                                 mov ah, 13h
+[ 539]    0629: CD 10                                 int 10h
+[ 540]        :                                       
+[ 541]    062B: BA 08 13                              mov dx, 1308h
+[ 542]    062E: B9 06 00                              mov cx, cadf_size
+[ 543]    0631: BD 4D 02                              mov bp, offset cadenaFinal
+[ 544]    0634: B4 13                                 mov ah, 13h
+[ 545]    0636: CD 10                                 int 10h
+[ 546]    0638: CD 20                                 int 20h
+[ 547]        :                                       
+[ 548]        :                                       
+[ 549]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

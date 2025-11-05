@@ -1,0 +1,27 @@
+< THE SYMBOL TABLE >  prac7.exe  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+STACK                    	00000     	-5        	SEGMENT   	(ITSELF)  
+DATA                     	00010     	-5        	SEGMENT   	(ITSELF)  
+NOMBRE_ALUMNO            	00000     	1         	VAR       	data      
+NOMBRE_ENTRADA           	00018     	1         	VAR       	data      
+EXTENSION_LST            	0007C     	1         	VAR       	data      
+MENSAJE_INGRESE          	00081     	1         	VAR       	data      
+MENSAJE_ERROR            	000BA     	1         	VAR       	data      
+CONTADOR_CARACTERES      	000DD     	2         	VAR       	data      
+BUFFER_LINEA             	000DF     	1         	VAR       	data      
+BUFFER_SALIDA            	0015F     	1         	VAR       	data      
+CODE                     	0002E     	-5        	SEGMENT   	(ITSELF)  
+MAIN                     	00000     	-1        	LABEL     	code      
+PROCESAR_LINEA           	0004B     	-1        	LABEL     	code      
+CONTAR_CARACTERES        	0005E     	-1        	LABEL     	code      
+FIN_CONTAR               	00068     	-1        	LABEL     	code      
+FIN_ARCHIVO              	00089     	-1        	LABEL     	code      
+ERROR_ABRIR              	00091     	-1        	LABEL     	code      
+ERROR_CREAR              	0009A     	-1        	LABEL     	code      
+CONVERTIR_A_HEX          	000A3     	-1        	LABEL     	code      
+===================================================================================================
+[ 12/11/2024  --  03:45:22 p. m. ] 
+< END >
+ 
