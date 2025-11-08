@@ -1,0 +1,114 @@
+include 'emu8086.inc'
+org 100h
+    jmp Principal
+;============
+;   Mensajes
+;============
+mensaje0    db 'Escriba una cadena: ', 0
+mensaje1    db 'La cadena escrita fue: ', 0
+nuevlin     db 13,10,0
+mensaje_err db 'ERROR: formato invalido. Use: digito operador digito ...',0
+;============
+;   Variables
+;============
+buffer  db 20 dup(?)  ;tomando el caracter
+bufferlong equ ($ - buffer -1) ;tam del buffer
+tammax  equ 20        ;para el "ENTER"
+
+;==============
+;   Subrutinas
+;==============
+;+++++++++ RUTINA: validar_expresion+++++++++
+;  Comprueba que la cadena en [buffer] siga el patrón:
+;  DIGITO (OPERADOR DIGITO)*
+;  Acepta espacios en blanco entre tokens. Si inválida, imprime mensaje
+;  de error y vuelve a `Principal` para reintentar.
+; Entrada: SI -> buffer (string terminado en 0)
+; Salida: retorna (si válida), no retorna si inválida (salta a Principal)
+validar_expresion:
+	push si
+	xor bl, bl        ; BL = 0 -> esperamos DIGITO, 1 -> esperamos OPERADOR
+.ve_loop:
+	mov al, [si]
+	cmp al, 0
+	je .ve_end
+	cmp al, ' '
+	je .ve_skip
+	cmp bl, 0
+	je .ve_expect_digit
+	; esperar operador
+	cmp al, '+'
+	je .ve_op_ok
+	cmp al, '-'
+	je .ve_op_ok
+	cmp al, '*'
+	je .ve_op_ok
+	cmp al, '/'
+	je .ve_op_ok
+	jmp .ve_invalid
+.ve_expect_digit:
+	cmp al, '0'
+	jb .ve_invalid
+	cmp al, '9'
+	ja .ve_invalid
+	; dígito válido
+	mov bl, 1
+	inc si
+	jmp .ve_loop
+.ve_op_ok:
+	mov bl, 0
+	inc si
+	jmp .ve_loop
+.ve_skip:
+	inc si
+	jmp .ve_loop
+.ve_end:
+	; Al finalizar, el último token debe haber sido un dígito (BL=1)
+	cmp bl, 1
+	je .ve_valid
+	jmp .ve_invalid
+.ve_valid:
+	pop si
+	ret
+.ve_invalid:
+	pop si
+	; imprimir mensaje de error desde la variable usando la macro print_string
+	printn ""
+	lea si, mensaje_err
+	call print_string
+	printn ""
+	jmp Principal
+
+
+;==============
+;   Macro Funciones
+;==============
+DEFINE_PRINT_STRING
+DEFINE_GET_STRING
+;==============
+;   Programa Principal
+;==============
+Principal:    
+    ;esciribir cadenas version corta
+    printn "Escriba una cadena:"
+    
+    ;leer los datos en buffer
+    lea di, buffer
+    mov dx, tammax
+    call get_string
+    
+    ;Validar la expresión ingresada: solo dígitos y operadores (+ - * /)
+	;Formato requerido: digito operador digito operador ... (termina en dígito)
+	lea si, buffer
+	call validar_expresion
+  
+    printn ""
+    printn "La cadena escrita fue:"
+    lea si,buffer
+    call print_string
+    printn ""
+    
+    ;Salir al Sistema Operativo
+    mov ax, 4c00h
+    int 21h
+ret
