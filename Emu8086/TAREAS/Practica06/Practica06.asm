@@ -1,556 +1,467 @@
-name "practica06"
+name "practica06.asm"
 include 'emu8086.inc'
+org 100h
+jmp Principal
+;============
+;   Mensajes
+;============
+mensaje0    db 'Escriba una cadena: ', 0
+mensaje1    db 'La cadena escrita fue: ', 0
+nuevlin     db 13,10,0
+mensaje_err db 'ERROR: formato invalido. Use: digito operador digito ...',0
+;============
+;   Variables
+;============
+buffer  db 20 dup(?)  ;tomando el caracter
+bufferlong equ ($ - buffer -1) ;tam del buffer
+tammax  equ 20        ;para el "ENTER"
 
-        
-        org  100h
-        jmp msg
-;mensajes del programa        
-        msg1: db "Christopher Lopez Avina"
-        msg2: db "El programa guarda una ecuacion introducida por el usuario"
-        msg3: db "y se realiza correctamente. "
-        msg4: db "solo se admiten como maximo 20 caracteres, valores"
-        msg5: db "enteros y de cuatro digitos como maximo y trabaja unicamente "
-        msg6: db "con los operadores aritmeticos basicos (+ , - , * , /)"
-        msg7: db "Introduzca la ecuacion: "
-        msg8: db "El resultado de la ecuacion es: "
-        cadenaFinal db "00000", 0
-        msgerr: db "Ecuacion erronea"
-        msgend:
+; Variables para evaluación
+vals dw 10 dup(0)     ; máximo 10 valores
+ops db 10 dup(0)      ; máximo 10 operadores
+nvals db 0            ; contador de valores
+nops db 0             ; contador de operadores
+resultado dw 0        ; resultado final
+resbuf db 8 dup(0)    ; buffer para imprimir resultado
 
-        msg1_size = msg2 - msg1
-        msg2_size = msg3 - msg2
-        msg3_size = msg4 - msg3
-        msg4_size = msg5 - msg4
-        msg5_size = msg6 - msg5
-        msg6_size = msg7 - msg6
-        msg7_size = msg8 - msg7
-        msg8_size = cadenaFinal - msg8
-        cadf_size = msgerr - cadenaFinal
-        msgerr_size = msgend - msgerr
-
-;variables del programa
-        
-        datos       dw 11 dup (0)
-        cadena      db 20 dup (0)
-        operadores  db 11 dup (0)
-        aux         db (0)
-        oper        dw (0)
-        corrida     dw 0x0
-        decimal     dw 11 dup (0)
-        componente  db ? , ? , ? , ?
-        den         db ?
-        num         dw ?
-        res         dw ?
-        cos         dw ?
-        aux2        dw ?
-        resultado   db ? , ? , ? , ? , ?
-        
-;Inicio del programa
-start:                     
-    
-        mov ah, 0xe
-        mov al, 0xa
-        int 10H
-        int 10H
-        mov al, 0xd
-        int 10H
-        mov al, 0x9
-        int 10H
-        ; Asegurar que el cursor se coloque en la columna 0
-        ; Leer posiciÃ³n actual del cursor (INT 10h AH=03h) y fijar columna a 0
-        mov ah, 03h
-        mov bh, 0
-        int 10h
-        mov ah, 02h
-        mov bh, 0
-        mov dl, 0
-        int 10h
-        
-        lea di, cadena
-        mov cx, 20
-
-capturar:
-
-        cmp cx, 0x1
-        jl finCad
-        mov ah,0
-        int 16h
-        cmp al, 0Dh
-        je finCad
-        cmp al, 08H
-        je borrar
-        mov ah,0Eh
-
-        int 10H
-        mov [di], al
-        inc di
-        dec cx
-        jmp capturar
-
-borrar:
-
-        cmp cx, 20
-        jz capturar
-        dec di
-        inc cx
-        mov ah, 0Eh
-        int 10H
-        mov al, 0x20
-        mov ah, 0x0e
-        int 10h
-        mov al, 08H
-        mov ah, 0Eh
-        int 10H
-        jmp capturar
-
-finCad:
-        lea di, datos
-        lea si, cadena
-        mov cx, 20
-
-siguiente:
-        xor ax, ax
-        mov al, [si]
-        call ascToNum
-        inc si
-        cmp al, 0x0
-        jl finOper
-        mov [aux], al
-        xor ax, ax
-        xor bx, bx
-        mov ax, [oper]
-        mov bl, 0x10
-        mul bx
-        add al, [aux]
-        mov [oper], ax
-        loop siguiente
+;==============
+;   Subrutinas
+;==============
+;+++++++++ RUTINA: validar_expresion+++++++++
+;  Comprueba que la cadena en [buffer] siga el patrón:
+;  DIGITO (OPERADOR DIGITO)*
+;  Acepta espacios en blanco entre tokens. Si inválida, imprime mensaje
+;  de error y vuelve a `Principal` para reintentar.
+; Entrada: SI -> buffer (string terminado en 0)
+; Salida: retorna (si válida), no retorna si inválida (salta a Principal)
+validar_expresion:
+push si
+xor bl, bl        ; BL = 0 -> esperamos DIGITO, 1 -> esperamos OPERADOR
+.ve_loop:
+mov al, [si]
+cmp al, 0
+je .ve_end
+cmp al, ' '
+je .ve_skip
+cmp bl, 0
+je .ve_expect_digit
+; esperar operador
+cmp al, '+'
+je .ve_op_ok
+cmp al, '-'
+je .ve_op_ok
+cmp al, '*'
+je .ve_op_ok
+cmp al, '/'
+je .ve_op_ok
+jmp .ve_invalid
+.ve_expect_digit:
+cmp al, '0'
+jb .ve_invalid
+cmp al, '9'
+ja .ve_invalid
+; dígito válido
+mov bl, 1
+inc si
+jmp .ve_loop
+.ve_op_ok:
+mov bl, 0
+inc si
+jmp .ve_loop
+.ve_skip:
+inc si
+jmp .ve_loop
+.ve_end:
+; Al finalizar, el último token debe haber sido un dígito (BL=1)
+cmp bl, 1
+je .ve_valid
+jmp .ve_invalid
+.ve_valid:
+pop si
+ret
+.ve_invalid:
+pop si
+; imprimir mensaje de error desde la variable usando la macro print_string
+printn ""
+lea si, mensaje_err
+call print_string
+printn ""
+jmp Principal
 
 
-finOper:                 
-        inc corrida
-        mov [aux], al
-        xor ax, ax
-        mov ax, [oper]
-        mov [di], ax
-        inc di
-        inc di
-        cmp [aux], -48
-        jz finOperandos
-        mov [oper], 0x0
-        mov [aux], 0x0
-        cmp cx, 0x0
-        jz finOperandos
-        loop siguiente
+;+++++++++ RUTINA: parsear_expresion +++++++++
+; Convierte la cadena en buffer a arrays vals[] y ops[]
+; Entrada: SI -> buffer
+; Salida: vals[], ops[], nvals, nops llenos
+parsear_expresion:
+push ax
+push bx
+push si
+push di
 
-finOperandos:
-        lea di, operadores
-        lea si, cadena
-        mov cx, 20
+mov byte ptr [nvals], 0
+mov byte ptr [nops], 0
+lea di, vals
+lea bx, ops
 
-operators:
-        xor ax, ax
-        mov al, [si]
-        inc si
-        cmp al, '*'
-        je pilaOperadores
-        cmp al, '/'
-        je pilaOperadores
-        cmp al, '+'
-        je pilaOperadores
-        cmp al, '-'
-        je pilaOperadores
-        loop operators
+.pe_loop:
+mov al, [si]
+cmp al, 0
+je .pe_done
+cmp al, ' '
+je .pe_skip
 
-pilaOperadores:
-        mov [di], al
-        inc di
-        cmp cx, 0x0
-        jz cad
-        loop operators
+; verificar si es dígito
+cmp al, '0'
+jb .pe_operador
+cmp al, '9'
+ja .pe_operador
 
-cad:
-        lea di, decimal
-        lea si, datos
-        mov cx, [corrida]
-        mov [den], 0x10
+; es dígito: convertir '0'..'9' a 0..9 y guardar como word
+sub al, '0'
+cbw                ; AX = valor 0..9 sign-extended
+mov [di], ax
+add di, 2
+inc byte ptr [nvals]
+inc si
+jmp .pe_loop
 
+.pe_operador:
+; guardar operador
+mov [bx], al
+inc bx
+inc byte ptr [nops]
+inc si
+jmp .pe_loop
 
-decToHex:
-        mov ax, [si]
-        mov [num], ax
-        inc si
-        inc si
-        pusha
-        lea di, componente+3
+.pe_skip:
+inc si
+jmp .pe_loop
 
-retry:
-        call division
-        xor ax, ax
-        xor bx, bx
-        xor dx, dx
-        mov ax, [res]
-        mov [di], al
-        dec di
-        xor ax, ax
-        mov ax, [cos]
-        mov [num], ax
-        mov bl, [den]
-        cmp ax, bx
-        jl finHex
-        jmp retry
-
-finHex:
-        mov [di], al
-        lea si, componente
-        xor ax, ax
-        xor bx, bx
-        mov al, [si]
-        mov bx, 1000
-        mul bx
-        mov [aux2], ax
-        inc si
-        xor ax, ax
-        xor bx, bx
-        mov al, [si]
-        mov bl, 100
-        mul bx
-        xor bx, bx
-        mov bx, [aux2]
-        adc bx, ax
-        mov [aux2], bx
-        inc si
-        xor ax, ax
-        xor bx, bx
-        mov al, [si]
-
-        mov bl, 10
-        mul bx
-        xor bx, bx
-        mov bx, [aux2] 
-        adc bx, ax
-        mov [aux2], bx 
-        inc si
-
-        xor ax, ax
-        xor bx, bx
-        mov ax, [aux2] 
-        mov bl, [si]
-        adc ax, bx
-        mov [aux2], ax
-
-        call limpiarArreglo
-        popa
-        mov ax, [aux2] 
-        mov [di], ax
-        inc di
-        inc di
-        loop decToHex
-        lea si, decimal
-        lea di, operadores
-        mov cx, [corrida]  
-          
-dm:
-        mov al, [di] 
-        cmp al, '*'
-        je multiplica
-        cmp al, '/'
-        je divide
-        cmp cx, 0x0 
-        jz findm 
-        inc di
-        inc si
-        inc si
-        loop dm 
-        cmp cx, 0x0 
-        jz findm
+.pe_done:
+pop di
+pop si
+pop bx
+pop ax
+ret
 
 
-multiplica:
-        xor ax, ax 
-        xor bx, bx 
-        mov ax, [si] 
-        inc si
-        inc si
-        mov bx, [si] 
-        mul bx
-        dec si
-        dec si
-        mov [si],ax 
-        inc si
-        inc si
-        call refrescar 
-        dec si
-        dec si
-        call refOpers 
-        loop dm
+;+++++++++ RUTINA: evaluar_expresion +++++++++
+; Evalúa vals[] y ops[] aplicando precedencia: / * - +
+; Entrada: vals[], ops[], nvals, nops
+; Salida: [resultado] contiene el valor final
+evaluar_expresion:
+push ax
+push bx
+push cx
+push dx
 
-divide:
-        xor ax, ax
-        xor dx, dx 
-        xor bx, bx 
-        mov ax, [si] 
-        inc si
-        inc si
-        mov bx, [si] 
-        div bx
-        dec si
-        dec si
-        mov [si], ax 
-        inc si
-        inc si
-        call refrescar 
-        dec si
-        dec si
-        call refOpers 
-        loop dm
+; Pasada 1: resolver divisiones
+mov dl, '/'
+call procesar_operador
 
-findm:
-        lea si, decimal
-        lea di, operadores 
-        mov cx, [corrida]
+; Pasada 2: resolver multiplicaciones
+mov dl, '*'
+call procesar_operador
+
+; Pasada 3: resolver restas
+mov dl, '-'
+call procesar_operador
+
+; Pasada 4: resolver sumas
+mov dl, '+'
+call procesar_operador
+
+; El resultado final está en vals[0]
+lea si, vals
+mov ax, [si]
+mov [resultado], ax
+
+pop dx
+pop cx
+pop bx
+pop ax
+ret
 
 
-sumRes:
-        mov al, [di] 
-        cmp al, '+' 
-        je suma
-        cmp al, '-'
-        je resta 
-        cmp cx, 0x0 
-        jz conversor: 
-        inc di
-        inc si
-        inc si
-        loop sumRes 
-        cmp cx, 0x0 
-        jz conversor:
+;+++++++++ RUTINA: procesar_operador +++++++++
+; Procesa todas las instancias de un operador específico
+; Entrada: DL = operador a procesar
+procesar_operador:
+push ax
+push bx
+push cx
+push si
+push di
+push bp
 
-suma:
-        xor ax, ax 
-        xor bx, bx 
-        mov ax, [si] 
-        inc si
-        inc si
-        mov bx, [si] 
-        add ax, bx 
-        dec si
-        dec si
-        mov [si], ax 
-        inc si
-        inc si
-        call refrescar 
-        dec si
-        dec si
-        call refOpers 
-        loop sumRes
+.po_restart:
+xor bx, bx          ; i = 0
+mov cl, [nops]
+cmp cl, 0
+je .po_done
 
-resta:
-        xor ax, ax 
-        xor dx, dx 
-        xor bx, bx 
-        mov ax, [si] 
-        inc si
-        inc si
-        mov bx, [si] 
-        sub ax, bx 
-        dec si
-        dec si
-        mov [si],ax 
-        inc si
-        inc si
-        call refrescar 
-        dec si
+.po_loop:
+cmp bl, cl
+jae .po_done
 
-        dec si
-        call refOpers 
-        loop sumRes
+; verificar si ops[i] == DL
+lea si, ops
+add si, bx
+mov al, [si]
+cmp al, dl
+jne .po_next
 
-refOpers:
-        pusha
-        mov cx, 11
+; Encontrado: calcular vals[i] op vals[i+1]
+lea si, vals
+mov ax, bx
+shl ax, 1           ; i*2
+add si, ax
+mov ax, [si]        ; vals[i]
+mov cx, [si+2]      ; vals[i+1]
 
-retryOp:
-        mov ax, [di+1] 
-        mov [di], ax 
-        cmp ax, 0x0
-        jz finRetry 
-        inc di
-        loop retryOp
+; Realizar operación según DL
+cmp dl, '/'
+je .po_div
+cmp dl, '*'
+je .po_mul
+cmp dl, '-'
+je .po_sub
+; debe ser '+'
+add ax, cx
+jmp .po_guardar
 
-finRetry:
-        popa 
-        ret
+.po_div:
+cmp cx, 0
+je .po_div_zero
+cwd
+idiv cx
+jmp .po_guardar
+.po_div_zero:
+xor ax, ax
+jmp .po_guardar
 
-refrescar:
-        pusha
-        mov cx, 11
+.po_mul:
+imul cx
+jmp .po_guardar
 
-repet:
-        mov ax, [si+2] 
-        mov [si], ax 
-        cmp ax, 0x0 
-        jz finRep
-        inc si
-        inc si
-        loop repet
+.po_sub:
+sub ax, cx
 
-finRep:
-        popa 
-        ret
+.po_guardar:
+; Guardar resultado en vals[i]
+lea si, vals
+mov cx, bx
+shl cx, 1
+add si, cx
+mov [si], ax
 
- 
-conversor: 
-        xor ax, ax
-        xor bx, bx
-        lea si, decimal
-        lea di, resultado+4
-        mov [den], 0x0a 
-        mov ax, [si]
-        mov [num], ax
+; Compactar: eliminar vals[i+1] y ops[i]
+call compactar_arrays
 
-convertirDecimal:
-        call division
-        xor ax, ax
-        mov al, b.[res] 
-        mov [di], al
-        dec di
-        xor bx, bx
-        mov ax, [cos] 
-        mov [num], ax 
-        xor bx, bx
-        mov bl, [den] 
-        cmp ax, bx
-        jle finDecimal
-        jmp convertirDecimal
+; Reiniciar búsqueda desde el inicio
+jmp .po_restart
 
-finDecimal: 
-        mov [di], al
-        xor cx, cx
-        mov cl, 0x5
-        lea si, resultado
-        lea di, cadenaFinal
+.po_next:
+inc bl
+jmp .po_loop
 
-copiar:
-        mov al, [si] 
-        add [di], al 
-        inc si
-        inc di
-        loop copiar
-        jmp fin
+.po_done:
+pop bp
+pop di
+pop si
+pop cx
+pop bx
+pop ax
+ret
 
-division:
-        pusha
-        xor ax, ax
-        xor bx, bx
-        mov ax,[num] 
-        mov bl, [den]
 
-        div bx
-        mov [cos], ax 
-        mov [res], dx 
-        popa
-        ret
+;+++++++++ RUTINA: compactar_arrays +++++++++
+; Elimina vals[i+1] y ops[i] moviendo elementos hacia la izquierda
+; Entrada: BL = índice i
+compactar_arrays:
+push ax
+push bx
+push cx
+push si
+push di
 
-limpiarArreglo: 
-        pusha
-        lea si, componente 
-        mov [si], 0x0 
-        inc si
-        mov [si], 0x0 
-        inc si
-        mov [si], 0x0 
-        inc si
-        mov [si], 0x0 
-        inc si
-        popa
-        ret
+; Compactar vals: mover vals[i+2..] a vals[i+1..]
+mov al, [nvals]
+mov cl, bl
+inc cl              ; start = i+1
+cmp al, cl
+jle .ca_skip_vals
 
-ascToNum: 
-        sub al, 48 
-        cmp al, 0x9 
-        jnle error 
-        ret
+lea si, vals
+mov al, bl
+inc al
+shl al, 1           ; (i+1)*2
+xor ah, ah
+add si, ax          ; si = &vals[i+1]
+mov di, si
+add si, 2           ; si = &vals[i+2]
 
-error:
-        mov al, 1
-        mov bh, 0
-        mov dl, 3
-        mov dh, 10
-        mov cx, msgerr_size 
-        mov bp, offset msgerr 
-        mov ah, 13h
-        int 10h
-    
-msg:
-        mov dx, 0300h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg1_size  
-        mov al, 01b       
-        mov bp, msg1
-        mov ah, 13h       
-        int 10h  
-    
-        mov dx, 0500h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg2_size  
-        mov al, 01b       
-        mov bp, msg2
-        mov ah, 13h       
-        int 10h           
-                   
-        mov dx, 0700h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg3_size  
-        mov al, 01b       
-        mov bp, msg3
-        mov ah, 13h       
-        int 10h           
+mov al, [nvals]
+sub al, bl
+sub al, 2           ; moves = nvals - i - 2
+cmp al, 0
+jle .ca_skip_vals
 
-        mov dx, 0900h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg4_size  
-        mov al, 01b       
-        mov bp, msg4
-        mov ah, 13h       
-        int 10h
+xor ah, ah
+mov cx, ax
+.ca_vals_loop:
+mov ax, [si]
+mov [di], ax
+add si, 2
+add di, 2
+loop .ca_vals_loop
 
-        mov dx, 0B00h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg5_size  
-        mov al, 01b       
-        mov bp, msg5
-        mov ah, 13h       
-        int 10h
+.ca_skip_vals:
+dec byte ptr [nvals]
 
-        mov dx, 0D00h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg6_size  
-        mov al, 01b       
-        mov bp, msg6
-        mov ah, 13h       
-        int 10h
-    
-        jmp start
- 
-fin:
-        mov dx, 1100h     
-        mov bx, 0         
-        mov bl, 10011111b 
-        mov cx, msg7_size  
-        mov al, 01b       
-        mov bp, msg7
-        mov ah, 13h       
-        int 10h           
-         
-        mov dx, 1300h
-        mov cx, cadf_size
-        mov bp, offset cadenaFinal 
-        mov ah, 13h
-        int 10h
-        int 20h 
+; Compactar ops: mover ops[i+1..] a ops[i..]
+mov al, [nops]
+cmp bl, al
+jae .ca_skip_ops
+
+lea si, ops
+xor bh, bh
+add si, bx          ; si = &ops[i]
+mov di, si
+inc si              ; si = &ops[i+1]
+
+mov al, [nops]
+sub al, bl
+dec al              ; moves = nops - i - 1
+cmp al, 0
+jle .ca_skip_ops
+
+xor ah, ah
+mov cx, ax
+.ca_ops_loop:
+mov al, [si]
+mov [di], al
+inc si
+inc di
+loop .ca_ops_loop
+
+.ca_skip_ops:
+dec byte ptr [nops]
+
+pop di
+pop si
+pop cx
+pop bx
+pop ax
+ret
+
+
+;+++++++++ RUTINA: imprimir_resultado +++++++++
+; Imprime el valor en [resultado]
+imprimir_resultado:
+push ax
+push bx
+push cx
+push dx
+push si
+push di
+
+printn ""
+print "Resultado: "
+
+mov ax, [resultado]
+lea di, resbuf
+
+; Manejar signo
+cmp ax, 0
+jge .ir_positivo
+neg ax
+mov byte ptr [di], '-'
+inc di
+
+.ir_positivo:
+; Convertir a decimal
+cmp ax, 0
+jne .ir_convertir
+mov byte ptr [di], '0'
+inc di
+jmp .ir_terminar
+
+.ir_convertir:
+xor cx, cx
+.ir_div_loop:
+xor dx, dx
+mov bx, 10
+div bx
+push dx
+inc cx
+cmp ax, 0
+jne .ir_div_loop
+
+.ir_escribir:
+pop dx
+add dl, '0'
+mov [di], dl
+inc di
+loop .ir_escribir
+
+.ir_terminar:
+mov byte ptr [di], 0
+lea si, resbuf
+call print_string
+printn ""
+
+pop di
+pop si
+pop dx
+pop cx
+pop bx
+pop ax
+ret
+
+
+;==============
+;   Macro Funciones
+;==============
+DEFINE_PRINT_STRING
+DEFINE_GET_STRING
+;==============
+;   Programa Principal
+;==============
+Principal:
+;esciribir cadenas version corta
+printn "Escriba una cadena:"
+
+;leer los datos en buffer
+lea di, buffer
+mov dx, tammax
+call get_string
+
+;Validar la expresión ingresada: solo dígitos y operadores (+ - * /)
+;Formato requerido: digito operador digito operador ... (termina en dígito)
+lea si, buffer
+call validar_expresion
+
+; Parsear la expresión a arrays vals[] y ops[]
+lea si, buffer
+call parsear_expresion
+
+; Evaluar con precedencia de operadores
+call evaluar_expresion
+
+; Imprimir resultado
+call imprimir_resultado
+
+;printn ""
+;printn "La cadena escrita fue:"
+;lea si,buffer
+;call print_string
+;printn ""
+
+;Salir al Sistema Operativo
+mov ax, 4c00h
+int 21h
+ret
+
+

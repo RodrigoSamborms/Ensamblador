@@ -1,0 +1,21 @@
+< THE SYMBOL TABLE >  Ptr04A.com_  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+MSG1                     	00103     	-1        	LABEL     	(NOSEG)   
+MSG2                     	0010E     	-1        	LABEL     	(NOSEG)   
+MSG3                     	00130     	-1        	LABEL     	(NOSEG)   
+MSG4                     	00153     	-1        	LABEL     	(NOSEG)   
+MSG5                     	0017A     	-1        	LABEL     	(NOSEG)   
+MSG_TAIL                 	0019D     	-1        	LABEL     	(NOSEG)   
+BASE                     	0019D     	1         	VAR       	(NOSEG)   
+EXP                      	0019F     	1         	VAR       	(NOSEG)   
+RES                      	001A0     	1         	VAR       	(NOSEG)   
+OPER                     	001A4     	-1        	LABEL     	(NOSEG)   
+OTRA                     	001AC     	-1        	LABEL     	(NOSEG)   
+NADA                     	001B0     	-1        	LABEL     	(NOSEG)   
+MAIN                     	001B1     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 10/10/2025  --  12:55:13 a. m. ] 
+< END >
+ 

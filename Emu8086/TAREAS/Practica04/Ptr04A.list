@@ -1,0 +1,160 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Ptr04A.com_ -- emu8086 assembler version: 4.08  
+ 
+[ 10/10/2025  --  12:55:12 a. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       
+[   2]        :                                       ; You may customize this and other start-up templates;
+[   3]        :                                       ; The location of this template is c:\emu8086\inc\0_com_template.txt
+[   4]        :                                       
+[   5]        :                                       org 100h
+[   6]    0100: E9 AE 00                              jmp main
+[   7]        :                                       
+[   8]        :                                       ;segmento de datos
+[   9]        :                                       ;mensajes a imprimir
+[  10]    0103: 53 65 63 63 69 6F 6E 20 44 30 38      msg1:   db "Seccion D08"
+[  11]    010E: 49 6E 74 72 6F 64 75 63 65 20 74 75   msg2:   db "Introduce tus datos en la memoria:"
+                73 20 64 61 74 6F 73 20 65 6E 20 6C 
+                61 20 6D 65 6D 6F 72 69 61 3A       
+[  12]    0130: 42 61 73 65 20 76 61 72 69 61 62 6C   msg3:   db "Base variable de entrada de 16 bits"
+                65 20 64 65 20 65 6E 74 72 61 64 61 
+                20 64 65 20 31 36 20 62 69 74 73    
+[  13]    0153: 45 78 70 6F 6E 65 6E 74 65 20 76 61   msg4:   db "Exponente variable de entrada de 8 bits"
+                72 69 61 62 6C 65 20 64 65 20 65 6E 
+                74 72 61 64 61 20 64 65 20 38 20 62 
+                69 74 73                            
+[  14]    017A: 52 65 73 70 75 65 73 74 61 20 76 61   msg5:   db "Respuesta variable salia de 32 bits"
+                72 69 61 62 6C 65 20 73 61 6C 69 61 
+                20 64 65 20 33 32 20 62 69 74 73    
+[  15]        :                                       ;msg6:   db "Prod variable de salida de 16 bits"
+[  16]    019D:                                       msg_tail:
+[  17]        :                                       msg1_size = msg2 - msg1
+[  18]        :                                       msg2_size = msg3 - msg2
+[  19]        :                                       msg3_size = msg4 - msg3
+[  20]        :                                       msg4_size = msg5 - msg4
+[  21]        :                                       msg5_size = msg_tail - msg5;msg5_size = msg6 - msg5
+[  22]        :                                       ;msg6_size = msg_tail - msg6
+[  23]        :                                       ;variables del programa
+[  24]        :                                       ;variables de entrada:
+[  25]    019D: 00 00                                 Base    db      ?,?     ;DW formato BigEndian
+[  26]    019F: 00                                    Exp     db      ?       ;Byte
+[  27]        :                                       ;variables de salida:
+[  28]    01A0: 00 00 00 00                           Res     db      ?,?,?,? ;DD 32 bits DoubleWord BigEndian
+[  29]        :                                       
+[  30]        :                                       ;Funciones
+[  31]        :                                       ;inicia funcion oper
+[  32]    01A4:                                       oper:
+[  33]        :                                       ;recibe la cantidad de veces a multiplicar
+[  34]        :                                       ;por si mismo
+[  35]    01A4: 80 E9 01                              sub cl,1        ;ajustamos el contador
+[  36]    01A7: 80 F9 00                              cmp cl,0        ;no debe ser menor a 0
+[  37]    01AA: 7E 04                                 jle nada        ;si es menor a cero salta
+[  38]    01AC:                                       otra:
+[  39]    01AC: F7 E3                                 mul bx          ;potencia mediante
+[  40]    01AE: E2 FC                                 loop otra       ;multiplicaciones repetidas
+[  41]    01B0:                                       nada:
+[  42]    01B0: C3                                    ret             ;regresa de funcion
+[  43]        :                                       ;termina funcion oper
+[  44]        :                                       
+[  45]        :                                       ;programa principal
+[  46]    01B1:                                       main:
+[  47]    01B1: B8 03 10                              mov ax, 1003h  ;configuracion de consola
+[  48]    01B4: BB 00 00                              mov bx, 0
+[  49]    01B7: CD 10                                 int 10h
+[  50]        :                                       
+[  51]    01B9: BA 05 07                              mov dx, 0705h
+[  52]    01BC: BB 00 00                              mov bx, 0
+[  53]    01BF: B3 9F                                 mov bl, 10011111b
+[  54]    01C1: B9 0B 00                              mov cx, msg1_size
+[  55]    01C4: B0 01                                 mov al, 01b
+[  56]    01C6: BD 03 01                              mov bp, msg1
+[  57]    01C9: B4 13                                 mov ah, 13h
+[  58]    01CB: CD 10                                 int 10h
+[  59]        :                                       
+[  60]    01CD: BA 05 09                              mov dx, 0905h
+[  61]    01D0: BB 00 00                              mov bx, 0
+[  62]    01D3: B3 9F                                 mov bl, 10011111b
+[  63]    01D5: B9 22 00                              mov cx, msg2_size
+[  64]    01D8: B0 01                                 mov al, 01b
+[  65]    01DA: BD 0E 01                              mov bp, msg2
+[  66]    01DD: B4 13                                 mov ah, 13h
+[  67]    01DF: CD 10                                 int 10h
+[  68]        :                                       
+[  69]    01E1: BA 05 0B                              mov dx, 0B05h
+[  70]    01E4: BB 00 00                              mov bx, 0
+[  71]    01E7: B3 9F                                 mov bl, 10011111b
+[  72]    01E9: B9 23 00                              mov cx, msg3_size
+[  73]    01EC: B0 01                                 mov al, 01b
+[  74]    01EE: BD 30 01                              mov bp, msg3
+[  75]    01F1: B4 13                                 mov ah, 13h
+[  76]    01F3: CD 10                                 int 10h
+[  77]        :                                       
+[  78]    01F5: BA 05 0C                              mov dx, 0C05h
+[  79]    01F8: BB 00 00                              mov bx, 0
+[  80]    01FB: B3 9F                                 mov bl, 10011111b
+[  81]    01FD: B9 27 00                              mov cx, msg4_size
+[  82]    0200: B0 01                                 mov al, 01b
+[  83]    0202: BD 53 01                              mov bp, msg4
+[  84]    0205: B4 13                                 mov ah, 13h
+[  85]    0207: CD 10                                 int 10h
+[  86]        :                                       
+[  87]    0209: BA 05 0D                              mov dx, 0D05h
+[  88]    020C: BB 00 00                              mov bx, 0
+[  89]    020F: B3 9F                                 mov bl, 10011111b
+[  90]    0211: B9 23 00                              mov cx, msg5_size
+[  91]    0214: B0 01                                 mov al, 01b
+[  92]    0216: BD 7A 01                              mov bp, msg5
+[  93]    0219: B4 13                                 mov ah, 13h
+[  94]    021B: CD 10                                 int 10h
+[  95]        :                                       
+[  96]        :                                       ;mov dx, 0E05h
+[  97]        :                                       ;mov bx, 0
+[  98]        :                                       ;mov bl, 10011111b
+[  99]        :                                       ;mov cx, msg6_size
+[ 100]        :                                       ;mov al, 01b
+[ 101]        :                                       ;mov bp, msg6
+[ 102]        :                                       ;mov ah, 13h
+[ 103]        :                                       ;int 10h
+[ 104]        :                                       
+[ 105]    021D: B4 00                                 mov ah, 0          ;espera a presionar una tecla
+[ 106]    021F: CD 16                                 int 16h
+[ 107]        :                                       
+[ 108]        :                                       ;programa potencia
+[ 109]    0221: A0 9E 01                              mov al,[Base+1] ;resultado intermedio
+[ 110]    0224: 8A 26 9D 01                           mov ah,Base     ;alamacenado como BigE
+[ 111]    0228: 8B D8                                 mov bx,ax       ;Base al multiplicar
+[ 112]    022A: 8A 0E 9F 01                           mov cl,Exp      ;numero de veces
+[ 113]        :                                       
+[ 114]    022E: E8 73 FF                              call oper       ;llama a funcion de potencia
+[ 115]        :                                       
+[ 116]    0231: 88 36 A0 01                           mov [Res],dh    ;DX en LSB de Res
+[ 117]    0235: 88 16 A1 01                           mov [Res+1],dl  ;en formato de BigE
+[ 118]        :                                       
+[ 119]    0239: 88 26 A2 01                           mov [Res+2],ah  ;AX en MSB de Res
+[ 120]    023D: A2 A3 01                              mov [Res+3,al   ;en formato BigE
+[ 121]        :                                       
+[ 122]        :                                       ;termina el programa
+[ 123]    0240: CD 20                                 int 20h
+[ 124]    0242: C3                                    ret
+[ 125]        :                                       
+[ 126]        :                                       ;ejemplo multiplicar 8 cuatro veces el mismo:
+[ 127]        :                                       ;Base       00h, 08h
+[ 128]        :                                       ;Exponente  04h
+[ 129]        :                                       ;Res        00h, 00h, 10h, 00
+[ 130]        :                                       
+[ 131]        :                                       
+[ 132]        :                                       
+[ 133]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

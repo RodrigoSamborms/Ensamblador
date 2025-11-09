@@ -1,0 +1,514 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Practica06.com -- emu8086 assembler version: 4.08  
+ 
+[ 08/11/2025  --  12:39:08 a. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "practica06.asm"
+[   2]        :                                       include 'emu8086.inc'
+[   3]        :                                       org 100h
+[   4]    0100: E9 7B 03                              jmp Principal
+[   5]        :                                       ;============
+[   6]        :                                       ;   Mensajes
+[   7]        :                                       ;============
+[   8]    0103: 45 73 63 72 69 62 61 20 75 6E 61 20   mensaje0    db 'Escriba una cadena: ', 0
+                63 61 64 65 6E 61 3A 20 00          
+[   9]    0118: 4C 61 20 63 61 64 65 6E 61 20 65 73   mensaje1    db 'La cadena escrita fue: ', 0
+                63 72 69 74 61 20 66 75 65 3A 20 00 
+                                                    
+[  10]    0130: 0D 0A 00                              nuevlin     db 13,10,0
+[  11]    0133: 45 52 52 4F 52 3A 20 66 6F 72 6D 61   mensaje_err db 'ERROR: formato invalido. Use: digito operador digito ...',0
+                74 6F 20 69 6E 76 61 6C 69 64 6F 2E 
+                20 55 73 65 3A 20 64 69 67 69 74 6F 
+                20 6F 70 65 72 61 64 6F 72 20 64 69 
+                67 69 74 6F 20 2E 2E 2E 00          
+[  12]        :                                       ;============
+[  13]        :                                       ;   Variables
+[  14]        :                                       ;============
+[  15]    016C: 00 00 00 00 00 00 00 00 00 00 00 00   buffer  db 20 dup(?)  ;tomando el caracter
+                00 00 00 00 00 00 00 00             
+[  16]    0180:                                       bufferlong equ ($ - buffer -1) ;tam del buffer
+[  17]        :                                       tammax  equ 20        ;para el "ENTER"
+[  18]        :                                       
+[  19]        :                                       ; Variables para evaluación
+[  20]    0180: 00 00 00 00 00 00 00 00 00 00 00 00   vals dw 10 dup(0)     ; máximo 10 valores
+                00 00 00 00 00 00 00 00             
+[  21]    0194: 00 00 00 00 00 00 00 00 00 00         ops db 10 dup(0)      ; máximo 10 operadores
+[  22]    019E: 00                                    nvals db 0            ; contador de valores
+[  23]    019F: 00                                    nops db 0             ; contador de operadores
+[  24]    01A0: 00 00                                 resultado dw 0        ; resultado final
+[  25]    01A2: 00 00 00 00 00 00 00 00               resbuf db 8 dup(0)    ; buffer para imprimir resultado
+[  26]        :                                       
+[  27]        :                                       ;==============
+[  28]        :                                       ;   Subrutinas
+[  29]        :                                       ;==============
+[  30]        :                                       ;+++++++++ RUTINA: validar_expresion+++++++++
+[  31]        :                                       ;  Comprueba que la cadena en [buffer] siga el patrón:
+[  32]        :                                       ;  DIGITO (OPERADOR DIGITO)*
+[  33]        :                                       ;  Acepta espacios en blanco entre tokens. Si inválida, imprime mensaje
+[  34]        :                                       ;  de error y vuelve a `Principal` para reintentar.
+[  35]        :                                       ; Entrada: SI -> buffer (string terminado en 0)
+[  36]        :                                       ; Salida: retorna (si válida), no retorna si inválida (salta a Principal)
+[  37]    01AA:                                       validar_expresion:
+[  38]    01AA: 56                                    	push si
+[  39]    01AB: 32 DB                                 	xor bl, bl        ; BL = 0 -> esperamos DIGITO, 1 -> esperamos OPERADOR
+[  40]    01AD:                                       .ve_loop:
+[  41]    01AD: 8A 04                                 	mov al, [si]
+[  42]    01AF: 3C 00                                 	cmp al, 0
+[  43]    01B1: 74 30                                 	je .ve_end
+[  44]    01B3: 3C 20                                 	cmp al, ' '
+[  45]    01B5: 74 29                                 	je .ve_skip
+[  46]    01B7: 80 FB 00                              	cmp bl, 0
+[  47]    01BA: 74 12                                 	je .ve_expect_digit
+[  48]        :                                       	; esperar operador
+[  49]    01BC: 3C 2B                                 	cmp al, '+'
+[  50]    01BE: 74 1B                                 	je .ve_op_ok
+[  51]    01C0: 3C 2D                                 	cmp al, '-'
+[  52]    01C2: 74 17                                 	je .ve_op_ok
+[  53]    01C4: 3C 2A                                 	cmp al, '*'
+[  54]    01C6: 74 13                                 	je .ve_op_ok
+[  55]    01C8: 3C 2F                                 	cmp al, '/'
+[  56]    01CA: 74 0F                                 	je .ve_op_ok
+[  57]    01CC: EB 1E                                 	jmp .ve_invalid
+[  58]    01CE:                                       .ve_expect_digit:
+[  59]    01CE: 3C 30                                 	cmp al, '0'
+[  60]    01D0: 72 1A                                 	jb .ve_invalid
+[  61]    01D2: 3C 39                                 	cmp al, '9'
+[  62]    01D4: 77 16                                 	ja .ve_invalid
+[  63]        :                                       	; dígito válido
+[  64]    01D6: B3 01                                 	mov bl, 1
+[  65]    01D8: 46                                    	inc si
+[  66]    01D9: EB D2                                 	jmp .ve_loop
+[  67]    01DB:                                       .ve_op_ok:
+[  68]    01DB: B3 00                                 	mov bl, 0
+[  69]    01DD: 46                                    	inc si
+[  70]    01DE: EB CD                                 	jmp .ve_loop
+[  71]    01E0:                                       .ve_skip:
+[  72]    01E0: 46                                    	inc si
+[  73]    01E1: EB CA                                 	jmp .ve_loop
+[  74]    01E3:                                       .ve_end:
+[  75]        :                                       	; Al finalizar, el último token debe haber sido un dígito (BL=1)
+[  76]    01E3: 80 FB 01                              	cmp bl, 1
+[  77]    01E6: 74 02                                 	je .ve_valid
+[  78]    01E8: EB 02                                 	jmp .ve_invalid
+[  79]    01EA:                                       .ve_valid:
+[  80]    01EA: 5E                                    	pop si
+[  81]    01EB: C3                                    	ret
+[  82]    01EC:                                       .ve_invalid:
+[  83]    01EC: 5E                                    	pop si
+[  84]        :                                       	; imprimir mensaje de error desde la variable usando la macro print_string
+[  85]    01ED: 50 56 EB 03 0D 0A 00 BE F1 01 2E 8A   	printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  86]    0207: BE 33 01                              	lea si, mensaje_err
+[  87]    020A: E8 10 02                              	call print_string
+[  88]    020D: 50 56 EB 03 0D 0A 00 BE 11 02 2E 8A   	printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  89]    0227: E9 54 02                              	jmp Principal
+[  90]        :                                       
+[  91]        :                                       
+[  92]        :                                       ;+++++++++ RUTINA: parsear_expresion +++++++++
+[  93]        :                                       ; Convierte la cadena en buffer a arrays vals[] y ops[]
+[  94]        :                                       ; Entrada: SI -> buffer
+[  95]        :                                       ; Salida: vals[], ops[], nvals, nops llenos
+[  96]    022A:                                       parsear_expresion:
+[  97]    022A: 50                                    	push ax
+[  98]    022B: 53                                    	push bx
+[  99]    022C: 56                                    	push si
+[ 100]    022D: 57                                    	push di
+[ 101]        :                                       	
+[ 102]    022E: C6 06 9E 01 00                        	mov byte ptr [nvals], 0
+[ 103]    0233: C6 06 9F 01 00                        	mov byte ptr [nops], 0
+[ 104]    0238: BF 80 01                              	lea di, vals
+[ 105]    023B: BB 94 01                              	lea bx, ops
+[ 106]        :                                       	
+[ 107]    023E:                                       .pe_loop:
+[ 108]    023E: 8A 04                                 	mov al, [si]
+[ 109]    0240: 3C 00                                 	cmp al, 0
+[ 110]    0242: 74 28                                 	je .pe_done
+[ 111]    0244: 3C 20                                 	cmp al, ' '
+[ 112]    0246: 74 21                                 	je .pe_skip
+[ 113]        :                                       	
+[ 114]        :                                       	; verificar si es dígito
+[ 115]    0248: 3C 30                                 	cmp al, '0'
+[ 116]    024A: 72 13                                 	jb .pe_operador
+[ 117]    024C: 3C 39                                 	cmp al, '9'
+[ 118]    024E: 77 0F                                 	ja .pe_operador
+[ 119]        :                                       	
+[ 120]        :                                       	; es dígito: convertir '0'..'9' a 0..9 y guardar como word
+[ 121]    0250: 2C 30                                 	sub al, '0'
+[ 122]    0252: 98                                    	cbw                ; AX = valor 0..9 sign-extended
+[ 123]    0253: 89 05                                 	mov [di], ax
+[ 124]    0255: 83 C7 02                              	add di, 2
+[ 125]    0258: FE 06 9E 01                           	inc byte ptr [nvals]
+[ 126]    025C: 46                                    	inc si
+[ 127]    025D: EB DF                                 	jmp .pe_loop
+[ 128]        :                                       	
+[ 129]    025F:                                       .pe_operador:
+[ 130]        :                                       	; guardar operador
+[ 131]    025F: 88 07                                 	mov [bx], al
+[ 132]    0261: 43                                    	inc bx
+[ 133]    0262: FE 06 9F 01                           	inc byte ptr [nops]
+[ 134]    0266: 46                                    	inc si
+[ 135]    0267: EB D5                                 	jmp .pe_loop
+[ 136]        :                                       	
+[ 137]    0269:                                       .pe_skip:
+[ 138]    0269: 46                                    	inc si
+[ 139]    026A: EB D2                                 	jmp .pe_loop
+[ 140]        :                                       	
+[ 141]    026C:                                       .pe_done:
+[ 142]    026C: 5F                                    	pop di
+[ 143]    026D: 5E                                    	pop si
+[ 144]    026E: 5B                                    	pop bx
+[ 145]    026F: 58                                    	pop ax
+[ 146]    0270: C3                                    	ret
+[ 147]        :                                       
+[ 148]        :                                       
+[ 149]        :                                       ;+++++++++ RUTINA: evaluar_expresion +++++++++
+[ 150]        :                                       ; Evalúa vals[] y ops[] aplicando precedencia: / * - +
+[ 151]        :                                       ; Entrada: vals[], ops[], nvals, nops
+[ 152]        :                                       ; Salida: [resultado] contiene el valor final
+[ 153]    0271:                                       evaluar_expresion:
+[ 154]    0271: 50                                    	push ax
+[ 155]    0272: 53                                    	push bx
+[ 156]    0273: 51                                    	push cx
+[ 157]    0274: 52                                    	push dx
+[ 158]        :                                       	
+[ 159]        :                                       	; Pasada 1: resolver divisiones
+[ 160]    0275: B2 2F                                 	mov dl, '/'
+[ 161]    0277: E8 1C 00                              	call procesar_operador
+[ 162]        :                                       	
+[ 163]        :                                       	; Pasada 2: resolver multiplicaciones
+[ 164]    027A: B2 2A                                 	mov dl, '*'
+[ 165]    027C: E8 17 00                              	call procesar_operador
+[ 166]        :                                       	
+[ 167]        :                                       	; Pasada 3: resolver restas
+[ 168]    027F: B2 2D                                 	mov dl, '-'
+[ 169]    0281: E8 12 00                              	call procesar_operador
+[ 170]        :                                       	
+[ 171]        :                                       	; Pasada 4: resolver sumas
+[ 172]    0284: B2 2B                                 	mov dl, '+'
+[ 173]    0286: E8 0D 00                              	call procesar_operador
+[ 174]        :                                       	
+[ 175]        :                                       	; El resultado final está en vals[0]
+[ 176]    0289: BE 80 01                              	lea si, vals
+[ 177]    028C: 8B 04                                 	mov ax, [si]
+[ 178]    028E: A3 A0 01                              	mov [resultado], ax
+[ 179]        :                                       	
+[ 180]    0291: 5A                                    	pop dx
+[ 181]    0292: 59                                    	pop cx
+[ 182]    0293: 5B                                    	pop bx
+[ 183]    0294: 58                                    	pop ax
+[ 184]    0295: C3                                    	ret
+[ 185]        :                                       
+[ 186]        :                                       
+[ 187]        :                                       ;+++++++++ RUTINA: procesar_operador +++++++++
+[ 188]        :                                       ; Procesa todas las instancias de un operador específico
+[ 189]        :                                       ; Entrada: DL = operador a procesar
+[ 190]    0296:                                       procesar_operador:
+[ 191]    0296: 50                                    	push ax
+[ 192]    0297: 53                                    	push bx
+[ 193]    0298: 51                                    	push cx
+[ 194]    0299: 56                                    	push si
+[ 195]    029A: 57                                    	push di
+[ 196]    029B: 55                                    	push bp
+[ 197]        :                                       	
+[ 198]    029C:                                       .po_restart:
+[ 199]    029C: 33 DB                                 	xor bx, bx          ; i = 0
+[ 200]    029E: 8A 0E 9F 01                           	mov cl, [nops]
+[ 201]    02A2: 80 F9 00                              	cmp cl, 0
+[ 202]    02A5: 74 58                                 	je .po_done
+[ 203]        :                                       	
+[ 204]    02A7:                                       .po_loop:
+[ 205]    02A7: 3A D9                                 	cmp bl, cl
+[ 206]    02A9: 73 54                                 	jae .po_done
+[ 207]        :                                       	
+[ 208]        :                                       	; verificar si ops[i] == DL
+[ 209]    02AB: BE 94 01                              	lea si, ops
+[ 210]    02AE: 03 F3                                 	add si, bx
+[ 211]    02B0: 8A 04                                 	mov al, [si]
+[ 212]    02B2: 3A C2                                 	cmp al, dl
+[ 213]    02B4: 75 45                                 	jne .po_next
+[ 214]        :                                       	
+[ 215]        :                                       	; Encontrado: calcular vals[i] op vals[i+1]
+[ 216]    02B6: BE 80 01                              	lea si, vals
+[ 217]    02B9: 8B C3                                 	mov ax, bx
+[ 218]    02BB: D1 E0                                 	shl ax, 1           ; i*2
+[ 219]    02BD: 03 F0                                 	add si, ax
+[ 220]    02BF: 8B 04                                 	mov ax, [si]        ; vals[i]
+[ 221]    02C1: 8B 4C 02                              	mov cx, [si+2]      ; vals[i+1]
+[ 222]        :                                       	
+[ 223]        :                                       	; Realizar operación según DL
+[ 224]    02C4: 80 FA 2F                              	cmp dl, '/'
+[ 225]    02C7: 74 0E                                 	je .po_div
+[ 226]    02C9: 80 FA 2A                              	cmp dl, '*'
+[ 227]    02CC: 74 17                                 	je .po_mul
+[ 228]    02CE: 80 FA 2D                              	cmp dl, '-'
+[ 229]    02D1: 74 16                                 	je .po_sub
+[ 230]        :                                       	; debe ser '+'
+[ 231]    02D3: 03 C1                                 	add ax, cx
+[ 232]    02D5: EB 14                                 	jmp .po_guardar
+[ 233]        :                                       	
+[ 234]    02D7:                                       .po_div:
+[ 235]    02D7: 83 F9 00                              	cmp cx, 0
+[ 236]    02DA: 74 05                                 	je .po_div_zero
+[ 237]    02DC: 99                                    	cwd
+[ 238]    02DD: F7 F9                                 	idiv cx
+[ 239]    02DF: EB 0A                                 	jmp .po_guardar
+[ 240]    02E1:                                       .po_div_zero:
+[ 241]    02E1: 33 C0                                 	xor ax, ax
+[ 242]    02E3: EB 06                                 	jmp .po_guardar
+[ 243]        :                                       	
+[ 244]    02E5:                                       .po_mul:
+[ 245]    02E5: F7 E9                                 	imul cx
+[ 246]    02E7: EB 02                                 	jmp .po_guardar
+[ 247]        :                                       	
+[ 248]    02E9:                                       .po_sub:
+[ 249]    02E9: 2B C1                                 	sub ax, cx
+[ 250]        :                                       	
+[ 251]    02EB:                                       .po_guardar:
+[ 252]        :                                       	; Guardar resultado en vals[i]
+[ 253]    02EB: BE 80 01                              	lea si, vals
+[ 254]    02EE: 8B CB                                 	mov cx, bx
+[ 255]    02F0: D1 E1                                 	shl cx, 1
+[ 256]    02F2: 03 F1                                 	add si, cx
+[ 257]    02F4: 89 04                                 	mov [si], ax
+[ 258]        :                                       	
+[ 259]        :                                       	; Compactar: eliminar vals[i+1] y ops[i]
+[ 260]    02F6: E8 0D 00                              	call compactar_arrays
+[ 261]        :                                       	
+[ 262]        :                                       	; Reiniciar búsqueda desde el inicio
+[ 263]    02F9: EB A1                                 	jmp .po_restart
+[ 264]        :                                       	
+[ 265]    02FB:                                       .po_next:
+[ 266]    02FB: FE C3                                 	inc bl
+[ 267]    02FD: EB A8                                 	jmp .po_loop
+[ 268]        :                                       	
+[ 269]    02FF:                                       .po_done:
+[ 270]    02FF: 5D                                    	pop bp
+[ 271]    0300: 5F                                    	pop di
+[ 272]    0301: 5E                                    	pop si
+[ 273]    0302: 59                                    	pop cx
+[ 274]    0303: 5B                                    	pop bx
+[ 275]    0304: 58                                    	pop ax
+[ 276]    0305: C3                                    	ret
+[ 277]        :                                       
+[ 278]        :                                       
+[ 279]        :                                       ;+++++++++ RUTINA: compactar_arrays +++++++++
+[ 280]        :                                       ; Elimina vals[i+1] y ops[i] moviendo elementos hacia la izquierda
+[ 281]        :                                       ; Entrada: BL = índice i
+[ 282]    0306:                                       compactar_arrays:
+[ 283]    0306: 50                                    	push ax
+[ 284]    0307: 53                                    	push bx
+[ 285]    0308: 51                                    	push cx
+[ 286]    0309: 56                                    	push si
+[ 287]    030A: 57                                    	push di
+[ 288]        :                                       	
+[ 289]        :                                       	; Compactar vals: mover vals[i+2..] a vals[i+1..]
+[ 290]    030B: A0 9E 01                              	mov al, [nvals]
+[ 291]    030E: 8A CB                                 	mov cl, bl
+[ 292]    0310: FE C1                                 	inc cl              ; start = i+1
+[ 293]    0312: 3A C1                                 	cmp al, cl
+[ 294]    0314: 7E 2D                                 	jle .ca_skip_vals
+[ 295]        :                                       	
+[ 296]    0316: BE 80 01                              	lea si, vals
+[ 297]    0319: 8A C3                                 	mov al, bl
+[ 298]    031B: FE C0                                 	inc al
+[ 299]    031D: D0 E0                                 	shl al, 1           ; (i+1)*2
+[ 300]    031F: 32 E4                                 	xor ah, ah
+[ 301]    0321: 03 F0                                 	add si, ax          ; si = &vals[i+1]
+[ 302]    0323: 8B FE                                 	mov di, si
+[ 303]    0325: 83 C6 02                              	add si, 2           ; si = &vals[i+2]
+[ 304]        :                                       	
+[ 305]    0328: A0 9E 01                              	mov al, [nvals]
+[ 306]    032B: 2A C3                                 	sub al, bl
+[ 307]    032D: 2C 02                                 	sub al, 2           ; moves = nvals - i - 2
+[ 308]    032F: 3C 00                                 	cmp al, 0
+[ 309]    0331: 7E 10                                 	jle .ca_skip_vals
+[ 310]        :                                       	
+[ 311]    0333: 32 E4                                 	xor ah, ah
+[ 312]    0335: 8B C8                                 	mov cx, ax
+[ 313]    0337:                                       .ca_vals_loop:
+[ 314]    0337: 8B 04                                 	mov ax, [si]
+[ 315]    0339: 89 05                                 	mov [di], ax
+[ 316]    033B: 83 C6 02                              	add si, 2
+[ 317]    033E: 83 C7 02                              	add di, 2
+[ 318]    0341: E2 F4                                 	loop .ca_vals_loop
+[ 319]        :                                       	
+[ 320]    0343:                                       .ca_skip_vals:
+[ 321]    0343: FE 0E 9E 01                           	dec byte ptr [nvals]
+[ 322]        :                                       	
+[ 323]        :                                       	; Compactar ops: mover ops[i+1..] a ops[i..]
+[ 324]    0347: A0 9F 01                              	mov al, [nops]
+[ 325]    034A: 3A D8                                 	cmp bl, al
+[ 326]    034C: 73 21                                 	jae .ca_skip_ops
+[ 327]        :                                       	
+[ 328]    034E: BE 94 01                              	lea si, ops
+[ 329]    0351: 32 FF                                 	xor bh, bh
+[ 330]    0353: 03 F3                                 	add si, bx          ; si = &ops[i]
+[ 331]    0355: 8B FE                                 	mov di, si
+[ 332]    0357: 46                                    	inc si              ; si = &ops[i+1]
+[ 333]        :                                       	
+[ 334]    0358: A0 9F 01                              	mov al, [nops]
+[ 335]    035B: 2A C3                                 	sub al, bl
+[ 336]    035D: FE C8                                 	dec al              ; moves = nops - i - 1
+[ 337]    035F: 3C 00                                 	cmp al, 0
+[ 338]    0361: 7E 0C                                 	jle .ca_skip_ops
+[ 339]        :                                       	
+[ 340]    0363: 32 E4                                 	xor ah, ah
+[ 341]    0365: 8B C8                                 	mov cx, ax
+[ 342]    0367:                                       .ca_ops_loop:
+[ 343]    0367: 8A 04                                 	mov al, [si]
+[ 344]    0369: 88 05                                 	mov [di], al
+[ 345]    036B: 46                                    	inc si
+[ 346]    036C: 47                                    	inc di
+[ 347]    036D: E2 F8                                 	loop .ca_ops_loop
+[ 348]        :                                       	
+[ 349]    036F:                                       .ca_skip_ops:
+[ 350]    036F: FE 0E 9F 01                           	dec byte ptr [nops]
+[ 351]        :                                       	
+[ 352]    0373: 5F                                    	pop di
+[ 353]    0374: 5E                                    	pop si
+[ 354]    0375: 59                                    	pop cx
+[ 355]    0376: 5B                                    	pop bx
+[ 356]    0377: 58                                    	pop ax
+[ 357]    0378: C3                                    	ret
+[ 358]        :                                       
+[ 359]        :                                       
+[ 360]        :                                       ;+++++++++ RUTINA: imprimir_resultado +++++++++
+[ 361]        :                                       ; Imprime el valor en [resultado]
+[ 362]    0379:                                       imprimir_resultado:
+[ 363]    0379: 50                                    	push ax
+[ 364]    037A: 53                                    	push bx
+[ 365]    037B: 51                                    	push cx
+[ 366]    037C: 52                                    	push dx
+[ 367]    037D: 56                                    	push si
+[ 368]    037E: 57                                    	push di
+[ 369]        :                                       	
+[ 370]    037F: 50 56 EB 03 0D 0A 00 BE 83 03 2E 8A   	printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 371]    0399: 50 56 EB 0C 52 65 73 75 6C 74 61 64   	print "Resultado: "
+                6F 3A 20 00 BE 9D 03 2E 8A 04 3C 00 
+                74 07 46 B4 0E CD 10 EB F2 5E 58    
+[ 372]        :                                       	
+[ 373]    03BC: A1 A0 01                              	mov ax, [resultado]
+[ 374]    03BF: BF A2 01                              	lea di, resbuf
+[ 375]        :                                       	
+[ 376]        :                                       	; Manejar signo
+[ 377]    03C2: 3D 00 00                              	cmp ax, 0
+[ 378]    03C5: 7D 06                                 	jge .ir_positivo
+[ 379]    03C7: F7 D8                                 	neg ax
+[ 380]    03C9: C6 05 2D                              	mov byte ptr [di], '-'
+[ 381]    03CC: 47                                    	inc di
+[ 382]        :                                       	
+[ 383]    03CD:                                       .ir_positivo:
+[ 384]        :                                       	; Convertir a decimal
+[ 385]    03CD: 3D 00 00                              	cmp ax, 0
+[ 386]    03D0: 75 06                                 	jne .ir_convertir
+[ 387]    03D2: C6 05 30                              	mov byte ptr [di], '0'
+[ 388]    03D5: 47                                    	inc di
+[ 389]    03D6: EB 19                                 	jmp .ir_terminar
+[ 390]        :                                       	
+[ 391]    03D8:                                       .ir_convertir:
+[ 392]    03D8: 33 C9                                 	xor cx, cx
+[ 393]    03DA:                                       .ir_div_loop:
+[ 394]    03DA: 33 D2                                 	xor dx, dx
+[ 395]    03DC: BB 0A 00                              	mov bx, 10
+[ 396]    03DF: F7 F3                                 	div bx
+[ 397]    03E1: 52                                    	push dx
+[ 398]    03E2: 41                                    	inc cx
+[ 399]    03E3: 3D 00 00                              	cmp ax, 0
+[ 400]    03E6: 75 F2                                 	jne .ir_div_loop
+[ 401]        :                                       	
+[ 402]    03E8:                                       .ir_escribir:
+[ 403]    03E8: 5A                                    	pop dx
+[ 404]    03E9: 80 C2 30                              	add dl, '0'
+[ 405]    03EC: 88 15                                 	mov [di], dl
+[ 406]    03EE: 47                                    	inc di
+[ 407]    03EF: E2 F7                                 	loop .ir_escribir
+[ 408]        :                                       	
+[ 409]    03F1:                                       .ir_terminar:
+[ 410]    03F1: C6 05 00                              	mov byte ptr [di], 0
+[ 411]    03F4: BE A2 01                              	lea si, resbuf
+[ 412]    03F7: E8 23 00                              	call print_string
+[ 413]    03FA: 50 56 EB 03 0D 0A 00 BE FE 03 2E 8A   	printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 414]        :                                       	
+[ 415]    0414: 5F                                    	pop di
+[ 416]    0415: 5E                                    	pop si
+[ 417]    0416: 5A                                    	pop dx
+[ 418]    0417: 59                                    	pop cx
+[ 419]    0418: 5B                                    	pop bx
+[ 420]    0419: 58                                    	pop ax
+[ 421]    041A: C3                                    	ret
+[ 422]        :                                       
+[ 423]        :                                       
+[ 424]        :                                       ;==============
+[ 425]        :                                       ;   Macro Funciones
+[ 426]        :                                       ;==============
+[ 427]    041B: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[ 428]    042F: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[ 429]        :                                       ;==============
+[ 430]        :                                       ;   Programa Principal
+[ 431]        :                                       ;==============
+[ 432]    047E:                                       Principal:
+[ 433]        :                                       ;esciribir cadenas version corta
+[ 434]    047E: 50 56 EB 16 45 73 63 72 69 62 61 20   printn "Escriba una cadena:"
+                75 6E 61 20 63 61 64 65 6E 61 3A 0D 
+                0A 00 BE 82 04 2E 8A 04 3C 00 74 07 
+                46 B4 0E CD 10 EB F2 5E 58          
+[ 435]        :                                       
+[ 436]        :                                       ;leer los datos en buffer
+[ 437]    04AB: BF 6C 01                              lea di, buffer
+[ 438]    04AE: BA 14 00                              mov dx, tammax
+[ 439]    04B1: E8 7D FF                              call get_string
+[ 440]        :                                       
+[ 441]        :                                       ;Validar la expresión ingresada: solo dígitos y operadores (+ - * /)
+[ 442]        :                                       	;Formato requerido: digito operador digito operador ... (termina en dígito)
+[ 443]    04B4: BE 6C 01                              	lea si, buffer
+[ 444]    04B7: E8 F0 FC                              	call validar_expresion
+[ 445]        :                                       	
+[ 446]        :                                       	; Parsear la expresión a arrays vals[] y ops[]
+[ 447]    04BA: BE 6C 01                              	lea si, buffer
+[ 448]    04BD: E8 6A FD                              	call parsear_expresion
+[ 449]        :                                       	
+[ 450]        :                                       	; Evaluar con precedencia de operadores
+[ 451]    04C0: E8 AE FD                              	call evaluar_expresion
+[ 452]        :                                       	
+[ 453]        :                                       	; Imprimir resultado
+[ 454]    04C3: E8 B3 FE                              	call imprimir_resultado
+[ 455]        :                                       
+[ 456]        :                                       ;printn ""
+[ 457]        :                                       ;printn "La cadena escrita fue:"
+[ 458]        :                                       ;lea si,buffer
+[ 459]        :                                       ;call print_string
+[ 460]        :                                       ;printn ""
+[ 461]        :                                       
+[ 462]        :                                       ;Salir al Sistema Operativo
+[ 463]    04C6: B8 00 4C                              mov ax, 4c00h
+[ 464]    04C9: CD 21                                 int 21h
+[ 465]    04CB: C3                                    ret
+[ 466]        :                                       
+[ 467]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
