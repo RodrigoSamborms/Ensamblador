@@ -15,9 +15,9 @@ buffer  db 20 dup(?)  ;tomando el caracter
 bufferlong equ ($ - buffer -1) ;tam del buffer
 tammax  equ 20        ;para el "ENTER"
 
-; Variables para evaluaciÃ³n
-vals dw 10 dup(0)     ; mÃ¡ximo 10 valores
-ops db 10 dup(0)      ; mÃ¡ximo 10 operadores
+; Variables para evaluación
+vals dw 10 dup(0)     ; máximo 10 valores
+ops db 10 dup(0)      ; máximo 10 operadores
 nvals db 0            ; contador de valores
 nops db 0             ; contador de operadores
 resultado dw 0        ; resultado final
@@ -27,12 +27,12 @@ resbuf db 8 dup(0)    ; buffer para imprimir resultado
 ;   Subrutinas
 ;==============
 ;+++++++++ RUTINA: validar_expresion+++++++++
-;  Comprueba que la cadena en [buffer] siga el patrÃ³n:
+;  Comprueba que la cadena en [buffer] siga el patrón:
 ;  DIGITO (OPERADOR DIGITO)*
-;  Acepta espacios en blanco entre tokens. Si invÃ¡lida, imprime mensaje
+;  Acepta espacios en blanco entre tokens. Si inválida, imprime mensaje
 ;  de error y vuelve a `Principal` para reintentar.
 ; Entrada: SI -> buffer (string terminado en 0)
-; Salida: retorna (si vÃ¡lida), no retorna si invÃ¡lida (salta a Principal)
+; Salida: retorna (si válida), no retorna si inválida (salta a Principal)
 validar_expresion:
 push si
 xor bl, bl        ; BL = 0 -> esperamos DIGITO, 1 -> esperamos OPERADOR
@@ -59,7 +59,7 @@ cmp al, '0'
 jb .ve_invalid
 cmp al, '9'
 ja .ve_invalid
-; dÃ­gito vÃ¡lido
+; dígito válido
 mov bl, 1
 inc si
 jmp .ve_loop
@@ -71,7 +71,7 @@ jmp .ve_loop
 inc si
 jmp .ve_loop
 .ve_end:
-; Al finalizar, el Ãºltimo token debe haber sido un dÃ­gito (BL=1)
+; Al finalizar, el último token debe haber sido un dígito (BL=1)
 cmp bl, 1
 je .ve_valid
 jmp .ve_invalid
@@ -110,13 +110,13 @@ je .pe_done
 cmp al, ' '
 je .pe_skip
 
-; verificar si es dÃ­gito
+; verificar si es dígito
 cmp al, '0'
 jb .pe_operador
 cmp al, '9'
 ja .pe_operador
 
-; es dÃ­gito: convertir '0'..'9' a 0..9 y guardar como word
+; es dígito: convertir '0'..'9' a 0..9 y guardar como word
 sub al, '0'
 cbw                ; AX = valor 0..9 sign-extended
 mov [di], ax
@@ -146,7 +146,7 @@ ret
 
 
 ;+++++++++ RUTINA: evaluar_expresion +++++++++
-; EvalÃºa vals[] y ops[] aplicando precedencia: / * - +
+; Evalúa vals[] y ops[] aplicando precedencia: / * - +
 ; Entrada: vals[], ops[], nvals, nops
 ; Salida: [resultado] contiene el valor final
 evaluar_expresion:
@@ -171,7 +171,7 @@ call procesar_operador
 mov dl, '+'
 call procesar_operador
 
-; El resultado final estÃ¡ en vals[0]
+; El resultado final está en vals[0]
 lea si, vals
 mov ax, [si]
 mov [resultado], ax
@@ -184,7 +184,7 @@ ret
 
 
 ;+++++++++ RUTINA: procesar_operador +++++++++
-; Procesa todas las instancias de un operador especÃ­fico
+; Procesa todas las instancias de un operador específico
 ; Entrada: DL = operador a procesar
 procesar_operador:
 push ax
@@ -219,7 +219,7 @@ add si, ax
 mov ax, [si]        ; vals[i]
 mov cx, [si+2]      ; vals[i+1]
 
-; Realizar operaciÃ³n segÃºn DL
+; Realizar operación según DL
 cmp dl, '/'
 je .po_div
 cmp dl, '*'
@@ -258,7 +258,7 @@ mov [si], ax
 ; Compactar: eliminar vals[i+1] y ops[i]
 call compactar_arrays
 
-; Reiniciar bÃºsqueda desde el inicio
+; Reiniciar búsqueda desde el inicio
 jmp .po_restart
 
 .po_next:
@@ -277,7 +277,7 @@ ret
 
 ;+++++++++ RUTINA: compactar_arrays +++++++++
 ; Elimina vals[i+1] y ops[i] moviendo elementos hacia la izquierda
-; Entrada: BL = Ã­ndice i
+; Entrada: BL = índice i
 compactar_arrays:
 push ax
 push bx
@@ -450,12 +450,12 @@ lea di, buffer
 mov dx, tammax
 call get_string
 
-;Validar la expresiÃ³n ingresada: solo dÃ­gitos y operadores (+ - * /)
-;Formato requerido: digito operador digito operador ... (termina en dÃ­gito)
+;Validar la expresión ingresada: solo dígitos y operadores (+ - * /)
+;Formato requerido: digito operador digito operador ... (termina en dígito)
 lea si, buffer
 call validar_expresion
 
-; Parsear la expresiÃ³n a arrays vals[] y ops[]
+; Parsear la expresión a arrays vals[] y ops[]
 lea si, buffer
 call parsear_expresion
 
