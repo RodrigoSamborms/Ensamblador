@@ -1,0 +1,1380 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Prt07A.com -- emu8086 assembler version: 4.08  
+ 
+[ 11/11/2025  --  08:31:33 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       include 'emu8086.inc'
+[   2]        :                                       org 100h
+[   3]    0100: E9 60 0C                              jmp Principal
+[   4]        :                                       
+[   5]        :                                       ;============
+[   6]        :                                       ;   Mensajes
+[   7]        :                                       ;============
+[   8]    0103: 50 72 6F 67 72 61 6D 61 20 67 65 6E   mensaje_inicio    db 'Programa generador de archivo .lst', 13, 10, 0
+                65 72 61 64 6F 72 20 64 65 20 61 72 
+                63 68 69 76 6F 20 2E 6C 73 74 0D 0A 
+                00                                  
+[   9]    0128: 0D 0A 2D 2D 2D 20 4D 45 4E 55 20 2D   mensaje_menu      db 13, 10, '--- MENU ---', 13, 10
+                2D 2D 0D 0A                         
+[  10]    0138: 31 2E 20 4D 6F 73 74 72 61 72 20 64   db '1. Mostrar directorio actual', 13, 10
+                69 72 65 63 74 6F 72 69 6F 20 61 63 
+                74 75 61 6C 0D 0A                   
+[  11]    0156: 32 2E 20 43 61 6D 62 69 61 72 20 64   db '2. Cambiar directorio', 13, 10
+                69 72 65 63 74 6F 72 69 6F 0D 0A    
+[  12]    016D: 33 2E 20 4C 69 73 74 61 72 20 61 72   db '3. Listar archivos .asm', 13, 10
+                63 68 69 76 6F 73 20 2E 61 73 6D 0D 
+                0A                                  
+[  13]    0186: 34 2E 20 50 72 6F 63 65 73 61 72 20   db '4. Procesar archivo', 13, 10
+                61 72 63 68 69 76 6F 0D 0A          
+[  14]    019B: 35 2E 20 53 61 6C 69 72 0D 0A         db '5. Salir', 13, 10
+[  15]    01A5: 4F 70 63 69 6F 6E 3A 20 00            db 'Opcion: ', 0
+[  16]    01AE: 44 69 72 65 63 74 6F 72 69 6F 20 61   mensaje_dirActual db 'Directorio actual: ', 0
+                63 74 75 61 6C 3A 20 00             
+[  17]    01C2: 49 6E 67 72 65 73 65 20 72 75 74 61   mensaje_nuevoDir  db 'Ingrese ruta (ej: C./MiCarpeta o ./SubDir): ', 0
+                20 28 65 6A 3A 20 43 2E 2F 4D 69 43 
+                61 72 70 65 74 61 20 6F 20 2E 2F 53 
+                75 62 44 69 72 29 3A 20 00          
+[  18]    01EF: 49 6E 67 72 65 73 65 20 6E 6F 6D 62   mensaje_nombre    db 'Ingrese nombre del archivo .asm: ', 0
+                72 65 20 64 65 6C 20 61 72 63 68 69 
+                76 6F 20 2E 61 73 6D 3A 20 00       
+[  19]    0211: 4C 65 79 65 6E 64 6F 20 61 72 63 68   mensaje_leyendo   db 'Leyendo archivo...', 13, 10, 0
+                69 76 6F 2E 2E 2E 0D 0A 00          
+[  20]    0226: 47 65 6E 65 72 61 6E 64 6F 20 61 72   mensaje_generando db 'Generando archivo .lst...', 13, 10, 0
+                63 68 69 76 6F 20 2E 6C 73 74 2E 2E 
+                2E 0D 0A 00                         
+[  21]    0242: 41 72 63 68 69 76 6F 20 67 65 6E 65   mensaje_exito     db 'Archivo generado exitosamente!', 13, 10, 0
+                72 61 64 6F 20 65 78 69 74 6F 73 61 
+                6D 65 6E 74 65 21 0D 0A 00          
+[  22]    0263: 45 52 52 4F 52 3A 20 4E 6F 20 73 65   mensaje_err_abrir db 'ERROR: No se pudo abrir el archivo', 13, 10, 0
+                20 70 75 64 6F 20 61 62 72 69 72 20 
+                65 6C 20 61 72 63 68 69 76 6F 0D 0A 
+                00                                  
+[  23]    0288: 45 52 52 4F 52 3A 20 4E 6F 20 73 65   mensaje_err_crear db 'ERROR: No se pudo crear archivo de salida', 13, 10, 0
+                20 70 75 64 6F 20 63 72 65 61 72 20 
+                61 72 63 68 69 76 6F 20 64 65 20 73 
+                61 6C 69 64 61 0D 0A 00             
+[  24]    02B4: 45 52 52 4F 52 3A 20 45 72 72 6F 72   mensaje_err_leer  db 'ERROR: Error al leer archivo', 13, 10, 0
+                20 61 6C 20 6C 65 65 72 20 61 72 63 
+                68 69 76 6F 0D 0A 00                
+[  25]    02D3: 45 52 52 4F 52 3A 20 4E 6F 20 73 65   mensaje_err_dir   db 'ERROR: No se pudo cambiar directorio', 13, 10, 0
+                20 70 75 64 6F 20 63 61 6D 62 69 61 
+                72 20 64 69 72 65 63 74 6F 72 69 6F 
+                0D 0A 00                            
+[  26]    02FA: 45 52 52 4F 52 3A 20 4E 6F 6D 62 72   mensaje_err_ext   db 'ERROR: Nombre invalido. Debe terminar en .asm', 13, 10, 0
+                65 20 69 6E 76 61 6C 69 64 6F 2E 20 
+                44 65 62 65 20 74 65 72 6D 69 6E 61 
+                72 20 65 6E 20 2E 61 73 6D 0D 0A 00 
+                                                    
+[  27]    032A: 45 52 52 4F 52 3A 20 4E 6F 20 73 65   mensaje_err_creardir db 'ERROR: No se pudo crear directorio', 13, 10, 0
+                20 70 75 64 6F 20 63 72 65 61 72 20 
+                64 69 72 65 63 74 6F 72 69 6F 0D 0A 
+                00                                  
+[  28]    034F: 4E 6F 6D 62 72 65 20 64 65 6C 20 6E   mensaje_crearDir  db 'Nombre del nuevo directorio: ', 0
+                75 65 76 6F 20 64 69 72 65 63 74 6F 
+                72 69 6F 3A 20 00                   
+[  29]    036D: 44 69 72 65 63 74 6F 72 69 6F 20 63   mensaje_dirCreado db 'Directorio creado exitosamente!', 13, 10, 0
+                72 65 61 64 6F 20 65 78 69 74 6F 73 
+                61 6D 65 6E 74 65 21 0D 0A 00       
+[  30]    038F: 53 65 20 63 72 65 61 72 61 20 65 6E   mensaje_infoCrear db 'Se creara en el directorio actual', 13, 10, 0
+                20 65 6C 20 64 69 72 65 63 74 6F 72 
+                69 6F 20 61 63 74 75 61 6C 0D 0A 00 
+                                                    
+[  31]    03B3: 52 75 74 61 20 63 6F 6E 76 65 72 74   mensaje_debugRuta db 'Ruta convertida: ', 0
+                69 64 61 3A 20 00                   
+[  32]    03C5: 0D 0A 41 72 63 68 69 76 6F 73 20 2E   mensaje_archivos  db 13, 10, 'Archivos .asm en el directorio:', 13, 10, 0
+                61 73 6D 20 65 6E 20 65 6C 20 64 69 
+                72 65 63 74 6F 72 69 6F 3A 0D 0A 00 
+                                                    
+[  33]    03E9: 4E 6F 20 73 65 20 65 6E 63 6F 6E 74   mensaje_noAsm     db 'No se encontraron archivos .asm', 13, 10, 0
+                72 61 72 6F 6E 20 61 72 63 68 69 76 
+                6F 73 20 2E 61 73 6D 0D 0A 00       
+[  34]    040B: 2A 2E 61 73 6D 00                     mascara_asm       db '*.asm', 0
+[  35]        :                                       
+[  36]        :                                       ;============
+[  37]        :                                       ;   Variables
+[  38]        :                                       ;============
+[  39]    0411: 00 00 00 00 00 00 00 00 00 00 00 00   nombre_entrada   db 64 dup(0)   ; nombre archivo entrada
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  40]    0451: 00 00 00 00 00 00 00 00 00 00 00 00   nombre_salida    db 64 dup(0)   ; nombre archivo salida (.lst)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  41]    0491: 00 00                                 handle_entrada   dw 0            ; handle del archivo de entrada
+[  42]    0493: 00 00                                 handle_salida    dw 0            ; handle del archivo de salida
+[  43]    0495: 00 00 00 00 00 00 00 00 00 00 00 00   buffer_linea     db 256 dup(0)  ; buffer para una línea
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  44]    0595: 00 00                                 longitud_linea   dw 0            ; longitud de la línea actual
+[  45]    0597: 00 00                                 acumulado        dw 0            ; caracteres acumulados
+[  46]    0599: 00 00 00 00                           buffer_numero    db 4 dup(0)    ; buffer para el número de 3 dígitos + espacio
+[  47]    059D: 00                                    temp_char        db 0            ; caracter temporal
+[  48]    059E: 00 00                                 drive_str        db 2 dup(0)     ; buffer para imprimir letra de unidad + 0
+[  49]    05A0: 00                                    opcion_menu      db 0            ; opción seleccionada del menú
+[  50]    05A1: 00 00 00 00 00 00 00 00 00 00 00 00   buffer_dir       db 128 dup(0)  ; buffer para directorio actual
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00             
+[  51]    0621: 00 00 00 00 00 00 00 00 00 00 00 00   buffer_ruta      db 128 dup(0)  ; buffer para nueva ruta
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00             
+[  52]    06A1: 00 00 00 00 00 00 00 00 00 00 00 00   dta_buffer       db 43 dup(0)   ; DTA para búsqueda de archivos
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00                
+[  53]    06CC: 00 00                                 longitud_visible dw 0           ; longitud visible (sin CR/LF) de la línea
+[  54]    06CE: 0D 0A                                 crlf             db 13, 10      ; fin de línea para escribir totales
+[  55]    06D0: 00 00 00 00 00 00 00 00 00 00 00 00   search_path      db 256 dup(0)  ; buffer para construir ruta absoluta X:\path\*.asm
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  56]        :                                       
+[  57]        :                                       ;==============
+[  58]        :                                       ;   Subrutinas
+[  59]        :                                       ;==============
+[  60]        :                                       
+[  61]        :                                       ;------ SUBRUTINA: mostrar_directorio_actual ------
+[  62]        :                                       ; Muestra el directorio de trabajo actual
+[  63]        :                                       ; Usa: INT 21h función 47h
+[  64]    07D0:                                       mostrar_directorio_actual:
+[  65]    07D0: 50                                    push ax
+[  66]    07D1: 52                                    push dx
+[  67]    07D2: 56                                    push si
+[  68]        :                                       
+[  69]        :                                       ; Obtener directorio actual
+[  70]    07D3: B4 47                                 mov ah, 47h         ; función DOS: obtener directorio actual
+[  71]    07D5: B2 00                                 mov dl, 0           ; 0 = drive actual
+[  72]    07D7: BE A1 05                              lea si, buffer_dir
+[  73]    07DA: CD 21                                 int 21h
+[  74]        :                                       
+[  75]        :                                       ; Imprimir mensaje
+[  76]    07DC: BE AE 01                              lea si, mensaje_dirActual
+[  77]    07DF: E8 20 05                              call print_string
+[  78]        :                                       
+[  79]        :                                       ; Imprimir letra de unidad
+[  80]    07E2: B4 19                                 mov ah, 19h         ; obtener drive actual
+[  81]    07E4: CD 21                                 int 21h
+[  82]    07E6: 04 41                                 add al, 'A'
+[  83]    07E8: A2 9E 05                              mov [drive_str], al
+[  84]    07EB: C6 06 9F 05 00                        mov byte ptr [drive_str+1], 0
+[  85]    07F0: BE 9E 05                              lea si, drive_str
+[  86]    07F3: E8 0C 05                              call print_string
+[  87]    07F6: 50 56 EB 02 3A 00 BE FA 07 2E 8A 04   print ':'
+                3C 00 74 07 46 B4 0E CD 10 EB F2 5E 
+                58                                  
+[  88]        :                                       
+[  89]        :                                       ; Imprimir directorio (AH=47h devuelve ruta comenzando con '\\')
+[  90]    080F: BE A1 05                              lea si, buffer_dir
+[  91]    0812: E8 ED 04                              call print_string
+[  92]    0815: 50 56 EB 03 0D 0A 00 BE 19 08 2E 8A   printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  93]        :                                       
+[  94]    082F: 5E                                    pop si
+[  95]    0830: 5A                                    pop dx
+[  96]    0831: 58                                    pop ax
+[  97]    0832: C3                                    ret
+[  98]        :                                       
+[  99]        :                                       
+[ 100]        :                                       ;------ SUBRUTINA: cambiar_directorio ------
+[ 101]        :                                       ; Cambia al directorio especificado por el usuario
+[ 102]        :                                       ; Entrada: buffer_ruta con la ruta
+[ 103]        :                                       ; Salida: CF=1 si error
+[ 104]    0833:                                       cambiar_directorio:
+[ 105]    0833: 50                                    push ax
+[ 106]    0834: 52                                    push dx
+[ 107]        :                                       
+[ 108]    0835: B4 3B                                 mov ah, 3Bh         ; función DOS: cambiar directorio
+[ 109]    0837: BA 21 06                              lea dx, buffer_ruta
+[ 110]    083A: CD 21                                 int 21h
+[ 111]        :                                       
+[ 112]    083C: 5A                                    pop dx
+[ 113]    083D: 58                                    pop ax
+[ 114]    083E: C3                                    ret
+[ 115]        :                                       
+[ 116]        :                                       
+[ 117]        :                                       ;------ SUBRUTINA: crear_directorio ------
+[ 118]        :                                       ; Crea un directorio en la ubicación actual
+[ 119]        :                                       ; Entrada: buffer_ruta con el nombre del directorio (sin rutas completas)
+[ 120]        :                                       ; Salida: CF=1 si error
+[ 121]    083F:                                       crear_directorio:
+[ 122]    083F: 50                                    push ax
+[ 123]    0840: 52                                    push dx
+[ 124]        :                                       
+[ 125]    0841: B4 39                                 mov ah, 39h         ; función DOS: crear directorio
+[ 126]    0843: BA 21 06                              lea dx, buffer_ruta
+[ 127]    0846: CD 21                                 int 21h
+[ 128]        :                                       
+[ 129]    0848: 5A                                    pop dx
+[ 130]    0849: 58                                    pop ax
+[ 131]    084A: C3                                    ret
+[ 132]        :                                       
+[ 133]        :                                       
+[ 134]        :                                       ;------ SUBRUTINA: convertir_slash_a_backslash ------
+[ 135]        :                                       ; Reemplaza todos los caracteres '/' por '\\' en buffer_ruta
+[ 136]        :                                       ; Además, si la cadena inicia con <letra>'.', lo convierte a <letra>':'
+[ 137]        :                                       ; Normaliza: elimina duplicados de '\\' y recorta espacios/barras al final
+[ 138]        :                                       ; Entrada: buffer_ruta (string terminado en 0)
+[ 139]        :                                       ; Salida:  buffer_ruta modificado in-place
+[ 140]    084B:                                       convertir_slash_a_backslash:
+[ 141]    084B: 50                                    push ax
+[ 142]    084C: 53                                    push bx
+[ 143]    084D: 56                                    push si
+[ 144]    084E: 57                                    push di
+[ 145]        :                                       
+[ 146]    084F: BE 21 06                              lea si, buffer_ruta
+[ 147]        :                                       
+[ 148]        :                                       ;--- Soporte de ruta relativa ./SubDir -> X:\ruta\actual\SubDir ---
+[ 149]    0852: 8A 04                                 mov al, [si]
+[ 150]    0854: 3C 2E                                 cmp al, '.'
+[ 151]    0856: 75 73                                 jne .csab_check_drivepattern
+[ 152]    0858: 8A 64 01                              mov ah, [si+1]
+[ 153]    085B: 80 FC 2F                              cmp ah, '/'
+[ 154]    085E: 74 07                                 je .csab_build_rel
+[ 155]    0860: 80 FC 5C                              cmp ah, 92            ; '\\'
+[ 156]    0863: 74 02                                 je .csab_build_rel
+[ 157]    0865: EB 64                                 jmp .csab_check_drivepattern
+[ 158]        :                                       
+[ 159]    0867:                                       .csab_build_rel:
+[ 160]        :                                       ; Obtener directorio actual en buffer_dir (usar SI para INT 21h/47h)
+[ 161]    0867: B4 47                                 mov ah, 47h
+[ 162]    0869: B2 00                                 mov dl, 0
+[ 163]    086B: BE A1 05                              lea si, buffer_dir
+[ 164]    086E: CD 21                                 int 21h                ; DOS usa DS:SI, antes se usaba DI por error
+[ 165]        :                                       ; Obtener unidad actual
+[ 166]    0870: B4 19                                 mov ah, 19h
+[ 167]    0872: CD 21                                 int 21h
+[ 168]    0874: 04 41                                 add al, 'A'
+[ 169]    0876: BF D0 06                              lea di, search_path
+[ 170]    0879: 88 05                                 mov [di], al           ; X
+[ 171]    087B: 47                                    inc di
+[ 172]    087C: C6 05 3A                              mov byte ptr [di], ':' ; X:
+[ 173]    087F: 47                                    inc di
+[ 174]    0880: C6 05 5C                              mov byte ptr [di], 92  ; X:\
+[ 175]    0883: 47                                    inc di
+[ 176]        :                                       ; Copiar buffer_dir saltando primer '\\' si existiera
+[ 177]    0884: BE A1 05                              lea si, buffer_dir
+[ 178]    0887: 8A 04                                 mov al, [si]
+[ 179]    0889: 3C 5C                                 cmp al, 92
+[ 180]    088B: 75 01                                 jne .csab_copy_cdir
+[ 181]    088D: 46                                    inc si                 ; saltar barra inicial
+[ 182]    088E:                                       .csab_copy_cdir:
+[ 183]    088E: 8A 04                                 mov al, [si]
+[ 184]    0890: 3C 00                                 cmp al, 0
+[ 185]    0892: 74 06                                 je .csab_after_cdir
+[ 186]    0894: 88 05                                 mov [di], al
+[ 187]    0896: 46                                    inc si
+[ 188]    0897: 47                                    inc di
+[ 189]    0898: EB F4                                 jmp .csab_copy_cdir
+[ 190]    089A:                                       .csab_after_cdir:
+[ 191]        :                                       ; Asegurar separador antes de resto
+[ 192]    089A: 4F                                    dec di
+[ 193]    089B: 8A 05                                 mov al,[di]
+[ 194]    089D: 47                                    inc di
+[ 195]    089E: 3C 5C                                 cmp al,92
+[ 196]    08A0: 74 04                                 je .csab_have_sep
+[ 197]    08A2: C6 05 5C                              mov byte ptr [di],92
+[ 198]    08A5: 47                                    inc di
+[ 199]    08A6:                                       .csab_have_sep:
+[ 200]        :                                       ; Copiar resto tras "./"
+[ 201]    08A6: BE 21 06                              lea si, buffer_ruta
+[ 202]    08A9: 83 C6 02                              add si, 2
+[ 203]    08AC:                                       .csab_copy_rest_rel:
+[ 204]    08AC: 8A 04                                 mov al,[si]
+[ 205]    08AE: 88 05                                 mov [di],al
+[ 206]    08B0: 3C 00                                 cmp al,0
+[ 207]    08B2: 74 04                                 je .csab_overwrite_rel
+[ 208]    08B4: 46                                    inc si
+[ 209]    08B5: 47                                    inc di
+[ 210]    08B6: EB F4                                 jmp .csab_copy_rest_rel
+[ 211]    08B8:                                       .csab_overwrite_rel:
+[ 212]        :                                       ; Copiar search_path a buffer_ruta
+[ 213]    08B8: BE D0 06                              lea si, search_path
+[ 214]    08BB: BF 21 06                              lea di, buffer_ruta
+[ 215]    08BE:                                       .csab_cp_back_rel:
+[ 216]    08BE: 8A 04                                 mov al,[si]
+[ 217]    08C0: 88 05                                 mov [di],al
+[ 218]    08C2: 46                                    inc si
+[ 219]    08C3: 47                                    inc di
+[ 220]    08C4: 3C 00                                 cmp al,0
+[ 221]    08C6: 75 F6                                 jne .csab_cp_back_rel
+[ 222]        :                                       ; Reiniciar SI para continuar flujo normal (reemplazo de '/','\\' normalización)
+[ 223]    08C8: BE 21 06                              lea si, buffer_ruta
+[ 224]        :                                       
+[ 225]    08CB:                                       .csab_check_drivepattern:
+[ 226]        :                                       
+[ 227]        :                                       ; Si comienza con <letra>'.' convertir a <letra>':'
+[ 228]    08CB: 8A 04                                 mov al, [si]
+[ 229]    08CD: 3C 00                                 cmp al, 0
+[ 230]    08CF: 74 1C                                 je .csab_normalize     ; cadena vacía
+[ 231]    08D1: 8A 64 01                              mov ah, [si+1]
+[ 232]    08D4: 80 FC 2E                              cmp ah, '.'
+[ 233]    08D7: 75 04                                 jne .csab_loop
+[ 234]    08D9: C6 44 01 3A                           mov byte ptr [si+1], ':'
+[ 235]        :                                       
+[ 236]    08DD:                                       .csab_loop:
+[ 237]        :                                       ; Reemplazar '/' con '\'
+[ 238]    08DD: 8A 04                                 mov al, [si]
+[ 239]    08DF: 3C 00                                 cmp al, 0
+[ 240]    08E1: 74 0A                                 je .csab_normalize
+[ 241]    08E3: 3C 2F                                 cmp al, '/'
+[ 242]    08E5: 75 03                                 jne .csab_next
+[ 243]    08E7: C6 04 5C                              mov byte ptr [si], 92      ; '\\' = ASCII 92
+[ 244]    08EA:                                       .csab_next:
+[ 245]    08EA: 46                                    inc si
+[ 246]    08EB: EB F0                                 jmp .csab_loop
+[ 247]        :                                       
+[ 248]    08ED:                                       .csab_normalize:
+[ 249]        :                                       ; Eliminar duplicados de '\' y recortar trailing '\'  y espacios
+[ 250]    08ED: BE 21 06                              lea si, buffer_ruta
+[ 251]    08F0: BF 21 06                              lea di, buffer_ruta
+[ 252]    08F3: 33 DB                                 xor bx, bx              ; BX = último carácter no-backslash
+[ 253]        :                                       
+[ 254]    08F5:                                       .csab_norm_loop:
+[ 255]    08F5: 8A 04                                 mov al, [si]
+[ 256]    08F7: 3C 00                                 cmp al, 0
+[ 257]    08F9: 74 22                                 je .csab_trim
+[ 258]        :                                       
+[ 259]        :                                       ; Si es '\', verificar si el anterior también lo era
+[ 260]    08FB: 3C 5C                                 cmp al, 92              ; '\'
+[ 261]    08FD: 75 0E                                 jne .csab_norm_copy
+[ 262]        :                                       
+[ 263]        :                                       ; Verificar si DI apunta a una posición donde ya hay '\'
+[ 264]    08FF: 81 FF 21 06                           cmp di, offset buffer_ruta
+[ 265]    0903: 74 08                                 je .csab_norm_copy      ; primera posición, copiar
+[ 266]    0905: 8A 65 FF                              mov ah, [di-1]
+[ 267]    0908: 80 FC 5C                              cmp ah, 92
+[ 268]    090B: 74 0D                                 je .csab_norm_skip      ; duplicado, omitir
+[ 269]        :                                       
+[ 270]    090D:                                       .csab_norm_copy:
+[ 271]    090D: 88 05                                 mov [di], al
+[ 272]    090F: 47                                    inc di
+[ 273]        :                                       ; Recordar posición si no es '\' ni espacio
+[ 274]    0910: 3C 5C                                 cmp al, 92
+[ 275]    0912: 74 06                                 je .csab_norm_continue
+[ 276]    0914: 3C 20                                 cmp al, ' '
+[ 277]    0916: 74 02                                 je .csab_norm_continue
+[ 278]    0918: 8B DF                                 mov bx, di              ; BX = última posición de carácter significativo
+[ 279]        :                                       
+[ 280]    091A:                                       .csab_norm_continue:
+[ 281]    091A:                                       .csab_norm_skip:
+[ 282]    091A: 46                                    inc si
+[ 283]    091B: EB D8                                 jmp .csab_norm_loop
+[ 284]        :                                       
+[ 285]    091D:                                       .csab_trim:
+[ 286]        :                                       ; Recortar trailing '\' y espacios (excepto si es C:\ raíz)
+[ 287]    091D: 81 FF 21 06                           cmp di, offset buffer_ruta
+[ 288]    0921: 74 1D                                 je .csab_done           ; cadena vacía
+[ 289]        :                                       
+[ 290]        :                                       ; Retroceder DI eliminando '\' y espacios al final
+[ 291]    0923:                                       .csab_trim_loop:
+[ 292]    0923: 81 FF 21 06                           cmp di, offset buffer_ruta
+[ 293]    0927: 76 17                                 jbe .csab_done
+[ 294]    0929: 4F                                    dec di
+[ 295]    092A: 8A 05                                 mov al, [di]
+[ 296]    092C: 3C 5C                                 cmp al, 92              ; '\'
+[ 297]    092E: 74 07                                 je .csab_check_root
+[ 298]    0930: 3C 20                                 cmp al, ' '
+[ 299]    0932: 74 EF                                 je .csab_trim_loop
+[ 300]        :                                       ; No es '\' ni espacio, restaurar y salir
+[ 301]    0934: 47                                    inc di
+[ 302]    0935: EB 09                                 jmp .csab_done
+[ 303]        :                                       
+[ 304]    0937:                                       .csab_check_root:
+[ 305]        :                                       ; Si es '\' verificar si es raíz (C:\)
+[ 306]    0937: 81 FF 23 06                           cmp di, offset buffer_ruta + 2
+[ 307]    093B: 75 E6                                 jne .csab_trim_loop     ; no es raíz, eliminar
+[ 308]        :                                       ; Es raíz, restaurar y salir
+[ 309]    093D: 47                                    inc di
+[ 310]    093E: EB 00                                 jmp .csab_done
+[ 311]        :                                       
+[ 312]    0940:                                       .csab_done:
+[ 313]        :                                       ; Terminar cadena
+[ 314]    0940: C6 05 00                              mov byte ptr [di], 0
+[ 315]        :                                       
+[ 316]    0943: 5F                                    pop di
+[ 317]    0944: 5E                                    pop si
+[ 318]    0945: 5B                                    pop bx
+[ 319]    0946: 58                                    pop ax
+[ 320]    0947: C3                                    ret
+[ 321]        :                                       ;------ SUBRUTINA: listar_archivos_asm ------
+[ 322]        :                                       ; Lista todos los archivos .asm en el directorio actual
+[ 323]        :                                       ; Usa: INT 21h funciones 1Ah (set DTA), 4Eh (find first), 4Fh (find next)
+[ 324]    0948:                                       listar_archivos_asm:
+[ 325]    0948: 50                                    push ax
+[ 326]    0949: 51                                    push cx
+[ 327]    094A: 52                                    push dx
+[ 328]    094B: 56                                    push si
+[ 329]    094C: 57                                    push di
+[ 330]        :                                       
+[ 331]        :                                       ; Construir ruta absoluta X:\path\*.asm en search_path
+[ 332]        :                                       ; 1) Obtener unidad actual
+[ 333]    094D: B4 19                                 mov ah, 19h
+[ 334]    094F: CD 21                                 int 21h
+[ 335]    0951: 04 41                                 add al, 'A'
+[ 336]    0953: BF D0 06                              lea di, search_path
+[ 337]    0956: 88 05                                 mov [di], al
+[ 338]    0958: 47                                    inc di
+[ 339]    0959: C6 05 3A                              mov byte ptr [di], ':'
+[ 340]    095C: 47                                    inc di
+[ 341]    095D: C6 05 5C                              mov byte ptr [di], 92  ; backslash
+[ 342]    0960: 47                                    inc di
+[ 343]        :                                       
+[ 344]        :                                       ; 2) Obtener directorio actual
+[ 345]    0961: B4 47                                 mov ah, 47h
+[ 346]    0963: B2 00                                 mov dl, 0
+[ 347]    0965: BE A1 05                              lea si, buffer_dir
+[ 348]    0968: CD 21                                 int 21h
+[ 349]        :                                       
+[ 350]        :                                       ; 3) Copiar directorio a search_path
+[ 351]    096A: BE A1 05                              lea si, buffer_dir
+[ 352]    096D:                                       .laa_cp_dir:
+[ 353]    096D: 8A 04                                 mov al, [si]
+[ 354]    096F: 3C 00                                 cmp al, 0
+[ 355]    0971: 74 06                                 je .laa_add_mask
+[ 356]    0973: 88 05                                 mov [di], al
+[ 357]    0975: 46                                    inc si
+[ 358]    0976: 47                                    inc di
+[ 359]    0977: EB F4                                 jmp .laa_cp_dir
+[ 360]        :                                       
+[ 361]    0979:                                       .laa_add_mask:
+[ 362]        :                                       ; 4) Asegurar separador antes de *.asm
+[ 363]    0979: 81 FF D3 06                           cmp di, offset search_path+3  ; justo después de X:\
+[ 364]    097D: 74 0C                                 je .laa_append
+[ 365]    097F: 4F                                    dec di
+[ 366]    0980: 8A 05                                 mov al, [di]
+[ 367]    0982: 47                                    inc di
+[ 368]    0983: 3C 5C                                 cmp al, 92
+[ 369]    0985: 74 04                                 je .laa_append
+[ 370]    0987: C6 05 5C                              mov byte ptr [di], 92
+[ 371]    098A: 47                                    inc di
+[ 372]        :                                       
+[ 373]    098B:                                       .laa_append:
+[ 374]        :                                       ; 5) Anexar *.asm
+[ 375]    098B: C6 05 2A                              mov byte ptr [di], '*'
+[ 376]    098E: 47                                    inc di
+[ 377]    098F: C6 05 2E                              mov byte ptr [di], '.'
+[ 378]    0992: 47                                    inc di
+[ 379]    0993: C6 05 61                              mov byte ptr [di], 'a'
+[ 380]    0996: 47                                    inc di
+[ 381]    0997: C6 05 73                              mov byte ptr [di], 's'
+[ 382]    099A: 47                                    inc di
+[ 383]    099B: C6 05 6D                              mov byte ptr [di], 'm'
+[ 384]    099E: 47                                    inc di
+[ 385]    099F: C6 05 00                              mov byte ptr [di], 0
+[ 386]        :                                       
+[ 387]        :                                       ; Establecer DTA
+[ 388]    09A2: B4 1A                                 mov ah, 1Ah
+[ 389]    09A4: BA A1 06                              lea dx, dta_buffer
+[ 390]    09A7: CD 21                                 int 21h
+[ 391]        :                                       
+[ 392]        :                                       ; Buscar primer archivo con ruta absoluta
+[ 393]    09A9: B4 4E                                 mov ah, 4Eh         ; find first
+[ 394]    09AB: B9 00 00                              mov cx, 0           ; atributos: archivos normales
+[ 395]    09AE: BA D0 06                              lea dx, search_path
+[ 396]    09B1: CD 21                                 int 21h
+[ 397]    09B3: 72 31                                 jc .laa_no_archivos
+[ 398]        :                                       
+[ 399]        :                                       ; Imprimir encabezado
+[ 400]    09B5: BE C5 03                              lea si, mensaje_archivos
+[ 401]    09B8: E8 47 03                              call print_string
+[ 402]        :                                       
+[ 403]    09BB:                                       .laa_mostrar:
+[ 404]        :                                       ; El nombre del archivo está en DTA offset 30 (1Eh)
+[ 405]    09BB: BE A1 06                              lea si, dta_buffer
+[ 406]    09BE: 83 C6 1E                              add si, 30
+[ 407]    09C1: E8 3E 03                              call print_string
+[ 408]    09C4: 50 56 EB 03 0D 0A 00 BE C8 09 2E 8A   printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 409]        :                                       
+[ 410]        :                                       ; Buscar siguiente
+[ 411]    09DE: B4 4F                                 mov ah, 4Fh         ; find next
+[ 412]    09E0: CD 21                                 int 21h
+[ 413]    09E2: 73 D7                                 jnc .laa_mostrar
+[ 414]    09E4: EB 20                                 jmp .laa_fin
+[ 415]        :                                       
+[ 416]    09E6:                                       .laa_no_archivos:
+[ 417]        :                                       ; Mostrar mensaje explícito si no hay archivos
+[ 418]    09E6: BE E9 03                              lea si, mensaje_noAsm
+[ 419]    09E9: E8 16 03                              call print_string
+[ 420]    09EC: 50 56 EB 03 0D 0A 00 BE F0 09 2E 8A   printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 421]        :                                       
+[ 422]    0A06:                                       .laa_fin:
+[ 423]    0A06: 5F                                    pop di
+[ 424]    0A07: 5E                                    pop si
+[ 425]    0A08: 5A                                    pop dx
+[ 426]    0A09: 59                                    pop cx
+[ 427]    0A0A: 58                                    pop ax
+[ 428]    0A0B: C3                                    ret
+[ 429]        :                                       
+[ 430]        :                                       
+[ 431]        :                                       ;------ SUBRUTINA: construir_nombre_salida ------
+[ 432]        :                                       ; Toma el nombre del archivo de entrada y genera el nombre de salida
+[ 433]        :                                       ; cambiando la extensión .asm por .lst
+[ 434]        :                                       ; Entrada: nombre_entrada (string terminado en 0)
+[ 435]        :                                       ; Salida: nombre_salida (string terminado en 0)
+[ 436]    0A0C:                                       construir_nombre_salida:
+[ 437]    0A0C: 50                                    push ax
+[ 438]    0A0D: 56                                    push si
+[ 439]    0A0E: 57                                    push di
+[ 440]        :                                       
+[ 441]    0A0F: BE 11 04                              lea si, nombre_entrada
+[ 442]    0A12: BF 51 04                              lea di, nombre_salida
+[ 443]        :                                       
+[ 444]        :                                       ; Copiar hasta encontrar el punto o fin de cadena
+[ 445]    0A15:                                       .cns_copiar:
+[ 446]    0A15: 8A 04                                 mov al, [si]
+[ 447]    0A17: 3C 00                                 cmp al, 0
+[ 448]    0A19: 74 0A                                 je .cns_agregar_ext
+[ 449]    0A1B: 3C 2E                                 cmp al, '.'
+[ 450]    0A1D: 74 06                                 je .cns_agregar_ext
+[ 451]    0A1F: 88 05                                 mov [di], al
+[ 452]    0A21: 46                                    inc si
+[ 453]    0A22: 47                                    inc di
+[ 454]    0A23: EB F0                                 jmp .cns_copiar
+[ 455]        :                                       
+[ 456]    0A25:                                       .cns_agregar_ext:
+[ 457]        :                                       ; Agregar extensión .lst
+[ 458]    0A25: C6 05 2E                              mov byte ptr [di], '.'
+[ 459]    0A28: 47                                    inc di
+[ 460]    0A29: C6 05 6C                              mov byte ptr [di], 'l'
+[ 461]    0A2C: 47                                    inc di
+[ 462]    0A2D: C6 05 73                              mov byte ptr [di], 's'
+[ 463]    0A30: 47                                    inc di
+[ 464]    0A31: C6 05 74                              mov byte ptr [di], 't'
+[ 465]    0A34: 47                                    inc di
+[ 466]    0A35: C6 05 00                              mov byte ptr [di], 0
+[ 467]        :                                       
+[ 468]    0A38: 5F                                    pop di
+[ 469]    0A39: 5E                                    pop si
+[ 470]    0A3A: 58                                    pop ax
+[ 471]    0A3B: C3                                    ret
+[ 472]        :                                       
+[ 473]        :                                       
+[ 474]        :                                       ;------ SUBRUTINA: abrir_archivo_entrada ------
+[ 475]        :                                       ; Abre el archivo de entrada en modo lectura
+[ 476]        :                                       ; Entrada: nombre_entrada
+[ 477]        :                                       ; Salida: handle_entrada (0 si error)
+[ 478]    0A3C:                                       abrir_archivo_entrada:
+[ 479]    0A3C: 50                                    push ax
+[ 480]    0A3D: 53                                    push bx
+[ 481]    0A3E: 52                                    push dx
+[ 482]    0A3F: 56                                    push si
+[ 483]    0A40: 57                                    push di
+[ 484]        :                                       ; Construir ruta absoluta si nombre_entrada no es absoluto
+[ 485]    0A41: BE 11 04                              lea si, nombre_entrada
+[ 486]    0A44: 8A 04                                 mov al, [si]
+[ 487]    0A46: 8A 64 01                              mov ah, [si+1]
+[ 488]    0A49: 80 FC 3A                              cmp ah, ':'
+[ 489]    0A4C: 74 70                                 je .aae_use_input         ; ya es X:...
+[ 490]    0A4E: 3C 5C                                 cmp al, 92                ; empieza con '\\' ? -> raíz de unidad actual
+[ 491]    0A50: 74 4A                                 je .aae_rooted
+[ 492]        :                                       ; relativo: X:\buffer_dir\nombre
+[ 493]    0A52: B4 19                                 mov ah, 19h
+[ 494]    0A54: CD 21                                 int 21h
+[ 495]    0A56: 04 41                                 add al, 'A'
+[ 496]    0A58: BF D0 06                              lea di, search_path
+[ 497]    0A5B: 88 05                                 mov [di], al
+[ 498]    0A5D: 47                                    inc di
+[ 499]    0A5E: C6 05 3A                              mov byte ptr [di], ':'
+[ 500]    0A61: 47                                    inc di
+[ 501]    0A62: C6 05 5C                              mov byte ptr [di], 92
+[ 502]    0A65: 47                                    inc di
+[ 503]        :                                       ; obtener dir actual
+[ 504]    0A66: B4 47                                 mov ah, 47h
+[ 505]    0A68: B2 00                                 mov dl, 0
+[ 506]    0A6A: BE A1 05                              lea si, buffer_dir
+[ 507]    0A6D: CD 21                                 int 21h
+[ 508]        :                                       ; copiar buffer_dir
+[ 509]    0A6F: BE A1 05                              lea si, buffer_dir
+[ 510]    0A72:                                       .aae_cp_dir:
+[ 511]    0A72: 8A 04                                 mov al, [si]
+[ 512]    0A74: 3C 00                                 cmp al, 0
+[ 513]    0A76: 74 06                                 je .aae_sep
+[ 514]    0A78: 88 05                                 mov [di], al
+[ 515]    0A7A: 46                                    inc si
+[ 516]    0A7B: 47                                    inc di
+[ 517]    0A7C: EB F4                                 jmp .aae_cp_dir
+[ 518]    0A7E:                                       .aae_sep:
+[ 519]    0A7E: 4F                                    dec di
+[ 520]    0A7F: 8A 05                                 mov al, [di]
+[ 521]    0A81: 47                                    inc di
+[ 522]    0A82: 3C 5C                                 cmp al, 92
+[ 523]    0A84: 74 04                                 je .aae_append_name
+[ 524]    0A86: C6 05 5C                              mov byte ptr [di], 92
+[ 525]    0A89: 47                                    inc di
+[ 526]    0A8A:                                       .aae_append_name:
+[ 527]        :                                       ; anexar nombre_entrada
+[ 528]    0A8A: BE 11 04                              lea si, nombre_entrada
+[ 529]    0A8D:                                       .aae_cp_name:
+[ 530]    0A8D: 8A 04                                 mov al, [si]
+[ 531]    0A8F: 88 05                                 mov [di], al
+[ 532]    0A91: 46                                    inc si
+[ 533]    0A92: 47                                    inc di
+[ 534]    0A93: 3C 00                                 cmp al, 0
+[ 535]    0A95: 75 F6                                 jne .aae_cp_name
+[ 536]    0A97: BA D0 06                              lea dx, search_path
+[ 537]    0A9A: EB 25                                 jmp .aae_do_open
+[ 538]        :                                       
+[ 539]    0A9C:                                       .aae_rooted:
+[ 540]        :                                       ; construir X: + nombre_entrada (que empieza con '\\')
+[ 541]    0A9C: B4 19                                 mov ah, 19h
+[ 542]    0A9E: CD 21                                 int 21h
+[ 543]    0AA0: 04 41                                 add al, 'A'
+[ 544]    0AA2: BF D0 06                              lea di, search_path
+[ 545]    0AA5: 88 05                                 mov [di], al
+[ 546]    0AA7: 47                                    inc di
+[ 547]    0AA8: C6 05 3A                              mov byte ptr [di], ':'
+[ 548]    0AAB: 47                                    inc di
+[ 549]        :                                       ; copiar nombre_entrada tal como viene (con '\\' inicial)
+[ 550]    0AAC: BE 11 04                              lea si, nombre_entrada
+[ 551]    0AAF:                                       .aae_cp_root:
+[ 552]    0AAF: 8A 04                                 mov al, [si]
+[ 553]    0AB1: 88 05                                 mov [di], al
+[ 554]    0AB3: 46                                    inc si
+[ 555]    0AB4: 47                                    inc di
+[ 556]    0AB5: 3C 00                                 cmp al, 0
+[ 557]    0AB7: 75 F6                                 jne .aae_cp_root
+[ 558]    0AB9: BA D0 06                              lea dx, search_path
+[ 559]    0ABC: EB 03                                 jmp .aae_do_open
+[ 560]        :                                       
+[ 561]    0ABE:                                       .aae_use_input:
+[ 562]    0ABE: BA 11 04                              lea dx, nombre_entrada
+[ 563]        :                                       
+[ 564]    0AC1:                                       .aae_do_open:
+[ 565]    0AC1: B4 3D                                 mov ah, 3Dh         ; función DOS: abrir archivo
+[ 566]    0AC3: B0 00                                 mov al, 0           ; modo: solo lectura
+[ 567]    0AC5: CD 21                                 int 21h
+[ 568]        :                                       
+[ 569]    0AC7: 72 05                                 jc .aae_error       ; si carry set, hubo error
+[ 570]    0AC9: A3 91 04                              mov [handle_entrada], ax
+[ 571]    0ACC: EB 06                                 jmp .aae_fin
+[ 572]        :                                       
+[ 573]    0ACE:                                       .aae_error:
+[ 574]    0ACE: C7 06 91 04 00 00                     mov word ptr [handle_entrada], 0
+[ 575]        :                                       
+[ 576]    0AD4:                                       .aae_fin:
+[ 577]    0AD4: 5F                                    pop di
+[ 578]    0AD5: 5E                                    pop si
+[ 579]    0AD6: 5A                                    pop dx
+[ 580]    0AD7: 5B                                    pop bx
+[ 581]    0AD8: 58                                    pop ax
+[ 582]    0AD9: C3                                    ret
+[ 583]        :                                       
+[ 584]        :                                       ;------ SUBRUTINA: crear_archivo_salida ------
+[ 585]        :                                       ; Crea el archivo de salida en modo escritura
+[ 586]        :                                       ; Entrada: nombre_salida
+[ 587]        :                                       ; Salida: handle_salida (0 si error)
+[ 588]    0ADA:                                       crear_archivo_salida:
+[ 589]    0ADA: 50                                    push ax
+[ 590]    0ADB: 51                                    push cx
+[ 591]    0ADC: 53                                    push bx
+[ 592]    0ADD: 52                                    push dx
+[ 593]    0ADE: 56                                    push si
+[ 594]    0ADF: 57                                    push di
+[ 595]        :                                       ; Construir ruta absoluta si nombre_salida no es absoluta
+[ 596]    0AE0: BE 51 04                              lea si, nombre_salida
+[ 597]    0AE3: 8A 04                                 mov al, [si]
+[ 598]    0AE5: 8A 64 01                              mov ah, [si+1]
+[ 599]    0AE8: 80 FC 3A                              cmp ah, ':'
+[ 600]    0AEB: 74 70                                 je .cas_use_input
+[ 601]    0AED: 3C 5C                                 cmp al, 92
+[ 602]    0AEF: 74 4A                                 je .cas_rooted
+[ 603]        :                                       ; relativo: X:\buffer_dir\nombre_salida
+[ 604]    0AF1: B4 19                                 mov ah, 19h
+[ 605]    0AF3: CD 21                                 int 21h
+[ 606]    0AF5: 04 41                                 add al, 'A'
+[ 607]    0AF7: BF D0 06                              lea di, search_path
+[ 608]    0AFA: 88 05                                 mov [di], al
+[ 609]    0AFC: 47                                    inc di
+[ 610]    0AFD: C6 05 3A                              mov byte ptr [di], ':'
+[ 611]    0B00: 47                                    inc di
+[ 612]    0B01: C6 05 5C                              mov byte ptr [di], 92
+[ 613]    0B04: 47                                    inc di
+[ 614]    0B05: B4 47                                 mov ah, 47h
+[ 615]    0B07: B2 00                                 mov dl, 0
+[ 616]    0B09: BE A1 05                              lea si, buffer_dir
+[ 617]    0B0C: CD 21                                 int 21h
+[ 618]    0B0E: BE A1 05                              lea si, buffer_dir
+[ 619]    0B11:                                       .cas_cp_dir:
+[ 620]    0B11: 8A 04                                 mov al, [si]
+[ 621]    0B13: 3C 00                                 cmp al, 0
+[ 622]    0B15: 74 06                                 je .cas_sep
+[ 623]    0B17: 88 05                                 mov [di], al
+[ 624]    0B19: 46                                    inc si
+[ 625]    0B1A: 47                                    inc di
+[ 626]    0B1B: EB F4                                 jmp .cas_cp_dir
+[ 627]    0B1D:                                       .cas_sep:
+[ 628]    0B1D: 4F                                    dec di
+[ 629]    0B1E: 8A 05                                 mov al, [di]
+[ 630]    0B20: 47                                    inc di
+[ 631]    0B21: 3C 5C                                 cmp al, 92
+[ 632]    0B23: 74 04                                 je .cas_append
+[ 633]    0B25: C6 05 5C                              mov byte ptr [di], 92
+[ 634]    0B28: 47                                    inc di
+[ 635]    0B29:                                       .cas_append:
+[ 636]    0B29: BE 51 04                              lea si, nombre_salida
+[ 637]    0B2C:                                       .cas_cp_name:
+[ 638]    0B2C: 8A 04                                 mov al, [si]
+[ 639]    0B2E: 88 05                                 mov [di], al
+[ 640]    0B30: 46                                    inc si
+[ 641]    0B31: 47                                    inc di
+[ 642]    0B32: 3C 00                                 cmp al, 0
+[ 643]    0B34: 75 F6                                 jne .cas_cp_name
+[ 644]    0B36: BA D0 06                              lea dx, search_path
+[ 645]    0B39: EB 25                                 jmp .cas_do_create
+[ 646]        :                                       
+[ 647]    0B3B:                                       .cas_rooted:
+[ 648]    0B3B: B4 19                                 mov ah, 19h
+[ 649]    0B3D: CD 21                                 int 21h
+[ 650]    0B3F: 04 41                                 add al, 'A'
+[ 651]    0B41: BF D0 06                              lea di, search_path
+[ 652]    0B44: 88 05                                 mov [di], al
+[ 653]    0B46: 47                                    inc di
+[ 654]    0B47: C6 05 3A                              mov byte ptr [di], ':'
+[ 655]    0B4A: 47                                    inc di
+[ 656]    0B4B: BE 51 04                              lea si, nombre_salida
+[ 657]    0B4E:                                       .cas_cp_root:
+[ 658]    0B4E: 8A 04                                 mov al, [si]
+[ 659]    0B50: 88 05                                 mov [di], al
+[ 660]    0B52: 46                                    inc si
+[ 661]    0B53: 47                                    inc di
+[ 662]    0B54: 3C 00                                 cmp al, 0
+[ 663]    0B56: 75 F6                                 jne .cas_cp_root
+[ 664]    0B58: BA D0 06                              lea dx, search_path
+[ 665]    0B5B: EB 03                                 jmp .cas_do_create
+[ 666]        :                                       
+[ 667]    0B5D:                                       .cas_use_input:
+[ 668]    0B5D: BA 51 04                              lea dx, nombre_salida
+[ 669]        :                                       
+[ 670]    0B60:                                       .cas_do_create:
+[ 671]    0B60: B4 3C                                 mov ah, 3Ch         ; función DOS: crear archivo
+[ 672]    0B62: B9 00 00                              mov cx, 0           ; atributos: normal
+[ 673]    0B65: CD 21                                 int 21h
+[ 674]        :                                       
+[ 675]    0B67: 72 05                                 jc .cas_error
+[ 676]    0B69: A3 93 04                              mov [handle_salida], ax
+[ 677]    0B6C: EB 06                                 jmp .cas_fin
+[ 678]        :                                       
+[ 679]    0B6E:                                       .cas_error:
+[ 680]    0B6E: C7 06 93 04 00 00                     mov word ptr [handle_salida], 0
+[ 681]        :                                       
+[ 682]    0B74:                                       .cas_fin:
+[ 683]    0B74: 5F                                    pop di
+[ 684]    0B75: 5E                                    pop si
+[ 685]    0B76: 5A                                    pop dx
+[ 686]    0B77: 5B                                    pop bx
+[ 687]    0B78: 59                                    pop cx
+[ 688]    0B79: 58                                    pop ax
+[ 689]    0B7A: C3                                    ret
+[ 690]        :                                       
+[ 691]        :                                       
+[ 692]        :                                       ;------ SUBRUTINA: leer_linea ------
+[ 693]        :                                       ; Lee una línea del archivo de entrada (hasta encontrar CR/LF o EOF)
+[ 694]        :                                       ; Entrada: handle_entrada
+[ 695]        :                                       ; Salida: buffer_linea con la línea leída
+[ 696]        :                                       ;         longitud_linea = número de caracteres (incluyendo CR/LF)
+[ 697]        :                                       ;         CF=1 si EOF o error
+[ 698]    0B7B:                                       leer_linea:
+[ 699]    0B7B: 50                                    push ax
+[ 700]    0B7C: 53                                    push bx
+[ 701]    0B7D: 51                                    push cx
+[ 702]    0B7E: 52                                    push dx
+[ 703]    0B7F: 56                                    push si
+[ 704]        :                                       
+[ 705]    0B80: BE 95 04                              lea si, buffer_linea
+[ 706]    0B83: 33 C9                                 xor cx, cx          ; contador de caracteres
+[ 707]        :                                       
+[ 708]    0B85:                                       .ll_leer_char:
+[ 709]        :                                       ; Leer un caracter
+[ 710]    0B85: B4 3F                                 mov ah, 3Fh         ; función DOS: leer archivo
+[ 711]    0B87: 8B 1E 91 04                           mov bx, [handle_entrada]
+[ 712]    0B8B: 8B D6                                 mov dx, si
+[ 713]    0B8D: B9 01 00                              mov cx, 1
+[ 714]    0B90: CD 21                                 int 21h
+[ 715]        :                                       
+[ 716]    0B92: 72 26                                 jc .ll_error        ; error de lectura
+[ 717]    0B94: 3D 00 00                              cmp ax, 0           ; EOF?
+[ 718]    0B97: 74 17                                 je .ll_eof
+[ 719]        :                                       
+[ 720]        :                                       ; Caracter leído correctamente
+[ 721]    0B99: 8A 04                                 mov al, [si]
+[ 722]    0B9B: 46                                    inc si
+[ 723]    0B9C: A1 95 05                              mov ax, [longitud_linea]
+[ 724]    0B9F: 40                                    inc ax
+[ 725]    0BA0: A3 95 05                              mov [longitud_linea], ax
+[ 726]        :                                       
+[ 727]        :                                       ; Verificar si es LF (fin de línea)
+[ 728]    0BA3: 4E                                    dec si
+[ 729]    0BA4: 8A 04                                 mov al, [si]
+[ 730]    0BA6: 46                                    inc si
+[ 731]    0BA7: 3C 0A                                 cmp al, 10          ; LF
+[ 732]    0BA9: 74 02                                 je .ll_fin_linea
+[ 733]        :                                       
+[ 734]    0BAB: EB D8                                 jmp .ll_leer_char
+[ 735]        :                                       
+[ 736]    0BAD:                                       .ll_fin_linea:
+[ 737]    0BAD: F8                                    clc                 ; clear carry (éxito)
+[ 738]    0BAE: EB 0B                                 jmp .ll_salir
+[ 739]        :                                       
+[ 740]    0BB0:                                       .ll_eof:
+[ 741]        :                                       ; Si leímos algo antes del EOF, es una línea válida
+[ 742]    0BB0: 83 3E 95 05 00                        cmp word ptr [longitud_linea], 0
+[ 743]    0BB5: 74 03                                 je .ll_error
+[ 744]    0BB7: F8                                    clc
+[ 745]    0BB8: EB 01                                 jmp .ll_salir
+[ 746]        :                                       
+[ 747]    0BBA:                                       .ll_error:
+[ 748]    0BBA: F9                                    stc                 ; set carry (error/EOF)
+[ 749]        :                                       
+[ 750]    0BBB:                                       .ll_salir:
+[ 751]    0BBB: 5E                                    pop si
+[ 752]    0BBC: 5A                                    pop dx
+[ 753]    0BBD: 59                                    pop cx
+[ 754]    0BBE: 5B                                    pop bx
+[ 755]    0BBF: 58                                    pop ax
+[ 756]    0BC0: C3                                    ret
+[ 757]        :                                       
+[ 758]        :                                       
+[ 759]        :                                       ;------ SUBRUTINA: convertir_numero ------
+[ 760]        :                                       ; Convierte un número de 0-999 a string de 3 dígitos
+[ 761]        :                                       ; Entrada: AX = número
+[ 762]        :                                       ; Salida: buffer_numero con 3 dígitos + 0
+[ 763]    0BC1:                                       convertir_numero:
+[ 764]    0BC1: 50                                    push ax
+[ 765]    0BC2: 53                                    push bx
+[ 766]    0BC3: 51                                    push cx
+[ 767]    0BC4: 52                                    push dx
+[ 768]    0BC5: 57                                    push di
+[ 769]        :                                       
+[ 770]    0BC6: BF 99 05                              lea di, buffer_numero
+[ 771]    0BC9: B9 03 00                              mov cx, 3           ; 3 dígitos
+[ 772]        :                                       
+[ 773]    0BCC:                                       .cn_extraer:
+[ 774]    0BCC: 33 D2                                 xor dx, dx
+[ 775]    0BCE: BB 0A 00                              mov bx, 10
+[ 776]    0BD1: F7 F3                                 div bx              ; AX = AX/10, DX = resto
+[ 777]    0BD3: 52                                    push dx             ; guardar dígito
+[ 778]    0BD4: E2 F6                                 loop .cn_extraer
+[ 779]        :                                       
+[ 780]        :                                       ; Escribir dígitos en orden correcto
+[ 781]    0BD6: BF 99 05                              lea di, buffer_numero
+[ 782]    0BD9: 5A                                    pop dx
+[ 783]    0BDA: 80 C2 30                              add dl, '0'
+[ 784]    0BDD: 88 15                                 mov [di], dl
+[ 785]    0BDF: 47                                    inc di
+[ 786]    0BE0: 5A                                    pop dx
+[ 787]    0BE1: 80 C2 30                              add dl, '0'
+[ 788]    0BE4: 88 15                                 mov [di], dl
+[ 789]    0BE6: 47                                    inc di
+[ 790]    0BE7: 5A                                    pop dx
+[ 791]    0BE8: 80 C2 30                              add dl, '0'
+[ 792]    0BEB: 88 15                                 mov [di], dl
+[ 793]    0BED: 47                                    inc di
+[ 794]    0BEE: C6 05 00                              mov byte ptr [di], 0
+[ 795]        :                                       
+[ 796]    0BF1: 5F                                    pop di
+[ 797]    0BF2: 5A                                    pop dx
+[ 798]    0BF3: 59                                    pop cx
+[ 799]    0BF4: 5B                                    pop bx
+[ 800]    0BF5: 58                                    pop ax
+[ 801]    0BF6: C3                                    ret
+[ 802]        :                                       
+[ 803]        :                                       
+[ 804]        :                                       ;------ SUBRUTINA: escribir_linea_salida ------
+[ 805]        :                                       ; Escribe en el archivo de salida: número de 3 dígitos + contenido de línea
+[ 806]        :                                       ; Entrada: handle_salida, acumulado, buffer_linea, longitud_linea
+[ 807]    0BF7:                                       escribir_linea_salida:
+[ 808]    0BF7: 50                                    push ax
+[ 809]    0BF8: 53                                    push bx
+[ 810]    0BF9: 51                                    push cx
+[ 811]    0BFA: 52                                    push dx
+[ 812]    0BFB: 56                                    push si
+[ 813]        :                                       
+[ 814]        :                                       ; Convertir acumulado a string de 3 dígitos
+[ 815]    0BFC: A1 97 05                              mov ax, [acumulado]
+[ 816]    0BFF: E8 BF FF                              call convertir_numero
+[ 817]        :                                       
+[ 818]        :                                       ; Escribir número (3 dígitos)
+[ 819]    0C02: B4 40                                 mov ah, 40h         ; función DOS: escribir archivo
+[ 820]    0C04: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 821]    0C08: BA 99 05                              lea dx, buffer_numero
+[ 822]    0C0B: B9 03 00                              mov cx, 3
+[ 823]    0C0E: CD 21                                 int 21h
+[ 824]        :                                       
+[ 825]        :                                       ; Escribir espacio
+[ 826]    0C10: C6 06 9D 05 20                        mov byte ptr [temp_char], ' '
+[ 827]    0C15: B4 40                                 mov ah, 40h
+[ 828]    0C17: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 829]    0C1B: BA 9D 05                              lea dx, temp_char
+[ 830]    0C1E: B9 01 00                              mov cx, 1
+[ 831]    0C21: CD 21                                 int 21h
+[ 832]        :                                       
+[ 833]        :                                       ; Escribir contenido de la línea
+[ 834]    0C23: B4 40                                 mov ah, 40h
+[ 835]    0C25: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 836]    0C29: BA 95 04                              lea dx, buffer_linea
+[ 837]    0C2C: 8B 0E 95 05                           mov cx, [longitud_linea]
+[ 838]    0C30: CD 21                                 int 21h
+[ 839]        :                                       
+[ 840]        :                                       ; Asegurar fin de línea: si la línea no termina con LF (10), agregar CRLF
+[ 841]    0C32: A1 95 05                              mov ax, [longitud_linea]
+[ 842]    0C35: 3D 00 00                              cmp ax, 0
+[ 843]    0C38: 74 10                                 je .esl_write_crlf
+[ 844]    0C3A: BE 95 04                              lea si, buffer_linea
+[ 845]    0C3D: 8B 1E 95 05                           mov bx, [longitud_linea]
+[ 846]    0C41: 4B                                    dec bx
+[ 847]    0C42: 03 F3                                 add si, bx
+[ 848]    0C44: 8A 04                                 mov al, [si]
+[ 849]    0C46: 3C 0A                                 cmp al, 10          ; LF?
+[ 850]    0C48: 74 0E                                 je .esl_skip_add
+[ 851]    0C4A:                                       .esl_write_crlf:
+[ 852]    0C4A: B4 40                                 mov ah, 40h
+[ 853]    0C4C: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 854]    0C50: BA CE 06                              lea dx, crlf
+[ 855]    0C53: B9 02 00                              mov cx, 2
+[ 856]    0C56: CD 21                                 int 21h
+[ 857]    0C58:                                       .esl_skip_add:
+[ 858]        :                                       
+[ 859]    0C58: 5E                                    pop si
+[ 860]    0C59: 5A                                    pop dx
+[ 861]    0C5A: 59                                    pop cx
+[ 862]    0C5B: 5B                                    pop bx
+[ 863]    0C5C: 58                                    pop ax
+[ 864]    0C5D: C3                                    ret
+[ 865]        :                                       
+[ 866]        :                                       
+[ 867]        :                                       ;------ SUBRUTINA: escribir_total_final ------
+[ 868]        :                                       ; Escribe solo el total acumulado como número de 3 dígitos y CRLF
+[ 869]        :                                       ; Entrada: handle_salida, acumulado
+[ 870]    0C5E:                                       escribir_total_final:
+[ 871]    0C5E: 50                                    push ax
+[ 872]    0C5F: 53                                    push bx
+[ 873]    0C60: 51                                    push cx
+[ 874]    0C61: 52                                    push dx
+[ 875]        :                                       
+[ 876]        :                                       ; Convertir acumulado
+[ 877]    0C62: A1 97 05                              mov ax, [acumulado]
+[ 878]    0C65: E8 59 FF                              call convertir_numero
+[ 879]        :                                       
+[ 880]        :                                       ; Escribir número (3 dígitos)
+[ 881]    0C68: B4 40                                 mov ah, 40h
+[ 882]    0C6A: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 883]    0C6E: BA 99 05                              lea dx, buffer_numero
+[ 884]    0C71: B9 03 00                              mov cx, 3
+[ 885]    0C74: CD 21                                 int 21h
+[ 886]        :                                       
+[ 887]        :                                       ; Escribir CRLF
+[ 888]    0C76: B4 40                                 mov ah, 40h
+[ 889]    0C78: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 890]    0C7C: BA CE 06                              lea dx, crlf
+[ 891]    0C7F: B9 02 00                              mov cx, 2
+[ 892]    0C82: CD 21                                 int 21h
+[ 893]        :                                       
+[ 894]    0C84: 5A                                    pop dx
+[ 895]    0C85: 59                                    pop cx
+[ 896]    0C86: 5B                                    pop bx
+[ 897]    0C87: 58                                    pop ax
+[ 898]    0C88: C3                                    ret
+[ 899]        :                                       
+[ 900]        :                                       
+[ 901]        :                                       ;------ SUBRUTINA: validar_extension_asm ------
+[ 902]        :                                       ; Verifica que nombre_entrada termine exactamente en .ASM (insensible a mayúsculas)
+[ 903]        :                                       ; Entrada: nombre_entrada (0-terminado)
+[ 904]        :                                       ; Salida: CF=0 válido, CF=1 inválido
+[ 905]    0C89:                                       validar_extension_asm:
+[ 906]    0C89: 50                                    push ax
+[ 907]    0C8A: 53                                    push bx
+[ 908]    0C8B: 56                                    push si
+[ 909]        :                                       
+[ 910]    0C8C: 33 DB                                 xor bx, bx              ; BX=0 si no hay punto
+[ 911]    0C8E: BE 11 04                              lea si, nombre_entrada
+[ 912]    0C91:                                       .vea_scan:
+[ 913]    0C91: 8A 04                                 mov al, [si]
+[ 914]    0C93: 3C 00                                 cmp al, 0
+[ 915]    0C95: 74 09                                 je .vea_check
+[ 916]    0C97: 3C 2E                                 cmp al, '.'
+[ 917]    0C99: 75 02                                 jne .vea_next
+[ 918]    0C9B: 8B DE                                 mov bx, si              ; guardar posición del último punto
+[ 919]    0C9D:                                       .vea_next:
+[ 920]    0C9D: 46                                    inc si
+[ 921]    0C9E: EB F1                                 jmp .vea_scan
+[ 922]        :                                       
+[ 923]    0CA0:                                       .vea_check:
+[ 924]    0CA0: 83 FB 00                              cmp bx, 0
+[ 925]    0CA3: 74 33                                 je .vea_invalid         ; no hay punto
+[ 926]    0CA5: 8B F3                                 mov si, bx
+[ 927]    0CA7: 46                                    inc si                  ; SI = después del '.'
+[ 928]        :                                       
+[ 929]    0CA8: 8A 04                                 mov al, [si]
+[ 930]    0CAA: 3C 00                                 cmp al, 0
+[ 931]    0CAC: 74 2A                                 je .vea_invalid
+[ 932]    0CAE: 24 DF                                 and al, 0DFh            ; a mayúscula
+[ 933]    0CB0: 3C 41                                 cmp al, 'A'
+[ 934]    0CB2: 75 24                                 jne .vea_invalid
+[ 935]    0CB4: 46                                    inc si
+[ 936]        :                                       
+[ 937]    0CB5: 8A 04                                 mov al, [si]
+[ 938]    0CB7: 3C 00                                 cmp al, 0
+[ 939]    0CB9: 74 1D                                 je .vea_invalid
+[ 940]    0CBB: 24 DF                                 and al, 0DFh
+[ 941]    0CBD: 3C 53                                 cmp al, 'S'
+[ 942]    0CBF: 75 17                                 jne .vea_invalid
+[ 943]    0CC1: 46                                    inc si
+[ 944]        :                                       
+[ 945]    0CC2: 8A 04                                 mov al, [si]
+[ 946]    0CC4: 3C 00                                 cmp al, 0
+[ 947]    0CC6: 74 10                                 je .vea_invalid
+[ 948]    0CC8: 24 DF                                 and al, 0DFh
+[ 949]    0CCA: 3C 4D                                 cmp al, 'M'
+[ 950]    0CCC: 75 0A                                 jne .vea_invalid
+[ 951]    0CCE: 46                                    inc si
+[ 952]        :                                       
+[ 953]    0CCF: 8A 04                                 mov al, [si]
+[ 954]    0CD1: 3C 00                                 cmp al, 0              ; debe terminar aquí
+[ 955]    0CD3: 75 03                                 jne .vea_invalid
+[ 956]        :                                       
+[ 957]    0CD5: F8                                    clc
+[ 958]    0CD6: EB 01                                 jmp .vea_end
+[ 959]        :                                       
+[ 960]    0CD8:                                       .vea_invalid:
+[ 961]    0CD8: F9                                    stc
+[ 962]        :                                       
+[ 963]    0CD9:                                       .vea_end:
+[ 964]    0CD9: 5E                                    pop si
+[ 965]    0CDA: 5B                                    pop bx
+[ 966]    0CDB: 58                                    pop ax
+[ 967]    0CDC: C3                                    ret
+[ 968]        :                                       
+[ 969]        :                                       
+[ 970]        :                                       ;------ SUBRUTINA: cerrar_archivos ------
+[ 971]        :                                       ; Cierra ambos archivos si están abiertos
+[ 972]    0CDD:                                       cerrar_archivos:
+[ 973]    0CDD: 50                                    push ax
+[ 974]    0CDE: 53                                    push bx
+[ 975]        :                                       
+[ 976]        :                                       ; Cerrar archivo de entrada
+[ 977]    0CDF: 83 3E 91 04 00                        cmp word ptr [handle_entrada], 0
+[ 978]    0CE4: 74 08                                 je .ca_skip_entrada
+[ 979]    0CE6: B4 3E                                 mov ah, 3Eh
+[ 980]    0CE8: 8B 1E 91 04                           mov bx, [handle_entrada]
+[ 981]    0CEC: CD 21                                 int 21h
+[ 982]        :                                       
+[ 983]    0CEE:                                       .ca_skip_entrada:
+[ 984]        :                                       ; Cerrar archivo de salida
+[ 985]    0CEE: 83 3E 93 04 00                        cmp word ptr [handle_salida], 0
+[ 986]    0CF3: 74 08                                 je .ca_skip_salida
+[ 987]    0CF5: B4 3E                                 mov ah, 3Eh
+[ 988]    0CF7: 8B 1E 93 04                           mov bx, [handle_salida]
+[ 989]    0CFB: CD 21                                 int 21h
+[ 990]        :                                       
+[ 991]    0CFD:                                       .ca_skip_salida:
+[ 992]    0CFD: 5B                                    pop bx
+[ 993]    0CFE: 58                                    pop ax
+[ 994]    0CFF: C3                                    ret
+[ 995]        :                                       
+[ 996]        :                                       
+[ 997]        :                                       ;==============
+[ 998]        :                                       ;   Macro Funciones
+[ 999]        :                                       ;==============
+[1000]    0D00: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[1001]    0D14: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[1002]        :                                       
+[1003]        :                                       
+[1004]        :                                       ;==============
+[1005]        :                                       ;   Programa Principal
+[1006]        :                                       ;==============
+[1007]    0D63:                                       Principal:
+[1008]        :                                       ; Mensaje de inicio
+[1009]    0D63: BE 03 01                              lea si, mensaje_inicio
+[1010]    0D66: E8 99 FF                              call print_string
+[1011]        :                                       
+[1012]    0D69:                                       .menu_principal:
+[1013]        :                                       ; Mostrar menú
+[1014]    0D69: BE 28 01                              lea si, mensaje_menu
+[1015]    0D6C: E8 93 FF                              call print_string
+[1016]        :                                       
+[1017]        :                                       ; Leer opción (un solo caracter)
+[1018]    0D6F: B4 01                                 mov ah, 01h
+[1019]    0D71: CD 21                                 int 21h
+[1020]    0D73: A2 A0 05                              mov [opcion_menu], al
+[1021]    0D76: 50 56 EB 03 0D 0A 00 BE 7A 0D 2E 8A   printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[1022]        :                                       
+[1023]        :                                       ; Procesar opción
+[1024]    0D90: 80 3E A0 05 31                        cmp byte ptr [opcion_menu], '1'
+[1025]    0D95: 74 50                                 je .opcion_mostrar_dir
+[1026]    0D97: 80 3E A0 05 32                        cmp byte ptr [opcion_menu], '2'
+[1027]    0D9C: 74 4F                                 je .opcion_cambiar_dir
+[1028]    0D9E: 80 3E A0 05 33                        cmp byte ptr [opcion_menu], '3'
+[1029]    0DA3: 75 03 E9 CB 00                        je .opcion_listar
+[1030]    0DA8: 80 3E A0 05 34                        cmp byte ptr [opcion_menu], '4'
+[1031]    0DAD: 75 03 E9 C7 00                        je .opcion_procesar
+[1032]    0DB2: 80 3E A0 05 35                        cmp byte ptr [opcion_menu], '5'
+[1033]    0DB7: 75 03 E9 C7 01                        je .salir
+[1034]        :                                       
+[1035]        :                                       ; Opción inválida
+[1036]    0DBC: 50 56 EB 12 4F 70 63 69 6F 6E 20 69   printn "Opcion invalida"
+                6E 76 61 6C 69 64 61 0D 0A 00 BE C0 
+                0D 2E 8A 04 3C 00 74 07 46 B4 0E CD 
+                10 EB F2 5E 58                      
+[1037]    0DE5: EB 82                                 jmp .menu_principal
+[1038]        :                                       
+[1039]    0DE7:                                       .opcion_mostrar_dir:
+[1040]    0DE7: E8 E6 F9                              call mostrar_directorio_actual
+[1041]    0DEA: E9 7C FF                              jmp .menu_principal
+[1042]        :                                       
+[1043]    0DED:                                       .opcion_cambiar_dir:
+[1044]        :                                       ; Solicitar nueva ruta
+[1045]    0DED: BE C2 01                              lea si, mensaje_nuevoDir
+[1046]    0DF0: E8 0F FF                              call print_string
+[1047]        :                                       
+[1048]    0DF3: BF 21 06                              lea di, buffer_ruta
+[1049]    0DF6: BA 78 00                              mov dx, 120
+[1050]    0DF9: E8 1A FF                              call get_string
+[1051]        :                                       
+[1052]        :                                       ; Convertir posibles '/' a '\' para DOS
+[1053]    0DFC: E8 4C FA                              call convertir_slash_a_backslash
+[1054]        :                                       
+[1055]        :                                       ; Mostrar ruta convertida para verificar
+[1056]    0DFF: BE B3 03                              lea si, mensaje_debugRuta
+[1057]    0E02: E8 FD FE                              call print_string
+[1058]    0E05: BE 21 06                              lea si, buffer_ruta
+[1059]    0E08: E8 F7 FE                              call print_string
+[1060]    0E0B: 50 56 EB 03 0D 0A 00 BE 0F 0E 2E 8A   printn ""
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[1061]        :                                       
+[1062]    0E25: E8 0B FA                              call cambiar_directorio
+[1063]    0E28: 73 09                                 jnc .cambio_ok
+[1064]        :                                       
+[1065]    0E2A: BE D3 02                              lea si, mensaje_err_dir
+[1066]    0E2D: E8 D2 FE                              call print_string
+[1067]    0E30: E9 36 FF                              jmp .menu_principal
+[1068]        :                                       
+[1069]    0E33:                                       .cambio_ok:
+[1070]    0E33: 50 56 EB 23 44 69 72 65 63 74 6F 72   printn "Directorio cambiado exitosamente"
+                69 6F 20 63 61 6D 62 69 61 64 6F 20 
+                65 78 69 74 6F 73 61 6D 65 6E 74 65 
+                0D 0A 00 BE 37 0E 2E 8A 04 3C 00 74 
+                07 46 B4 0E CD 10 EB F2 5E 58       
+[1071]        :                                       ; Mostrar directorio actual para confirmar
+[1072]    0E6D: E8 60 F9                              call mostrar_directorio_actual
+[1073]    0E70: E9 F6 FE                              jmp .menu_principal
+[1074]        :                                       
+[1075]    0E73:                                       .opcion_listar:
+[1076]    0E73: E8 D2 FA                              call listar_archivos_asm
+[1077]    0E76: E9 F0 FE                              jmp .menu_principal
+[1078]        :                                       
+[1079]    0E79:                                       .opcion_procesar:
+[1080]        :                                       ; Solicitar nombre de archivo
+[1081]    0E79: BE EF 01                              lea si, mensaje_nombre
+[1082]    0E7C: E8 83 FE                              call print_string
+[1083]        :                                       
+[1084]    0E7F: BF 11 04                              lea di, nombre_entrada
+[1085]    0E82: BA 3C 00                              mov dx, 60
+[1086]    0E85: E8 8E FE                              call get_string
+[1087]        :                                       
+[1088]        :                                       ; Mostrar ruta/archivo elegido (debug)
+[1089]    0E88: 50 56 EB 13 4E 6F 6D 62 72 65 20 69   print 'Nombre ingresado: '
+                6E 67 72 65 73 61 64 6F 3A 20 00 BE 
+                8C 0E 2E 8A 04 3C 00 74 07 46 B4 0E 
+                CD 10 EB F2 5E 58                   
+[1090]    0EB2: BE 11 04                              lea si, nombre_entrada
+[1091]    0EB5: E8 4A FE                              call print_string
+[1092]    0EB8: 50 56 EB 03 0D 0A 00 BE BC 0E 2E 8A   printn ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[1093]        :                                       
+[1094]        :                                       ; Validar que termine en .asm
+[1095]    0ED2: E8 B4 FD                              call validar_extension_asm
+[1096]    0ED5: 73 09                                 jnc .ext_ok
+[1097]    0ED7: BE FA 02                              lea si, mensaje_err_ext
+[1098]    0EDA: E8 25 FE                              call print_string
+[1099]    0EDD: E9 89 FE                              jmp .menu_principal
+[1100]        :                                       
+[1101]    0EE0:                                       .ext_ok:
+[1102]        :                                       ; Asegurar que cambios de directorio previos se reflejen en apertura usando ruta relativa + directorio actual
+[1103]        :                                       ; Si nombre_entrada no contiene ':' asumimos relativo y no modificamos; DOS resolverá en CWD.
+[1104]        :                                       ; (Opcional futuro: construir absoluto si necesario.)
+[1105]        :                                       
+[1106]        :                                       ; Construir nombre de salida
+[1107]    0EE0: E8 29 FB                              call construir_nombre_salida
+[1108]        :                                       
+[1109]        :                                       ; Abrir archivo de entrada
+[1110]    0EE3: BE 11 02                              lea si, mensaje_leyendo
+[1111]    0EE6: E8 19 FE                              call print_string
+[1112]        :                                       
+[1113]    0EE9: E8 50 FB                              call abrir_archivo_entrada
+[1114]    0EEC: 83 3E 91 04 00                        cmp word ptr [handle_entrada], 0
+[1115]    0EF1: 74 7B                                 je .error_abrir
+[1116]        :                                       
+[1117]        :                                       ; Crear archivo de salida
+[1118]    0EF3: BE 26 02                              lea si, mensaje_generando
+[1119]    0EF6: E8 09 FE                              call print_string
+[1120]        :                                       
+[1121]    0EF9: E8 DE FB                              call crear_archivo_salida
+[1122]    0EFC: 83 3E 93 04 00                        cmp word ptr [handle_salida], 0
+[1123]    0F01: 74 74                                 je .error_crear
+[1124]        :                                       
+[1125]        :                                       ; Inicializar acumulado
+[1126]    0F03: C7 06 97 05 00 00                     mov word ptr [acumulado], 0
+[1127]        :                                       
+[1128]        :                                       ; Procesar archivo línea por línea
+[1129]    0F09:                                       .procesar_lineas:
+[1130]        :                                       ; Limpiar buffer y longitud
+[1131]    0F09: C7 06 95 05 00 00                     mov word ptr [longitud_linea], 0
+[1132]    0F0F: BF 95 04                              lea di, buffer_linea
+[1133]    0F12: B9 00 01                              mov cx, 256
+[1134]    0F15: 32 C0                                 xor al, al
+[1135]    0F17: F3 AA                                 rep stosb
+[1136]        :                                       
+[1137]        :                                       ; Leer línea
+[1138]    0F19: E8 5F FC                              call leer_linea
+[1139]    0F1C: 72 41                                 jc .fin_archivo     ; si CF=1, fin de archivo o error
+[1140]        :                                       
+[1141]        :                                       ; Calcular longitud visible (sin CR/LF)
+[1142]    0F1E: A1 95 05                              mov ax, [longitud_linea]
+[1143]    0F21: A3 CC 06                              mov [longitud_visible], ax
+[1144]    0F24: 3D 00 00                              cmp ax, 0
+[1145]    0F27: 74 27                                 je .lv_done
+[1146]    0F29: BE 95 04                              lea si, buffer_linea
+[1147]    0F2C: 8B 1E 95 05                           mov bx, [longitud_linea]
+[1148]    0F30: 4B                                    dec bx
+[1149]    0F31: 03 F3                                 add si, bx          ; SI = último carácter leído
+[1150]    0F33: 8A 04                                 mov al, [si]
+[1151]    0F35: 3C 0A                                 cmp al, 10          ; LF
+[1152]    0F37: 75 04                                 jne .chk_cr
+[1153]    0F39: FF 0E CC 06                           dec word ptr [longitud_visible]
+[1154]    0F3D:                                       .chk_cr:
+[1155]    0F3D: A1 CC 06                              mov ax, [longitud_visible]
+[1156]    0F40: 3D 00 00                              cmp ax, 0
+[1157]    0F43: 74 0B                                 je .lv_done
+[1158]    0F45: 4E                                    dec si
+[1159]    0F46: 8A 04                                 mov al, [si]
+[1160]    0F48: 3C 0D                                 cmp al, 13          ; CR
+[1161]    0F4A: 75 04                                 jne .lv_done
+[1162]    0F4C: FF 0E CC 06                           dec word ptr [longitud_visible]
+[1163]    0F50:                                       .lv_done:
+[1164]        :                                       
+[1165]        :                                       ; Escribir línea en salida con acumulado PREVIO
+[1166]    0F50: E8 A4 FC                              call escribir_linea_salida
+[1167]        :                                       
+[1168]        :                                       ; Actualizar acumulado sumando solo la longitud visible
+[1169]    0F53: A1 97 05                              mov ax, [acumulado]
+[1170]    0F56: 03 06 CC 06                           add ax, [longitud_visible]
+[1171]    0F5A: A3 97 05                              mov [acumulado], ax
+[1172]        :                                       
+[1173]    0F5D: EB AA                                 jmp .procesar_lineas
+[1174]        :                                       
+[1175]    0F5F:                                       .fin_archivo:
+[1176]        :                                       ; Escribir total final (acumulado)
+[1177]    0F5F: E8 FC FC                              call escribir_total_final
+[1178]        :                                       
+[1179]        :                                       ; Cerrar archivos
+[1180]    0F62: E8 78 FD                              call cerrar_archivos
+[1181]        :                                       
+[1182]        :                                       ; Mensaje de éxito
+[1183]    0F65: BE 42 02                              lea si, mensaje_exito
+[1184]    0F68: E8 97 FD                              call print_string
+[1185]    0F6B: E9 FB FD                              jmp .menu_principal
+[1186]        :                                       
+[1187]    0F6E:                                       .error_abrir:
+[1188]    0F6E: BE 63 02                              lea si, mensaje_err_abrir
+[1189]    0F71: E8 8E FD                              call print_string
+[1190]    0F74: E9 F2 FD                              jmp .menu_principal
+[1191]        :                                       
+[1192]    0F77:                                       .error_crear:
+[1193]    0F77: E8 63 FD                              call cerrar_archivos
+[1194]    0F7A: BE 88 02                              lea si, mensaje_err_crear
+[1195]    0F7D: E8 82 FD                              call print_string
+[1196]    0F80: E9 E6 FD                              jmp .menu_principal
+[1197]        :                                       
+[1198]    0F83:                                       .salir:
+[1199]        :                                       ; Salir al Sistema Operativo
+[1200]    0F83: B8 00 4C                              mov ax, 4C00h
+[1201]    0F86: CD 21                                 int 21h
+[1202]    0F88: C3                                    ret
+[1203]        :                                       
+[1204]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

@@ -1,0 +1,716 @@
+================================================
+LOC    MACHINE CODE         SOURCE              
+================================================
+0000   6A 6B                jmp Principal
+0002   70 71                push ax
+0004   70 71                push dx
+0006   70 71                push si
+0008   6D 6E 6F             mov dl, 0           ; 0 = drive actual
+000B   6C 6D 6E             lea si, buffer_dir
+000E   69 6A                int 21h
+0010   6C 6D 6E             lea si, mensaje_dirActual
+0013   63 64                call print_string
+0015   6D 6E 6F             mov ah, 19h         ; obtener drive actual
+0018   69 6A                int 21h
+001A   61 62 63             add al, 'A'
+001D   6D 6E 6F             mov [drive_str], al
+0020   6D 6E 6F             mov byte ptr [drive_str+1], 0
+0023   6C 6D 6E             lea si, drive_str
+0026   63 64                call print_string
+0028   6C 6D 6E             lea si, buffer_dir
+002B   63 64                call print_string
+002D   70 71                pop si
+002F   70 71                pop dx
+0031   70 71                pop ax
+0033   72                   ret
+0034   70 71                push ax
+0036   70 71                push dx
+0038   6C 6D 6E             lea dx, buffer_ruta
+003B   69 6A                int 21h
+003D   70 71                pop dx
+003F   70 71                pop ax
+0041   72                   ret
+0042   70 71                push ax
+0044   70 71                push dx
+0046   6C 6D 6E             lea dx, buffer_ruta
+0049   69 6A                int 21h
+004B   70 71                pop dx
+004D   70 71                pop ax
+004F   72                   ret
+0050   70 71                push ax
+0052   70 71                push bx
+0054   70 71                push si
+0056   70 71                push di
+0058   6C 6D 6E             lea si, buffer_ruta
+005B   6D 6E 6F             mov al, [si]
+005E   63 64 65             cmp al, '.'
+0061   6A 6B                jne .csab_check_drivepattern
+0063   6D 6E 6F             mov ah, [si+1]
+0066   63 64 65             cmp ah, '/'
+0069   6A 6B                je .csab_build_rel
+006B   63 64 65             cmp ah, 92            ; '\\'
+006E   6A 6B                je .csab_build_rel
+0070   6A 6B                jmp .csab_check_drivepattern
+0072   6D 6E 6F             mov ah, 47h
+0075   6D 6E 6F             mov dl, 0
+0078   6C 6D 6E             lea si, buffer_dir
+007B   6D 6E 6F             mov ah, 19h
+007E   69 6A                int 21h
+0080   61 62 63             add al, 'A'
+0083   6C 6D 6E             lea di, search_path
+0086   6D 6E 6F             mov [di], al           ; X
+0089   69 6A                inc di
+008B   69 6A                inc di
+008D   69 6A                inc di
+008F   6C 6D 6E             lea si, buffer_dir
+0092   6D 6E 6F             mov al, [si]
+0095   63 64 65             cmp al, 92
+0098   6A 6B                jne .csab_copy_cdir
+009A   69 6A                inc si                 ; saltar barra inicial
+009C   6D 6E 6F             mov al, [si]
+009F   63 64 65             cmp al, 0
+00A2   6A 6B                je .csab_after_cdir
+00A4   6D 6E 6F             mov [di], al
+00A7   69 6A                inc si
+00A9   69 6A                inc di
+00AB   6A 6B                jmp .csab_copy_cdir
+00AD   64 65                dec di
+00AF   6D 6E 6F             mov al,[di]
+00B2   69 6A                inc di
+00B4   63 64 65             cmp al,92
+00B7   6A 6B                je .csab_have_sep
+00B9   6D 6E 6F             mov byte ptr [di],92
+00BC   69 6A                inc di
+00BE   6C 6D 6E             lea si, buffer_ruta
+00C1   61 62 63             add si, 2
+00C4   6D 6E 6F             mov al,[si]
+00C7   6D 6E 6F             mov [di],al
+00CA   63 64 65             cmp al,0
+00CD   6A 6B                je .csab_overwrite_rel
+00CF   69 6A                inc si
+00D1   69 6A                inc di
+00D3   6A 6B                jmp .csab_copy_rest_rel
+00D5   6C 6D 6E             lea si, search_path
+00D8   6C 6D 6E             lea di, buffer_ruta
+00DB   6D 6E 6F             mov al,[si]
+00DE   6D 6E 6F             mov [di],al
+00E1   69 6A                inc si
+00E3   69 6A                inc di
+00E5   63 64 65             cmp al,0
+00E8   6A 6B                jne .csab_cp_back_rel
+00EA   6C 6D 6E             lea si, buffer_ruta
+00ED   6D 6E 6F             mov al, [si]
+00F0   63 64 65             cmp al, 0
+00F3   6A 6B                je .csab_normalize     ; cadena vaca
+00F5   6D 6E 6F             mov ah, [si+1]
+00F8   63 64 65             cmp ah, '.'
+00FB   6A 6B                jne .csab_loop
+00FD   6D 6E 6F             mov al, [si]
+0100   63 64 65             cmp al, 0
+0103   6A 6B                je .csab_normalize
+0105   63 64 65             cmp al, '/'
+0108   6A 6B                jne .csab_next
+010A   6D 6E 6F             mov byte ptr [si], 92      ; '\\' = ASCII 92
+010D   69 6A                inc si
+010F   6A 6B                jmp .csab_loop
+0111   6C 6D 6E             lea si, buffer_ruta
+0114   6C 6D 6E             lea di, buffer_ruta
+0117   78 79 7A             xor bx, bx              ; BX = ltimo carcter no-backslash
+011A   6D 6E 6F             mov al, [si]
+011D   63 64 65             cmp al, 0
+0120   6A 6B                je .csab_trim
+0122   63 64 65             cmp al, 92              ; '\'
+0125   6A 6B                jne .csab_norm_copy
+0127   63 64 65             cmp di, offset buffer_ruta
+012A   6A 6B 6C             je .csab_norm_copy      ; primera posicin, copiar
+012D   6D 6E 6F             mov ah, [di-1]
+0130   63 64 65             cmp ah, 92
+0133   6A 6B 6C             je .csab_norm_skip      ; duplicado, omitir
+0136   6D 6E 6F             mov [di], al
+0139   69 6A                inc di
+013B   63 64 65             cmp al, 92
+013E   6A 6B                je .csab_norm_continue
+0140   63 64 65             cmp al, ' '
+0143   6A 6B                je .csab_norm_continue
+0145   6D 6E 6F             mov bx, di              ; BX = ltima posicin de carcter significativo
+0148   69 6A                inc si
+014A   6A 6B                jmp .csab_norm_loop
+014C   63 64 65             cmp di, offset buffer_ruta
+014F   6A 6B                je .csab_done           ; cadena vaca
+0151   63 64 65             cmp di, offset buffer_ruta
+0154   6A 6B                jbe .csab_done
+0156   64 65                dec di
+0158   6D 6E 6F             mov al, [di]
+015B   63 64 65             cmp al, 92              ; '\'
+015E   6A 6B                je .csab_check_root
+0160   63 64 65             cmp al, ' '
+0163   6A 6B                je .csab_trim_loop
+0165   69 6A                inc di
+0167   6A 6B                jmp .csab_done
+0169   63 64 65             cmp di, offset buffer_ruta + 2
+016C   6A 6B 6C             jne .csab_trim_loop     ; no es raz, eliminar
+016F   69 6A                inc di
+0171   6A 6B                jmp .csab_done
+0173   6D 6E 6F             mov byte ptr [di], 0
+0176   70 71                pop di
+0178   70 71                pop si
+017A   70 71                pop bx
+017C   70 71                pop ax
+017E   72                   ret
+017F   70 71                push ax
+0181   70 71                push cx
+0183   70 71                push dx
+0185   70 71                push si
+0187   70 71                push di
+0189   6D 6E 6F             mov ah, 19h
+018C   69 6A                int 21h
+018E   61 62 63             add al, 'A'
+0191   6C 6D 6E             lea di, search_path
+0194   6D 6E 6F             mov [di], al
+0197   69 6A                inc di
+0199   69 6A                inc di
+019B   6D 6E 6F             mov byte ptr [di], 92  ; backslash
+019E   69 6A                inc di
+01A0   6D 6E 6F             mov ah, 47h
+01A3   6D 6E 6F             mov dl, 0
+01A6   6C 6D 6E             lea si, buffer_dir
+01A9   69 6A                int 21h
+01AB   6C 6D 6E             lea si, buffer_dir
+01AE   6D 6E 6F             mov al, [si]
+01B1   63 64 65             cmp al, 0
+01B4   6A 6B                je .laa_add_mask
+01B6   6D 6E 6F             mov [di], al
+01B9   69 6A                inc si
+01BB   69 6A                inc di
+01BD   6A 6B                jmp .laa_cp_dir
+01BF   6A 6B                je .laa_append
+01C1   64 65                dec di
+01C3   6D 6E 6F             mov al, [di]
+01C6   69 6A                inc di
+01C8   63 64 65             cmp al, 92
+01CB   6A 6B                je .laa_append
+01CD   6D 6E 6F             mov byte ptr [di], 92
+01D0   69 6A                inc di
+01D2   6D 6E 6F             mov byte ptr [di], '*'
+01D5   69 6A                inc di
+01D7   6D 6E 6F             mov byte ptr [di], '.'
+01DA   69 6A                inc di
+01DC   6D 6E 6F             mov byte ptr [di], 'a'
+01DF   69 6A                inc di
+01E1   6D 6E 6F             mov byte ptr [di], 's'
+01E4   69 6A                inc di
+01E6   6D 6E 6F             mov byte ptr [di], 'm'
+01E9   69 6A                inc di
+01EB   6D 6E 6F             mov byte ptr [di], 0
+01EE   6D 6E 6F             mov ah, 1Ah
+01F1   6C 6D 6E             lea dx, dta_buffer
+01F4   69 6A                int 21h
+01F6   6D 6E 6F             mov ah, 4Eh         ; find first
+01F9   6C 6D 6E             lea dx, search_path
+01FC   69 6A                int 21h
+01FE   6A 6B                jc .laa_no_archivos
+0200   6C 6D 6E             lea si, mensaje_archivos
+0203   63 64                call print_string
+0205   6C 6D 6E             lea si, dta_buffer
+0208   61 62 63             add si, 30
+020B   63 64                call print_string
+020D   6D 6E 6F             mov ah, 4Fh         ; find next
+0210   69 6A                int 21h
+0212   6A 6B                jnc .laa_mostrar
+0214   6A 6B                jmp .laa_fin
+0216   6C 6D 6E             lea si, mensaje_noAsm
+0219   63 64                call print_string
+021B   70 71                pop di
+021D   70 71                pop si
+021F   70 71                pop dx
+0221   70 71                pop cx
+0223   70 71                pop ax
+0225   72                   ret
+0226   70 71                push ax
+0228   70 71                push si
+022A   70 71                push di
+022C   6C 6D 6E             lea si, nombre_entrada
+022F   6C 6D 6E             lea di, nombre_salida
+0232   6D 6E 6F             mov al, [si]
+0235   63 64 65             cmp al, 0
+0238   6A 6B                je .cns_agregar_ext
+023A   63 64 65             cmp al, '.'
+023D   6A 6B                je .cns_agregar_ext
+023F   6D 6E 6F             mov [di], al
+0242   69 6A                inc si
+0244   69 6A                inc di
+0246   6A 6B                jmp .cns_copiar
+0248   6D 6E 6F             mov byte ptr [di], '.'
+024B   69 6A                inc di
+024D   6D 6E 6F             mov byte ptr [di], 'l'
+0250   69 6A                inc di
+0252   6D 6E 6F             mov byte ptr [di], 's'
+0255   69 6A                inc di
+0257   6D 6E 6F             mov byte ptr [di], 't'
+025A   69 6A                inc di
+025C   6D 6E 6F             mov byte ptr [di], 0
+025F   70 71                pop di
+0261   70 71                pop si
+0263   70 71                pop ax
+0265   72                   ret
+0266   70 71                push ax
+0268   70 71                push bx
+026A   70 71                push dx
+026C   70 71                push si
+026E   70 71                push di
+0270   6C 6D 6E             lea si, nombre_entrada
+0273   6D 6E 6F             mov al, [si]
+0276   6D 6E 6F             mov ah, [si+1]
+0279   63 64 65             cmp al, 92                ; empieza con '\\' ? -> raz de unidad actual
+027C   6A 6B                je .aae_rooted
+027E   6D 6E 6F             mov ah, 19h
+0281   69 6A                int 21h
+0283   61 62 63             add al, 'A'
+0286   6C 6D 6E             lea di, search_path
+0289   6D 6E 6F             mov [di], al
+028C   69 6A                inc di
+028E   69 6A                inc di
+0290   6D 6E 6F             mov byte ptr [di], 92
+0293   69 6A                inc di
+0295   6D 6E 6F             mov ah, 47h
+0298   6D 6E 6F             mov dl, 0
+029B   6C 6D 6E             lea si, buffer_dir
+029E   69 6A                int 21h
+02A0   6C 6D 6E             lea si, buffer_dir
+02A3   6D 6E 6F             mov al, [si]
+02A6   63 64 65             cmp al, 0
+02A9   6A 6B                je .aae_sep
+02AB   6D 6E 6F             mov [di], al
+02AE   69 6A                inc si
+02B0   69 6A                inc di
+02B2   6A 6B                jmp .aae_cp_dir
+02B4   64 65                dec di
+02B6   6D 6E 6F             mov al, [di]
+02B9   69 6A                inc di
+02BB   63 64 65             cmp al, 92
+02BE   6A 6B                je .aae_append_name
+02C0   6D 6E 6F             mov byte ptr [di], 92
+02C3   69 6A                inc di
+02C5   6C 6D 6E             lea si, nombre_entrada
+02C8   6D 6E 6F             mov al, [si]
+02CB   6D 6E 6F             mov [di], al
+02CE   69 6A                inc si
+02D0   69 6A                inc di
+02D2   63 64 65             cmp al, 0
+02D5   6A 6B                jne .aae_cp_name
+02D7   6C 6D 6E             lea dx, search_path
+02DA   6A 6B                jmp .aae_do_open
+02DC   6D 6E 6F             mov ah, 19h
+02DF   69 6A                int 21h
+02E1   61 62 63             add al, 'A'
+02E4   6C 6D 6E             lea di, search_path
+02E7   6D 6E 6F             mov [di], al
+02EA   69 6A                inc di
+02EC   69 6A                inc di
+02EE   6C 6D 6E             lea si, nombre_entrada
+02F1   6D 6E 6F             mov al, [si]
+02F4   6D 6E 6F             mov [di], al
+02F7   69 6A                inc si
+02F9   69 6A                inc di
+02FB   63 64 65             cmp al, 0
+02FE   6A 6B                jne .aae_cp_root
+0300   6C 6D 6E             lea dx, search_path
+0303   6A 6B                jmp .aae_do_open
+0305   6C 6D 6E             lea dx, nombre_entrada
+0308   69 6A                int 21h
+030A   6A 6B 6C             jc .aae_error       ; si carry set, hubo error
+030D   6D 6E 6F             mov [handle_entrada], ax
+0310   6A 6B                jmp .aae_fin
+0312   6D 6E 6F             mov word ptr [handle_entrada], 0
+0315   70 71                pop di
+0317   70 71                pop si
+0319   70 71                pop dx
+031B   70 71                pop bx
+031D   70 71                pop ax
+031F   72                   ret
+0320   70 71                push ax
+0322   70 71                push cx
+0324   70 71                push bx
+0326   70 71                push dx
+0328   70 71                push si
+032A   70 71                push di
+032C   6C 6D 6E             lea si, nombre_salida
+032F   6D 6E 6F             mov al, [si]
+0332   6D 6E 6F             mov ah, [si+1]
+0335   6A 6B                je .cas_use_input
+0337   63 64 65             cmp al, 92
+033A   6A 6B                je .cas_rooted
+033C   6D 6E 6F             mov ah, 19h
+033F   69 6A                int 21h
+0341   61 62 63             add al, 'A'
+0344   6C 6D 6E             lea di, search_path
+0347   6D 6E 6F             mov [di], al
+034A   69 6A                inc di
+034C   69 6A                inc di
+034E   6D 6E 6F             mov byte ptr [di], 92
+0351   69 6A                inc di
+0353   6D 6E 6F             mov ah, 47h
+0356   6D 6E 6F             mov dl, 0
+0359   6C 6D 6E             lea si, buffer_dir
+035C   69 6A                int 21h
+035E   6C 6D 6E             lea si, buffer_dir
+0361   6D 6E 6F             mov al, [si]
+0364   63 64 65             cmp al, 0
+0367   6A 6B                je .cas_sep
+0369   6D 6E 6F             mov [di], al
+036C   69 6A                inc si
+036E   69 6A                inc di
+0370   6A 6B                jmp .cas_cp_dir
+0372   64 65                dec di
+0374   6D 6E 6F             mov al, [di]
+0377   69 6A                inc di
+0379   63 64 65             cmp al, 92
+037C   6A 6B                je .cas_append
+037E   6D 6E 6F             mov byte ptr [di], 92
+0381   69 6A                inc di
+0383   6C 6D 6E             lea si, nombre_salida
+0386   6D 6E 6F             mov al, [si]
+0389   6D 6E 6F             mov [di], al
+038C   69 6A                inc si
+038E   69 6A                inc di
+0390   63 64 65             cmp al, 0
+0393   6A 6B                jne .cas_cp_name
+0395   6C 6D 6E             lea dx, search_path
+0398   6A 6B                jmp .cas_do_create
+039A   6D 6E 6F             mov ah, 19h
+039D   69 6A                int 21h
+039F   61 62 63             add al, 'A'
+03A2   6C 6D 6E             lea di, search_path
+03A5   6D 6E 6F             mov [di], al
+03A8   69 6A                inc di
+03AA   69 6A                inc di
+03AC   6C 6D 6E             lea si, nombre_salida
+03AF   6D 6E 6F             mov al, [si]
+03B2   6D 6E 6F             mov [di], al
+03B5   69 6A                inc si
+03B7   69 6A                inc di
+03B9   63 64 65             cmp al, 0
+03BC   6A 6B                jne .cas_cp_root
+03BE   6C 6D 6E             lea dx, search_path
+03C1   6A 6B                jmp .cas_do_create
+03C3   6C 6D 6E             lea dx, nombre_salida
+03C6   69 6A                int 21h
+03C8   6A 6B                jc .cas_error
+03CA   6D 6E 6F             mov [handle_salida], ax
+03CD   6A 6B                jmp .cas_fin
+03CF   6D 6E 6F             mov word ptr [handle_salida], 0
+03D2   70 71                pop di
+03D4   70 71                pop si
+03D6   70 71                pop dx
+03D8   70 71                pop bx
+03DA   70 71                pop cx
+03DC   70 71                pop ax
+03DE   72                   ret
+03DF   70 71                push ax
+03E1   70 71                push bx
+03E3   70 71                push cx
+03E5   70 71                push dx
+03E7   70 71                push si
+03E9   6C 6D 6E             lea si, buffer_linea
+03EC   78 79 7A             xor cx, cx          ; contador de caracteres
+03EF   6D 6E 6F             mov bx, [handle_entrada]
+03F2   6D 6E 6F             mov dx, si
+03F5   6D 6E 6F             mov cx, 1
+03F8   69 6A                int 21h
+03FA   6A 6B                jc .ll_error        ; error de lectura
+03FC   63 64 65             cmp ax, 0           ; EOF?
+03FF   6A 6B                je .ll_eof
+0401   6D 6E 6F             mov al, [si]
+0404   69 6A                inc si
+0406   6D 6E 6F             mov ax, [longitud_linea]
+0409   69 6A                inc ax
+040B   6D 6E 6F             mov [longitud_linea], ax
+040E   64 65                dec si
+0410   6D 6E 6F             mov al, [si]
+0413   69 6A                inc si
+0415   63 64 65             cmp al, 10          ; LF
+0418   6A 6B                je .ll_fin_linea
+041A   6A 6B                jmp .ll_leer_char
+041C   63 64                clc                 ; clear carry (xito)
+041E   6A 6B                jmp .ll_salir
+0420   63 64 65             cmp word ptr [longitud_linea], 0
+0423   6A 6B                je .ll_error
+0425   63                   clc
+0426   6A 6B                jmp .ll_salir
+0428   73 74                stc                 ; set carry (error/EOF)
+042A   70 71                pop si
+042C   70 71                pop dx
+042E   70 71                pop cx
+0430   70 71                pop bx
+0432   70 71                pop ax
+0434   72                   ret
+0435   70 71                push ax
+0437   70 71                push bx
+0439   70 71                push cx
+043B   70 71                push dx
+043D   70 71                push di
+043F   6C 6D 6E             lea di, buffer_numero
+0442   6D 6E 6F             mov cx, 3           ; 3 dgitos
+0445   78 79 7A             xor dx, dx
+0448   6D 6E 6F             mov bx, 10
+044B   64 65 66             div bx              ; AX = AX/10, DX = resto
+044E   70 71                push dx             ; guardar dgito
+0450   6C 6D                loop .cn_extraer
+0452   6C 6D 6E             lea di, buffer_numero
+0455   70 71                pop dx
+0457   61 62 63             add dl, '0'
+045A   6D 6E 6F             mov [di], dl
+045D   69 6A                inc di
+045F   70 71                pop dx
+0461   61 62 63             add dl, '0'
+0464   6D 6E 6F             mov [di], dl
+0467   69 6A                inc di
+0469   70 71                pop dx
+046B   61 62 63             add dl, '0'
+046E   6D 6E 6F             mov [di], dl
+0471   69 6A                inc di
+0473   6D 6E 6F             mov byte ptr [di], 0
+0476   70 71                pop di
+0478   70 71                pop dx
+047A   70 71                pop cx
+047C   70 71                pop bx
+047E   70 71                pop ax
+0480   72                   ret
+0481   70 71                push ax
+0483   70 71                push bx
+0485   70 71                push cx
+0487   70 71                push dx
+0489   70 71                push si
+048B   6D 6E 6F             mov ax, [acumulado]
+048E   63 64                call convertir_numero
+0490   6D 6E 6F             mov bx, [handle_salida]
+0493   6C 6D 6E             lea dx, buffer_numero
+0496   6D 6E 6F             mov cx, 3
+0499   69 6A                int 21h
+049B   6D 6E 6F             mov byte ptr [temp_char], ' '
+049E   6D 6E 6F             mov ah, 40h
+04A1   6D 6E 6F             mov bx, [handle_salida]
+04A4   6C 6D 6E             lea dx, temp_char
+04A7   6D 6E 6F             mov cx, 1
+04AA   69 6A                int 21h
+04AC   6D 6E 6F             mov ah, 40h
+04AF   6D 6E 6F             mov bx, [handle_salida]
+04B2   6C 6D 6E             lea dx, buffer_linea
+04B5   6D 6E 6F             mov cx, [longitud_linea]
+04B8   69 6A                int 21h
+04BA   6D 6E 6F             mov ax, [longitud_linea]
+04BD   63 64 65             cmp ax, 0
+04C0   6A 6B                je .esl_write_crlf
+04C2   6C 6D 6E             lea si, buffer_linea
+04C5   6D 6E 6F             mov bx, [longitud_linea]
+04C8   64 65                dec bx
+04CA   61 62 63             add si, bx
+04CD   6D 6E 6F             mov al, [si]
+04D0   63 64 65             cmp al, 10          ; LF?
+04D3   6A 6B                je .esl_skip_add
+04D5   6D 6E 6F             mov ah, 40h
+04D8   6D 6E 6F             mov bx, [handle_salida]
+04DB   6C 6D 6E             lea dx, crlf
+04DE   6D 6E 6F             mov cx, 2
+04E1   69 6A                int 21h
+04E3   70 71                pop si
+04E5   70 71                pop dx
+04E7   70 71                pop cx
+04E9   70 71                pop bx
+04EB   70 71                pop ax
+04ED   72                   ret
+04EE   70 71                push ax
+04F0   70 71                push bx
+04F2   70 71                push cx
+04F4   70 71                push dx
+04F6   6D 6E 6F             mov ax, [acumulado]
+04F9   63 64                call convertir_numero
+04FB   6D 6E 6F             mov ah, 40h
+04FE   6D 6E 6F             mov bx, [handle_salida]
+0501   6C 6D 6E             lea dx, buffer_numero
+0504   6D 6E 6F             mov cx, 3
+0507   69 6A                int 21h
+0509   6D 6E 6F             mov ah, 40h
+050C   6D 6E 6F             mov bx, [handle_salida]
+050F   6C 6D 6E             lea dx, crlf
+0512   6D 6E 6F             mov cx, 2
+0515   69 6A                int 21h
+0517   70 71                pop dx
+0519   70 71                pop cx
+051B   70 71                pop bx
+051D   70 71                pop ax
+051F   72                   ret
+0520   70 71                push ax
+0522   70 71                push bx
+0524   70 71                push si
+0526   78 79 7A             xor bx, bx              ; BX=0 si no hay punto
+0529   6C 6D 6E             lea si, nombre_entrada
+052C   6D 6E 6F             mov al, [si]
+052F   63 64 65             cmp al, 0
+0532   6A 6B                je .vea_check
+0534   63 64 65             cmp al, '.'
+0537   6A 6B                jne .vea_next
+0539   6D 6E 6F             mov bx, si              ; guardar posicin del ltimo punto
+053C   69 6A                inc si
+053E   6A 6B                jmp .vea_scan
+0540   63 64 65             cmp bx, 0
+0543   6A 6B                je .vea_invalid         ; no hay punto
+0545   6D 6E 6F             mov si, bx
+0548   69 6A                inc si                  ; SI = despus del '.'
+054A   6D 6E 6F             mov al, [si]
+054D   63 64 65             cmp al, 0
+0550   6A 6B                je .vea_invalid
+0552   61 62 63             and al, 0DFh            ; a mayscula
+0555   63 64 65             cmp al, 'A'
+0558   6A 6B                jne .vea_invalid
+055A   69 6A                inc si
+055C   6D 6E 6F             mov al, [si]
+055F   63 64 65             cmp al, 0
+0562   6A 6B                je .vea_invalid
+0564   61 62 63             and al, 0DFh
+0567   63 64 65             cmp al, 'S'
+056A   6A 6B                jne .vea_invalid
+056C   69 6A                inc si
+056E   6D 6E 6F             mov al, [si]
+0571   63 64 65             cmp al, 0
+0574   6A 6B                je .vea_invalid
+0576   61 62 63             and al, 0DFh
+0579   63 64 65             cmp al, 'M'
+057C   6A 6B                jne .vea_invalid
+057E   69 6A                inc si
+0580   6D 6E 6F             mov al, [si]
+0583   63 64 65             cmp al, 0              ; debe terminar aqu
+0586   6A 6B                jne .vea_invalid
+0588   63                   clc
+0589   6A 6B                jmp .vea_end
+058B   73                   stc
+058C   70 71                pop si
+058E   70 71                pop bx
+0590   70 71                pop ax
+0592   72                   ret
+0593   70 71                push ax
+0595   70 71                push bx
+0597   63 64 65             cmp word ptr [handle_entrada], 0
+059A   6A 6B                je .ca_skip_entrada
+059C   6D 6E 6F             mov ah, 3Eh
+059F   6D 6E 6F             mov bx, [handle_entrada]
+05A2   69 6A                int 21h
+05A4   63 64 65             cmp word ptr [handle_salida], 0
+05A7   6A 6B                je .ca_skip_salida
+05A9   6D 6E 6F             mov ah, 3Eh
+05AC   6D 6E 6F             mov bx, [handle_salida]
+05AF   69 6A                int 21h
+05B1   70 71                pop bx
+05B3   70 71                pop ax
+05B5   72                   ret
+05B6   6C 6D 6E             lea si, mensaje_inicio
+05B9   63 64                call print_string
+05BB   6C 6D 6E             lea si, mensaje_menu
+05BE   63 64                call print_string
+05C0   6D 6E 6F             mov ah, 01h
+05C3   69 6A                int 21h
+05C5   6D 6E 6F             mov [opcion_menu], al
+05C8   63 64 65             cmp byte ptr [opcion_menu], '1'
+05CB   6A 6B                je .opcion_mostrar_dir
+05CD   63 64 65             cmp byte ptr [opcion_menu], '2'
+05D0   6A 6B                je .opcion_cambiar_dir
+05D2   63 64 65             cmp byte ptr [opcion_menu], '3'
+05D5   6A 6B                je .opcion_listar
+05D7   63 64 65             cmp byte ptr [opcion_menu], '4'
+05DA   6A 6B                je .opcion_procesar
+05DC   63 64 65             cmp byte ptr [opcion_menu], '5'
+05DF   6A 6B                je .salir
+05E1   6A 6B                jmp .menu_principal
+05E3   63 64                call mostrar_directorio_actual
+05E5   6A 6B                jmp .menu_principal
+05E7   6C 6D 6E             lea si, mensaje_nuevoDir
+05EA   63 64                call print_string
+05EC   6C 6D 6E             lea di, buffer_ruta
+05EF   6D 6E 6F             mov dx, 120
+05F2   63 64                call get_string
+05F4   63 64                call convertir_slash_a_backslash
+05F6   6C 6D 6E             lea si, mensaje_debugRuta
+05F9   63 64                call print_string
+05FB   6C 6D 6E             lea si, buffer_ruta
+05FE   63 64                call print_string
+0600   63 64                call cambiar_directorio
+0602   6A 6B                jnc .cambio_ok
+0604   6C 6D 6E             lea si, mensaje_err_dir
+0607   63 64                call print_string
+0609   6A 6B                jmp .menu_principal
+060B   63 64                call mostrar_directorio_actual
+060D   6A 6B                jmp .menu_principal
+060F   63 64                call listar_archivos_asm
+0611   6A 6B                jmp .menu_principal
+0613   6C 6D 6E             lea si, mensaje_nombre
+0616   63 64                call print_string
+0618   6C 6D 6E             lea di, nombre_entrada
+061B   6D 6E 6F             mov dx, 60
+061E   63 64                call get_string
+0620   6C 6D 6E             lea si, nombre_entrada
+0623   63 64                call print_string
+0625   63 64                call validar_extension_asm
+0627   6A 6B                jnc .ext_ok
+0629   6C 6D 6E             lea si, mensaje_err_ext
+062C   63 64                call print_string
+062E   6A 6B                jmp .menu_principal
+0630   63 64                call construir_nombre_salida
+0632   6C 6D 6E             lea si, mensaje_leyendo
+0635   63 64                call print_string
+0637   63 64                call abrir_archivo_entrada
+0639   63 64 65             cmp word ptr [handle_entrada], 0
+063C   6A 6B                je .error_abrir
+063E   6C 6D 6E             lea si, mensaje_generando
+0641   63 64                call print_string
+0643   63 64                call crear_archivo_salida
+0645   63 64 65             cmp word ptr [handle_salida], 0
+0648   6A 6B                je .error_crear
+064A   6D 6E 6F             mov word ptr [acumulado], 0
+064D   6D 6E 6F             mov word ptr [longitud_linea], 0
+0650   6C 6D 6E             lea di, buffer_linea
+0653   6D 6E 6F             mov cx, 256
+0656   78 79 7A             xor al, al
+0659   72 73                rep stosb
+065B   63 64                call leer_linea
+065D   6A 6B 6C             jc .fin_archivo     ; si CF=1, fin de archivo o error
+0660   6D 6E 6F             mov ax, [longitud_linea]
+0663   6D 6E 6F             mov [longitud_visible], ax
+0666   63 64 65             cmp ax, 0
+0669   6A 6B                je .lv_done
+066B   6C 6D 6E             lea si, buffer_linea
+066E   6D 6E 6F             mov bx, [longitud_linea]
+0671   64 65                dec bx
+0673   61 62 63             add si, bx          ; SI = ltimo carcter ledo
+0676   6D 6E 6F             mov al, [si]
+0679   63 64 65             cmp al, 10          ; LF
+067C   6A 6B                jne .chk_cr
+067E   64 65                dec word ptr [longitud_visible]
+0680   6D 6E 6F             mov ax, [longitud_visible]
+0683   63 64 65             cmp ax, 0
+0686   6A 6B                je .lv_done
+0688   64 65                dec si
+068A   6D 6E 6F             mov al, [si]
+068D   63 64 65             cmp al, 13          ; CR
+0690   6A 6B                jne .lv_done
+0692   64 65                dec word ptr [longitud_visible]
+0694   63 64                call escribir_linea_salida
+0696   6D 6E 6F             mov ax, [acumulado]
+0699   61 62 63             add ax, [longitud_visible]
+069C   6D 6E 6F             mov [acumulado], ax
+069F   6A 6B                jmp .procesar_lineas
+06A1   63 64                call escribir_total_final
+06A3   63 64                call cerrar_archivos
+06A5   6C 6D 6E             lea si, mensaje_exito
+06A8   63 64                call print_string
+06AA   6A 6B                jmp .menu_principal
+06AC   6C 6D 6E             lea si, mensaje_err_abrir
+06AF   63 64                call print_string
+06B1   6A 6B                jmp .menu_principal
+06B3   63 64                call cerrar_archivos
+06B5   6C 6D 6E             lea si, mensaje_err_crear
+06B8   63 64                call print_string
+06BA   6A 6B                jmp .menu_principal
+06BC   6D 6E 6F             mov ax, 4C00h
+06BF   69 6A                int 21h
+06C1   72                   ret
+================================================
