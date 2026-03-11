@@ -1,0 +1,209 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Practica03.com -- emu8086 assembler version: 4.08  
+ 
+[ 27/02/2026  --  05:30:25 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "p3"   ;
+[   2]        :                                       
+[   3]        :                                       ;   Este programa realiza la suma de 5 datos de 16 bits
+[   4]        :                                       ;   almacenados contiguamente en memoria en formato big endian.
+[   5]        :                                       ;   Dato1: 0700:0310-0311, Dato2: 0312-0313, Dato3: 0314-0315
+[   6]        :                                       ;   Dato4: 0316-0317, Dato5: 0318-0319
+[   7]        :                                       ;   El resultado de 32 bits se almacena en:
+[   8]        :                                       ;   0700:031A-031D (big endian) y 0700:031E-0321 (little endian)
+[   9]        :                                       ;   La suma utiliza DX:AX como acumulador de 32 bits
+[  10]        :                                       ;   manejando los acarreos entre operaciones.
+[  11]        :                                       
+[  12]        :                                       org  100h	
+[  13]    0100: E9 40 01                              jmp inicio
+[  14]        :                                       
+[  15]    0103: 53 65 63 63 69 6F 6E 20 44 30 31 20   msg1:         db "Seccion D01 - Suma de 5 datos de 16 bits"
+                2D 20 53 75 6D 61 20 64 65 20 35 20 
+                64 61 74 6F 73 20 64 65 20 31 36 20 
+                62 69 74 73                         
+[  16]    012B: 49 6E 74 72 6F 64 75 63 65 20 35 20   msg2:         db "Introduce 5 datos de 16 bits en memoria:"
+                64 61 74 6F 73 20 64 65 20 31 36 20 
+                62 69 74 73 20 65 6E 20 6D 65 6D 6F 
+                72 69 61 3A                         
+[  17]    0153: 44 61 74 6F 31 3A 20 30 37 30 30 3A   msg3:         db "Dato1: 0700:0310-0311, Dato2: 0312-0313, Dato3: 0314-0315"
+                30 33 31 30 2D 30 33 31 31 2C 20 44 
+                61 74 6F 32 3A 20 30 33 31 32 2D 30 
+                33 31 33 2C 20 44 61 74 6F 33 3A 20 
+                30 33 31 34 2D 30 33 31 35          
+[  18]    018C: 44 61 74 6F 34 3A 20 30 37 30 30 3A   msg4:         db "Dato4: 0700:0316-0317, Dato5: 0700:0318-0319"
+                30 33 31 36 2D 30 33 31 37 2C 20 44 
+                61 74 6F 35 3A 20 30 37 30 30 3A 30 
+                33 31 38 2D 30 33 31 39             
+[  19]    01B8: 52 65 73 75 6C 74 61 64 6F 20 64 65   msg5:         db "Resultado de 32 bits en 0700:031A-031B-031C-031D (Big Endian)"
+                20 33 32 20 62 69 74 73 20 65 6E 20 
+                30 37 30 30 3A 30 33 31 41 2D 30 33 
+                31 42 2D 30 33 31 43 2D 30 33 31 44 
+                20 28 42 69 67 20 45 6E 64 69 61 6E 
+                29                                  
+[  20]    01F5: 46 6F 72 6D 61 74 6F 20 42 69 67 20   msg6:         db "Formato Big Endian: byte alto primero"
+                45 6E 64 69 61 6E 3A 20 62 79 74 65 
+                20 61 6C 74 6F 20 70 72 69 6D 65 72 
+                6F                                  
+[  21]    021A: 4C 69 74 74 6C 65 20 45 6E 64 69 61   msg7:         db "Little Endian en 0700:031E-031F-0320-0321"
+                6E 20 65 6E 20 30 37 30 30 3A 30 33 
+                31 45 2D 30 33 31 46 2D 30 33 32 30 
+                2D 30 33 32 31                      
+[  22]    0243:                                       msg_tail:
+[  23]        :                                       msg1_size = msg2 - msg1
+[  24]        :                                       msg2_size = msg3 - msg2
+[  25]        :                                       msg3_size = msg4 - msg3
+[  26]        :                                       msg4_size = msg5 - msg4
+[  27]        :                                       msg5_size = msg6 - msg5
+[  28]        :                                       msg6_size = msg6 - msg5
+[  29]        :                                       msg7_size = msg_tail - msg7
+[  30]        :                                       
+[  31]    0243:                                       inicio:
+[  32]    0243: B8 03 10                              mov ax, 1003h       ;cofiguracion del tama?o de la consola
+[  33]    0246: BB 00 00                              mov bx, 0           ;consolo de 80x25 caracteres
+[  34]    0249: CD 10                                 int 10h
+[  35]        :                                       
+[  36]    024B: BA 05 07                              mov dx, 0705h       ;se imprime el primer mensaje en el renglon 0705
+[  37]    024E: BB 00 00                              mov bx, 0
+[  38]    0251: B3 9F                                 mov bl, 10011111b   ;paleta de colores
+[  39]    0253: B9 28 00                              mov cx, msg1_size   ;guion bajo solo para visualizar mejor
+[  40]    0256: B0 01                                 mov al, 01b
+[  41]    0258: BD 03 01                              mov bp, msg1
+[  42]    025B: B4 13                                 mov ah, 13h
+[  43]    025D: CD 10                                 int 10h
+[  44]        :                                       
+[  45]    025F: BA 05 09                              mov dx, 0905h      ;dos lienas depues del primer mensaje
+[  46]    0262: BB 00 00                              mov bx, 0
+[  47]    0265: B3 9F                                 mov bl, 10011111b
+[  48]    0267: B9 28 00                              mov cx, msg2_size
+[  49]    026A: B0 01                                 mov al, 01b
+[  50]    026C: BD 2B 01                              mov bp, msg2        ;
+[  51]    026F: B4 13                                 mov ah, 13h
+[  52]    0271: CD 10                                 int 10h
+[  53]        :                                       
+[  54]    0273: BA 05 0B                              mov dx, 0B05h
+[  55]    0276: BB 00 00                              mov bx, 0
+[  56]    0279: B3 9F                                 mov bl, 10011111b
+[  57]    027B: B9 39 00                              mov cx, msg3_size
+[  58]    027E: B0 01                                 mov al, 01b
+[  59]    0280: BD 53 01                              mov bp, msg3
+[  60]    0283: B4 13                                 mov ah, 13h
+[  61]    0285: CD 10                                 int 10h
+[  62]        :                                       
+[  63]    0287: BA 05 0C                              mov dx, 0C05h
+[  64]    028A: BB 00 00                              mov bx, 0
+[  65]    028D: B3 9F                                 mov bl, 10011111b
+[  66]    028F: B9 2C 00                              mov cx, msg4_size
+[  67]    0292: B0 01                                 mov al, 01b
+[  68]    0294: BD 8C 01                              mov bp, msg4
+[  69]    0297: B4 13                                 mov ah, 13h
+[  70]    0299: CD 10                                 int 10h
+[  71]        :                                       ;-----------------
+[  72]    029B: B4 00                                 	mov ah, 0           ;pulse una tecla para continuar
+[  73]    029D: CD 16                                 int 10110b          ;22 en binario
+[  74]        :                                       
+[  75]    029F: BA 05 0D                              mov dx, 0D05h
+[  76]    02A2: BB 00 00                              mov bx, 0
+[  77]    02A5: B3 F9                                 mov bl, 11111001b
+[  78]    02A7: B9 3D 00                              mov cx, msg5_size
+[  79]    02AA: B0 01                                 mov al, 01b
+[  80]    02AC: BD B8 01                              mov bp, msg5
+[  81]    02AF: B4 13                                 mov ah, 13h
+[  82]    02B1: CD 10                                 int 10h
+[  83]        :                                       
+[  84]    02B3: BA 05 0E                              mov dx, 0E05h
+[  85]    02B6: BB 00 00                              mov bx, 0
+[  86]    02B9: B3 F9                                 mov bl, 11111001b
+[  87]    02BB: B9 3D 00                              mov cx, msg6_size
+[  88]    02BE: B0 01                                 mov al, 01b
+[  89]    02C0: BD F5 01                              mov bp, msg6
+[  90]    02C3: B4 13                                 mov ah, 13h
+[  91]    02C5: CD 10                                 int 10h
+[  92]        :                                       
+[  93]    02C7: BA 05 0F                              mov dx, 0F05h
+[  94]    02CA: BB 00 00                              mov bx, 0
+[  95]    02CD: B3 F9                                 mov bl, 11111001b
+[  96]    02CF: B9 29 00                              mov cx, msg7_size
+[  97]    02D2: B0 01                                 mov al, 01b
+[  98]    02D4: BD 1A 02                              mov bp, msg7
+[  99]    02D7: B4 13                                 mov ah, 13h
+[ 100]    02D9: CD 10                                 int 10h
+[ 101]        :                                       
+[ 102]        :                                       
+[ 103]        :                                       
+[ 104]    02DB: B4 00                                 mov ah, 0           ;pulse una tecla para continuar
+[ 105]    02DD: CD 16                                 int 10110b          ;22 en binario
+[ 106]        :                                       
+[ 107]        :                                       ; Configurar segmento de datos a 0700h para acceder a memoria
+[ 108]    02DF: B8 00 07                              mov ax, 0700h
+[ 109]    02E2: 8E D8                                 mov ds, ax
+[ 110]        :                                       
+[ 111]        :                                       ; Inicializar acumulador de 32 bits (DX:AX = 0)
+[ 112]    02E4: 33 D2                                 xor dx, dx          ; DX = 0 (parte alta de 32 bits)
+[ 113]    02E6: 33 C0                                 xor ax, ax          ; AX = 0 (parte baja de 32 bits)
+[ 114]    02E8: 33 C9                                 xor cx, cx          ; CX = 0 (para manejo de acarreos adicionales)
+[ 115]        :                                       
+[ 116]        :                                       ; Sumar Dato1 (0310-0311 en big endian)
+[ 117]    02EA: 8A 1E 10 03                           mov bl, [0x310]     ; byte bajo (menos significativo)
+[ 118]    02EE: 8A 3E 11 03                           mov bh, [0x311]     ; byte alto (más significativo)
+[ 119]    02F2: 03 C3                                 add ax, bx          ; sumar BX a AX
+[ 120]    02F4: 83 D2 00                              adc dx, 0           ; propagar acarreo a DX
+[ 121]    02F7: 83 D1 00                              adc cx, 0           ; propagar acarreo a CX (bits 32-39)
+[ 122]        :                                       
+[ 123]        :                                       ; Sumar Dato2 (0312-0313)
+[ 124]    02FA: 8A 1E 12 03                           mov bl, [0x312]
+[ 125]    02FE: 8A 3E 13 03                           mov bh, [0x313]
+[ 126]    0302: 03 C3                                 add ax, bx
+[ 127]    0304: 83 D2 00                              adc dx, 0
+[ 128]    0307: 83 D1 00                              adc cx, 0
+[ 129]        :                                       
+[ 130]        :                                       ; Sumar Dato3 (0314-0315)
+[ 131]    030A: 8A 1E 14 03                           mov bl, [0x314]
+[ 132]    030E: 8A 3E 15 03                           mov bh, [0x315]
+[ 133]    0312: 03 C3                                 add ax, bx
+[ 134]    0314: 83 D2 00                              adc dx, 0
+[ 135]    0317: 83 D1 00                              adc cx, 0
+[ 136]        :                                       
+[ 137]        :                                       ; Sumar Dato4 (0316-0317)
+[ 138]    031A: 8A 1E 16 03                           mov bl, [0x316]
+[ 139]    031E: 8A 3E 17 03                           mov bh, [0x317]
+[ 140]    0322: 03 C3                                 add ax, bx
+[ 141]    0324: 83 D2 00                              adc dx, 0
+[ 142]    0327: 83 D1 00                              adc cx, 0
+[ 143]        :                                       
+[ 144]        :                                       ; Sumar Dato5 (0318-0319)
+[ 145]    032A: 8A 1E 18 03                           mov bl, [0x318]
+[ 146]    032E: 8A 3E 19 03                           mov bh, [0x319]
+[ 147]    0332: 03 C3                                 add ax, bx
+[ 148]    0334: 83 D2 00                              adc dx, 0
+[ 149]    0337: 83 D1 00                              adc cx, 0
+[ 150]        :                                       
+[ 151]        :                                       ; Guardar resultado en formato Big Endian (031A-031D)
+[ 152]        :                                       ; Big Endian: byte más significativo primero
+[ 153]    033A: 88 36 1A 03                           mov [031Ah], dh     ; byte más alto de DX
+[ 154]    033E: 88 16 1B 03                           mov [031Bh], dl     ; byte más bajo de DX
+[ 155]    0342: 88 26 1C 03                           mov [031Ch], ah     ; byte más alto de AX
+[ 156]    0346: A2 1D 03                              mov [031Dh], al     ; byte más bajo de AX
+[ 157]        :                                       
+[ 158]        :                                       ; Guardar resultado en formato Little Endian (031E-0321)
+[ 159]        :                                       ; Little Endian: byte menos significativo primero
+[ 160]    0349: A2 1E 03                              mov [031Eh], al     ; byte más bajo de AX
+[ 161]    034C: 88 26 1F 03                           mov [031Fh], ah     ; byte más alto de AX
+[ 162]    0350: 88 16 20 03                           mov [0320h], dl     ; byte más bajo de DX
+[ 163]    0354: 88 36 21 03                           mov [0321h], dh     ; byte más alto de DX
+[ 164]        :                                       
+[ 165]    0358: CD 20                                 int 20h
+[ 166]        :                                       
+[ 167]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

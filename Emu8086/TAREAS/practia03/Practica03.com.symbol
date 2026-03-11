@@ -1,0 +1,17 @@
+< THE SYMBOL TABLE >  Practica03.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+MSG1                     	00103     	-1        	LABEL     	(NOSEG)   
+MSG2                     	0012B     	-1        	LABEL     	(NOSEG)   
+MSG3                     	00153     	-1        	LABEL     	(NOSEG)   
+MSG4                     	0018C     	-1        	LABEL     	(NOSEG)   
+MSG5                     	001B8     	-1        	LABEL     	(NOSEG)   
+MSG6                     	001F5     	-1        	LABEL     	(NOSEG)   
+MSG7                     	0021A     	-1        	LABEL     	(NOSEG)   
+MSG_TAIL                 	00243     	-1        	LABEL     	(NOSEG)   
+INICIO                   	00243     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 27/02/2026  --  05:30:25 p. m. ] 
+< END >
+ 
