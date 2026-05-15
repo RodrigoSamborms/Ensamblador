@@ -180,7 +180,7 @@ ExtraerDigitos:
     JNE ExtraerDigitos
 
 MOV num_digitos, BL    ;guardar cantidad de digitos
-
+;Concatenar los digitos binarios
 ;Meter los digitos en pila (de derecha a izquierda del arreglo)
 LEA SI, decimales
 MOV CX, BX              ;CX = num_digitos
@@ -201,7 +201,7 @@ ConvertirABinario:
     MOV AL, BL
     SHL AL, 1          ;AL * 2
     SHL AL, 1          ;AL * 4
-    MOVZX EAX, AL      ;extender a 16 bits
+    XOR AH, AH         ;limpiar AH para extender sin signo (8086)
     
     ;copiar 4 caracteres desde tabla a BCD_Num
     LEA SI, BinarioDígitos
@@ -216,7 +216,7 @@ ConvertirABinario:
     MOV [DI], AL
     INC SI
     INC DI
-    
+    ;cada digito decimal viene en formato de 4 bits
     MOV AL, [SI]
     MOV [DI], AL
     INC SI
