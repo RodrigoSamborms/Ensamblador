@@ -1,0 +1,310 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+noname.com_ -- emu8086 assembler version: 4.08  
+ 
+[ 17/05/2026  --  11:54:25 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       
+[   2]        :                                       ; You may customize this and other start-up templates;
+[   3]        :                                       ; The location of this template is c:\emu8086\inc\0_com_template.txt
+[   4]        :                                       include 'emu8086.inc'
+[   5]        :                                       
+[   6]        :                                       org 100h
+[   7]    0100: E9 AF 01                              jmp inicio
+[   8]        :                                       ;--------------------
+[   9]        :                                       ;|SEGMENTO DE DATOS |
+[  10]        :                                       ;--------------------
+[  11]    0103: 45 73 63 72 69 62 65 20 75 6E 20 6E   msj1 db "Escribe un numero de 16 bits en HEX usando mayusculas (ejemp FFFF) ",0
+                75 6D 65 72 6F 20 64 65 20 31 36 20 
+                62 69 74 73 20 65 6E 20 48 45 58 20 
+                75 73 61 6E 64 6F 20 6D 61 79 75 73 
+                63 75 6C 61 73 20 28 65 6A 65 6D 70 
+                20 46 46 46 46 29 20 00             
+[  12]    0147: 0D 0A 45 6C 20 6E 75 6D 65 72 6F 20   msj2 db 13, 10,"El numero escrito fue: $",0
+                65 73 63 72 69 74 6F 20 66 75 65 3A 
+                20 24 00                            
+[  13]        :                                       
+[  14]        :                                       ;Variables
+[  15]    0162: 00 00 00 00 00                        cadena db 5 dup(0); debe tomar en cuenta el caracter NULL
+[  16]    0167: 00 00 00 00 00                        invertida db 4 dup(0),0;cadena invertida
+[  17]    016C: 00 00 00 00                           invertidanum db 4 dup(0)
+[  18]    0170: 00 00                                 decimal dw 0    ;valor convertido a decimal
+[  19]        :                                       
+[  20]        :                                       ;Variables para BCD
+[  21]    0172: 00 00 00 00 00                        decimales db 5 dup(0)  ;array para almacenar los 5 digitos decimales
+[  22]    0177: 00                                    num_digitos db 0       ;cantidad de digitos
+[  23]    0178: 00 00 00 00 00 00 00 00 00 00 00 00   BCD_Num db 21 dup(0)   ;array de 20 caracteres ('0' y '1') + null terminator
+                00 00 00 00 00 00 00 00 00          
+[  24]        :                                       
+[  25]        :                                       ;Tablas Look up
+[  26]    018D: 30 31 32 33 34 35 36 37 38 39 41 42   CaracteresHEX db '0123456789ABCDEF';caracteres
+                43 44 45 46                         
+[  27]    019D: 00 01 02 03 04 05 06 07 08 09 0A 0B   ValoresHEX  db 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15;numeros
+                0C 0D 0E 0F                         
+[  28]        :                                       
+[  29]        :                                       ;Tabla para conversion a binario (4 caracteres por digito 0-9)
+[  30]    01AD:                                       BinarioDígitos:
+[  31]    01AD: 30 30 30 30                           db '0000'  ;0
+[  32]    01B1: 30 30 30 31                           db '0001'  ;1
+[  33]    01B5: 30 30 31 30                           db '0010'  ;2
+[  34]    01B9: 30 30 31 31                           db '0011'  ;3
+[  35]    01BD: 30 31 30 30                           db '0100'  ;4
+[  36]    01C1: 30 31 30 31                           db '0101'  ;5
+[  37]    01C5: 30 31 31 30                           db '0110'  ;6
+[  38]    01C9: 30 31 31 31                           db '0111'  ;7
+[  39]    01CD: 31 30 30 30                           db '1000'  ;8
+[  40]    01D1: 31 30 30 31                           db '1001'  ;9
+[  41]        :                                       
+[  42]        :                                       ;Procedimientos
+[  43]    01D5:                                       TablaLookup:
+[  44]        :                                       ;dato a verificar debe estar en AL
+[  45]        :                                       ;retorna valor buscado en AL y CF=0
+[  46]        :                                       ;o error con CF=1 y AL=0FFh
+[  47]        :                                       ;resguardamos los registros
+[  48]    01D5: 56                                    PUSH SI
+[  49]    01D6: 51                                    PUSH CX
+[  50]    01D7: 57                                    PUSH DI
+[  51]    01D8: 53                                    PUSH BX
+[  52]        :                                       ;codigo del procedimiento
+[  53]    01D9: 8A D8                                 MOV BL, AL          ;conservar valor incial de AL en BL
+[  54]    01DB: BE 8D 01                              LEA SI, CaracteresHEX;nos preparamos para revisar los caracteres
+[  55]    01DE: 33 FF                                 XOR DI, DI          ;reesetea DI
+[  56]    01E0: B9 10 00                              MOV CX, 16          ;contador del bucle
+[  57]    01E3:                                       HL_loop:
+[  58]    01E3: 8A 14                                 MOV DL, [SI]        ;cargamos el primer elemento de la tabla
+[  59]    01E5: 3A DA                                 CMP BL, DL          ;verificamos
+[  60]    01E7: 74 09                                 JE  HL_found        ;si encontrado no se continua la busqueda
+[  61]    01E9: 46                                    INC SI              ;movemos el apuntador de CaracteresHEX
+[  62]    01EA: 47                                    INC DI              ;movemos el apuntador de ValoresHEX
+[  63]    01EB: E2 F6                                 LOOP HL_loop        ;cuerpo del bucle de busqueda
+[  64]        :                                       
+[  65]        :                                       ; no encontrado se revisaron todos los elementos
+[  66]    01ED: B0 FF                                 MOV AL, 0FFh        ;se carga con un valor que indica error
+[  67]    01EF: F9                                    STC                 ; CF=1 indica error
+[  68]    01F0: EB 06                                 JMP TL_end
+[  69]        :                                       ;en caso de error AL=0FFh y CF=1
+[  70]    01F2:                                       HL_found:
+[  71]    01F2: BB 9D 01                              LEA BX, ValoresHEX  ;BX base de la tabla de valores
+[  72]    01F5: 8A 01                                 MOV AL, [BX+DI]     ; AL = valor 0..15
+[  73]    01F7: F8                                    CLC                 ; CF=0 indica exito
+[  74]        :                                       ;caso de exito AL con el valor 0..15 y CF=0
+[  75]        :                                       
+[  76]        :                                       ;reestablecemos los registros
+[  77]    01F8:                                       TL_end:
+[  78]    01F8: 5B                                    POP BX
+[  79]    01F9: 5F                                    POP DI
+[  80]    01FA: 59                                    POP CX
+[  81]    01FB: 5E                                    POP SI
+[  82]    01FC: C3                                    RET    ;termina el procedimiento
+[  83]        :                                       ;###MacroDefiniciones###
+[  84]    01FD: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[  85]    0211: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[  86]    0260: EB 50 50 53 51 52 B9 01 00 BB 10 27   DEFINE_PRINT_NUM_UNS
+                3D 00 00 74 32 83 FB 00 74 35 83 F9 
+                00 74 04 3B C3 72 14 B9 00 00 BA 00 
+                00 F7 F3 04 30 50 8A C0 B4 0E CD 10 
+                58 8B C2 50 BA 00 00 8B C3 2E F7 36 
+                B0 02 8B D8 58 EB CE 50 B0 30 B4 0E 
+                CD 10 58 5A 59 5B 58 C3 0A 00       
+[  87]        :                                       
+[  88]    02B2:                                       inicio:
+[  89]    02B2: 50 56 EB 16 54 4F 52 52 45 53 20 52   PRINT "TORRES RIVERA RODRIGO"
+                49 56 45 52 41 20 52 4F 44 52 49 47 
+                4F 00 BE B6 02 2E 8A 04 3C 00 74 07 
+                46 B4 0E CD 10 EB F2 5E 58          
+[  90]    02DF: 50 56 EB 03 0D 0A 00 BE E3 02 2E 8A   PRINTN '';salto de liena
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  91]    02F9: BE 03 01                              LEA    SI, msj1       ;cargamos el mensaje a enviar
+[  92]    02FC: E8 00 FF                              CALL   PRINT_STRING   ;imprimimos el mensaje
+[  93]    02FF: 50 56 EB 03 0D 0A 00 BE 03 03 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  94]    0319: BF 62 01                              LEA DI, cadena;definimos donde se guarda la cadena
+[  95]    031C: BA 05 00                              MOV DX, 5   ;cuantos caracteres se leeran
+[  96]    031F: E8 F1 FE                              CALL GET_STRING;leemos la cadena
+[  97]        :                                       
+[  98]        :                                       
+[  99]        :                                       ;metemos los valores en pila para voltear
+[ 100]        :                                       ;conocemos de antemano el numero de elementos a meter a la pila
+[ 101]    0322: BE 62 01                              LEA SI, cadena  ;metemos la direccion de la cadena
+[ 102]    0325: B9 04 00                              MOV CX, 4   ;debido a que el ultimo elemento es null
+[ 103]    0328:                                       Voltear:
+[ 104]    0328: 8A 04                                 MOV AL,[SI] ;movemos el caracter al registro
+[ 105]    032A: B4 00                                 MOV AH, 0   ;solo AX entra a la pila
+[ 106]    032C: 50                                    PUSH AX ;metemos el valor a la pila
+[ 107]    032D: 46                                    INC SI
+[ 108]    032E: E2 F8                                 LOOP Voltear
+[ 109]        :                                       
+[ 110]        :                                       ;sacamos los valores en pila volteados para rellenar la tabla invertida
+[ 111]    0330: BE 67 01                              LEA SI, Invertida
+[ 112]    0333: B9 04 00                              MOV CX, 4
+[ 113]    0336:                                       Invertir:
+[ 114]    0336: 58                                    POP AX
+[ 115]        :                                       ;el valor de AH es 0 y no lo necesitamos
+[ 116]    0337: 88 04                                 MOV [SI], AL
+[ 117]    0339: 46                                    INC SI
+[ 118]    033A: E2 FA                                 LOOP Invertir
+[ 119]        :                                       
+[ 120]        :                                       
+[ 121]    033C: BE 67 01                              LEA SI, Invertida    ;arreglo fuente
+[ 122]    033F: BF 6C 01                              LEA DI, invertidanum ;arreglo destino
+[ 123]    0342: B9 04 00                              MOV CX, 4
+[ 124]    0345:                                       Rellenar_invertidanum:
+[ 125]    0345: 8A 04                                 MOV AL, [SI]      ;movemos el valor de la tabla a buscar
+[ 126]    0347: E8 8B FE                              CALL TablaLookup  ;procedimiento para buscar en las tablas
+[ 127]    034A: 73 41                                 JNC exito              ; CF=0 ? éxito, AL contiene 0..15
+[ 128]        :                                       ; aquí manejas error (AL = 0FFh)
+[ 129]    034C: 50 56 EB 27 45 52 52 4F 52 20 45 4E   PRINT "ERROR EN LOS DATOS TERMINA EL PROGRAMA"
+                20 4C 4F 53 20 44 41 54 4F 53 20 54 
+                45 52 4D 49 4E 41 20 45 4C 20 50 52 
+                4F 47 52 41 4D 41 00 BE 50 03 2E 8A 
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 130]    038A: E9 E7 00                              JMP fin_programa    ;termina el programa
+[ 131]        :                                       ;JMP fin_valida
+[ 132]    038D:                                       exito:          ; aqui AL = valor numérico (0..15)
+[ 133]    038D: 88 05                                 MOV [DI], AL
+[ 134]    038F: 46                                    INC SI ;nos movemos al siguiente valor
+[ 135]    0390: 47                                    INC DI ;a verificar
+[ 136]    0391: E2 B2                                 LOOP Rellenar_invertidanum
+[ 137]        :                                       ;fin_valida: ;continua el programa
+[ 138]        :                                       
+[ 139]        :                                       ;como ya tenemos en invertidanum los valores decimales
+[ 140]        :                                       ;para cada digito y estan en orden de menor a mayor peso
+[ 141]        :                                       ;de izquierda a derecha podemos comenzar la operacion para
+[ 142]        :                                       ;calcular el valro en decimal
+[ 143]    0393: BE 6C 01                              LEA SI, invertidanum   ;apuntamos al arreglo con los digitos
+[ 144]    0396: B9 04 00                              MOV CX, 4              ;son cuatro digitos
+[ 145]    0399: BB 01 00                              MOV BX, 1              ; peso = 16^0
+[ 146]    039C: C7 06 70 01 00 00                     MOV decimal, 0
+[ 147]    03A2:                                       AcumularHex:
+[ 148]    03A2: 33 C0                                 XOR AX, AX         ;reseteamos AX a 0
+[ 149]    03A4: 8A 04                                 MOV AL, [SI]       ;apuntamos al primer elemento del arreglo
+[ 150]    03A6: F7 E3                                 MUL BX             ;AX = digito * peso (DX:AX, aqui DX queda 0)
+[ 151]    03A8: 01 06 70 01                           ADD decimal, AX    ;la salida se va acumulando sistema numerico posicional
+[ 152]        :                                       
+[ 153]        :                                       ; peso *= 16 ;calculo del siguiente peso mediante desplazamientos
+[ 154]    03AC: D1 E3                                 SHL BX, 1    ;desplazamientos a la izquierda
+[ 155]    03AE: D1 E3                                 SHL BX, 1
+[ 156]    03B0: D1 E3                                 SHL BX, 1
+[ 157]    03B2: D1 E3                                 SHL BX, 1
+[ 158]        :                                       
+[ 159]    03B4: 46                                    INC SI        ;nos movemos al siguiente elemento del arreglo
+[ 160]    03B5: E2 EB                                 LOOP AcumularHex ;continua el ciclo
+[ 161]        :                                       
+[ 162]    03B7: 50 56 EB 03 0D 0A 00 BE BB 03 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 163]    03D1: A1 70 01                              MOV AX, decimal
+[ 164]    03D4: E8 8B FE                              CALL PRINT_NUM_UNS
+[ 165]        :                                       
+[ 166]        :                                       ;-----CONVERSION A BCD BINARIO-----
+[ 167]        :                                       ;Extraccion de digitos decimales dividiendo entre 10
+[ 168]    03D7: BF 72 01                              LEA DI, decimales
+[ 169]    03DA: A1 70 01                              MOV AX, decimal
+[ 170]    03DD: B9 0A 00                              MOV CX, 10
+[ 171]    03E0: 33 DB                                 XOR BX, BX              ;BX = contador de digitos
+[ 172]        :                                       
+[ 173]    03E2:                                       ExtraerDigitos:
+[ 174]    03E2: 33 D2                                 XOR DX, DX
+[ 175]    03E4: F7 F1                                 DIV CX              ;AX = cociente, DX = residuo
+[ 176]    03E6: 88 15                                 MOV [DI], DL        ;guardar el digito
+[ 177]    03E8: 47                                    INC DI
+[ 178]    03E9: 43                                    INC BX              ;contar digitos
+[ 179]    03EA: 3D 00 00                              CMP AX, 0
+[ 180]    03ED: 75 F3                                 JNE ExtraerDigitos
+[ 181]        :                                       
+[ 182]    03EF: 88 1E 77 01                           MOV num_digitos, BL    ;guardar cantidad de digitos
+[ 183]        :                                       ;Concatenar los digitos binarios
+[ 184]        :                                       ;Meter los digitos en pila (de derecha a izquierda del arreglo)
+[ 185]    03F3: BE 72 01                              LEA SI, decimales
+[ 186]    03F6: 8B CB                                 MOV CX, BX              ;CX = num_digitos
+[ 187]    03F8:                                       MetEnPila:
+[ 188]    03F8: 8A 04                                 MOV AL, [SI]
+[ 189]    03FA: 50                                    PUSH AX
+[ 190]    03FB: 46                                    INC SI
+[ 191]    03FC: E2 FA                                 LOOP MetEnPila
+[ 192]        :                                       
+[ 193]        :                                       ;Sacar de pila y convertir cada digito a sus 4 bits binarios
+[ 194]    03FE: BF 78 01                              LEA DI, BCD_Num        ;apuntador destino
+[ 195]    0401: 8B CB                                 MOV CX, BX             ;CX = num_digitos
+[ 196]    0403:                                       ConvertirABinario:
+[ 197]    0403: 58                                    POP AX
+[ 198]    0404: 8A D8                                 MOV BL, AL         ;BL = digito (0-9)
+[ 199]        :                                       
+[ 200]        :                                       ;calcular desplazamiento en tabla: AL * 4
+[ 201]    0406: 8A C3                                 MOV AL, BL
+[ 202]    0408: D0 E0                                 SHL AL, 1          ;AL * 2
+[ 203]    040A: D0 E0                                 SHL AL, 1          ;AL * 4
+[ 204]    040C: 32 E4                                 XOR AH, AH         ;limpiar AH para extender sin signo (8086)
+[ 205]        :                                       
+[ 206]        :                                       ;copiar 4 caracteres desde tabla a BCD_Num
+[ 207]    040E: BE AD 01                              LEA SI, BinarioDígitos
+[ 208]    0411: 03 F0                                 ADD SI, AX         ;SI = tabla + offset
+[ 209]        :                                       
+[ 210]    0413: 8A 04                                 MOV AL, [SI]
+[ 211]    0415: 88 05                                 MOV [DI], AL
+[ 212]    0417: 46                                    INC SI
+[ 213]    0418: 47                                    INC DI
+[ 214]        :                                       
+[ 215]    0419: 8A 04                                 MOV AL, [SI]
+[ 216]    041B: 88 05                                 MOV [DI], AL
+[ 217]    041D: 46                                    INC SI
+[ 218]    041E: 47                                    INC DI
+[ 219]        :                                       ;cada digito decimal viene en formato de 4 bits
+[ 220]    041F: 8A 04                                 MOV AL, [SI]
+[ 221]    0421: 88 05                                 MOV [DI], AL
+[ 222]    0423: 46                                    INC SI
+[ 223]    0424: 47                                    INC DI
+[ 224]        :                                       
+[ 225]    0425: 8A 04                                 MOV AL, [SI]
+[ 226]    0427: 88 05                                 MOV [DI], AL
+[ 227]    0429: 47                                    INC DI
+[ 228]        :                                       
+[ 229]    042A: E2 D7                                 LOOP ConvertirABinario
+[ 230]        :                                       
+[ 231]        :                                       ;Terminar string con null
+[ 232]    042C: C6 05 00                              MOV byte [DI], 0
+[ 233]        :                                       
+[ 234]        :                                       ;Mostrar resultado BCD
+[ 235]    042F: 50 56 EB 03 0D 0A 00 BE 33 04 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 236]    0449: 50 56 EB 0E 42 43 44 20 42 69 6E 61   PRINT "BCD Binario: "
+                72 69 6F 3A 20 00 BE 4D 04 2E 8A 04 
+                3C 00 74 07 46 B4 0E CD 10 EB F2 5E 
+                58                                  
+[ 237]    046E: BE 78 01                              LEA SI, BCD_Num
+[ 238]    0471: E8 8B FD                              CALL PRINT_STRING
+[ 239]        :                                       
+[ 240]    0474:                                       fin_programa:
+[ 241]    0474: CD 20                                 INT 20H
+[ 242]    0476: C3                                    ret
+[ 243]        :                                       
+[ 244]        :                                       
+[ 245]        :                                       
+[ 246]        :                                       
+[ 247]        :                                       
+[ 248]        :                                       
+[ 249]        :                                       
+[ 250]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
