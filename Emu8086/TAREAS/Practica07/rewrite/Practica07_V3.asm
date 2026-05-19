@@ -8,7 +8,7 @@ JMP inicio:
 ;| SEGMENTO DE DATOS |
 ;--------------------
 max_caracteres  EQU 60
-; Estructura requerida por la INT 21h / AH=0Ah: [Max], [Leídos], [Espacio]
+; Estructura requerida por la INT 21h / AH=0Ah: [Max], [Leidos], [Espacio]
 buffer db max_caracteres, 0, max_caracteres dup(' ')
 nombre_archivo  db 60 dup(0)
 handler dw ?    ; Variable para almacenar el identificador del archivo
@@ -16,15 +16,15 @@ handler dw ?    ; Variable para almacenar el identificador del archivo
 ; Variables
 caracter db ? ;alamacenamiento del caracter leido
 cont_caracteres dw 0 ;contador de caracteres
-nueva_linea     db 1    ; Bandera: 1 = Imprimir contador al inicio de línea, 0 = No imprimir
+nueva_linea     db 1    ; Bandera: 1 = Imprimir contador al inicio de lï¿½nea, 0 = No imprimir
 
-; Funciones de la librería emu8086.inc
+; Funciones de la libreria emu8086.inc
 DEFINE_PRINT_STRING
 DEFINE_PRINT_NUM_UNS
 
 ;definir funciones y procedimientos
 ; Funcion: PRINT_NUM_CARA
-; Entrada: AX = Valor numérico a imprimir (ej. cont_caracteres)
+; Entrada: AX = Valor numerico a imprimir (ej. cont_caracteres)
 ; Salida: Imprime el numero en consola con formato estricto de 3 digitos (000)
 ; funcionamiento:
 ; el numero esta almacenado en binario, asi que vamos a extraer
@@ -40,7 +40,7 @@ PUSH BX   ;alterar los valores del programa principal
 PUSH CX   ;esta es una practica comun arquitecturas
 PUSH DX   ;posteriores tienen instrucciones que facilitan ester proceso
 
-MOV BX, AX;Pasamos el numero a BX para trabajar cómodamente
+MOV BX, AX;Pasamos el numero a BX para trabajar comodamente
 
 ;Centenas
 MOV AX, BX  ;Colocamos el numero completo en AX
@@ -52,14 +52,14 @@ MOV BX, DX  ;Guardamos provisionalmente el residuo en BX para despues
 
 ;Imprimir las Centenas
 MOV DL, AL   ;Movemos el cociente a DL
-ADD DL, 30h  ;Convertimos el número a su carácter ASCII (ej: 0 -> '0')
+ADD DL, 30h  ;Convertimos el numero a su caracter ASCII (ej: 0 -> '0')
 MOV AH, 02h  ;Funcion 02h de la INT 21h para imprimir caracter
 INT 21h
 
 ;Decenas y unidades
 ;la ultima division nos entrega las decenas en el cociente
 ;y las unidades en el residuo
-MOV AX, BX ;Recuperamos el residuo anterior (lo que quedó de las centenas)
+MOV AX, BX ;Recuperamos el residuo anterior (lo que quedï¿½ de las centenas)
 MOV DX, 0  ;Limpiamos DX
 MOV CX, 10 ;Divisor = 10
 DIV CX     ;AX = Cociente (Decenas), DX = Residuo (Unidades)
@@ -98,7 +98,7 @@ INT 21h
 ;eliminar los datos no requeridos para el nombre
 ;del archivo a abrir
 XOR BX, BX          ;reinciamos BX para cargar el numero de caracteres
-MOV BL, buffer[1]   ;BL obtiene cuántos caracteres se escribieron realmente
+MOV BL, buffer[1]   ;BL obtiene cuantos caracteres se escribieron realmente
 MOV SI, offset buffer + 2   ;Origen cadena buffer mas dos desplazamientos
 LEA DI, nombre_archivo      ;Destino cadena nombre_archivo para abrir archivo
 MOV CX, BX                  ;Usamos el contador de caracteres para el bucle
@@ -114,7 +114,7 @@ MOV byte ptr [DI], 0 ;terminador para PRINT_STRING y apertura de archivos
 ;####ABRIR EL ARCHIVO####
 MOV AH, 3Dh             ; Funcion 3Dh: Abrir archivo
 MOV AL, 0               ; Modo de acceso: 0 = Solo lectura
-LEA DX, nombre_archivo  ; DX debe apuntar al nombre con terminación 0
+LEA DX, nombre_archivo  ; DX debe apuntar al nombre con terminacion 0
 INT 21h
 ;Si no se puede abir saltamos a error_abrir
 JC error_abrir ;Si la bandera Carry (CF) es 1, hubo un error
@@ -129,7 +129,7 @@ leer_caracter:
 MOV AH, 3Fh     ;Leer de un archivo AH= 3Fh
 MOV BX, handler ;Manejador del archivo
 MOV CX, 1       ;leeremos exactamente 1 caracter
-LEA DX, caracter;Direccion de memoria donde se guardará el byte leido
+LEA DX, caracter;Direccion de memoria donde se guardar el byte leido
 INT 21h         ;INT que lee el dato
 
 JC error_lectura;Si hay error en la lectura, saltamos
@@ -138,14 +138,14 @@ JE fin_archivo  ;Si AX = 0, llegamos al final del archivo (EOF)
 
 ; --- Control del inicio de linea ---
 ;para verificar si el caracter sigue a un salto de linea
-CMP nueva_linea, 1      ; ¿Es el inicio de una linea?
+CMP nueva_linea, 1      ; ï¿½Es el inicio de una linea?
 JNE verificar_filtros   ; Si no es, saltamos directo a las verificaciones
 
 ;la primera lectura del caracter lleva por defacto el valor 0
 ;Imprimimos el contador antes del texto
 MOV AX, cont_caracteres ;Cargamos el valor actual en AX
 CALL PRINT_NUM_CARA     ;Funcion para formato de tres digitos
-PRINT " "               ;Espacio decorativo entre el número y el texto
+PRINT " "               ;Espacio decorativo entre el numero y el texto
 MOV nueva_linea, 0      ;Apagamos la bandera para que no repita el numero en la misma linea
 
 verificar_filtros:
@@ -153,15 +153,15 @@ verificar_filtros:
 CMP caracter, 0Dh     ;0Dh = Carriage Return (Retorno de carro)
 JE mostrar_pantalla   ;Si es 0Dh, saltamos la suma y solo lo mandamos a pantalla
 
-CMP caracter, 0Ah     ;0Ah = Line Feed (Salto de línea)
+CMP caracter, 0Ah     ;0Ah = Line Feed (Salto de linea)
 JE activar_nueva_linea;Si es 0Ah, saltamos la suma y vamos a activar la bandera
 
-; Si no fue ninguno de los anteriores, es un carácter válido. ¡Lo contamos!
+; Si no fue ninguno de los anteriores, es un caracter valido. Lo contamos!
 INC cont_caracteres
 JMP mostrar_pantalla
 
 activar_nueva_linea:
-MOV nueva_linea, 1      ; Activamos la bandera para la siguiente línea
+MOV nueva_linea, 1      ; Activamos la bandera para la siguiente lï¿½nea
 
 mostrar_pantalla:
 ; --> Mostrar el caracter leido en la pantalla
@@ -176,7 +176,7 @@ PRINTN ''
 PRINTN "Error al leer del archivo"
 
 fin_archivo:
-PRINTN ''                ; Un salto de línea al terminar el volcado
+PRINTN ''                ; Un salto de linea al terminar el volcado
 PRINTN " Termino el archivo "
 
 ;####CERRAMOS EL ARCHIVO####
