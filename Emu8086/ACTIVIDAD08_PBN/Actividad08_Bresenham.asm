@@ -10,85 +10,6 @@ RADIUS   EQU 60         ; Radio del círculo
 COLOR    EQU 0Fh        ; Color blanco
 
 ;============
-; Programa Principal
-;============
-start:
-    ; Establecer modo de video 13h (320x200, 256 colores)
-    mov ah, 0
-    mov al, 13h
-    int 10h
-
-    ; Inicializar algoritmo de Bresenham para círculos
-    ; Registros usados:
-    ; SI = x (inicia en 0)
-    ; DI = y (inicia en radius)
-    ; BP = d (variable de decisión)
-    
-    xor si, si              ; SI = x = 0
-    mov di, RADIUS          ; DI = y = radius
-    
-    ; d = 3 - 2*radius
-    mov ax, RADIUS
-    shl ax, 1               ; ax = 2*radius
-    mov bp, 3
-    sub bp, ax              ; BP = d = 3 - 2*radius
-
-bresenham_loop:
-    ; Verificar si x > y (condición de parada)
-    cmp si, di
-    jg bresenham_done
-
-    ; Dibujar los 8 puntos simétricos
-    call draw_8_points
-
-    ; Actualizar d y coordenadas
-    mov ax, bp
-    cmp ax, 0
-    jl update_d_negative
-
-update_d_positive:
-    ; d >= 0: d = d + 4*(x-y) + 10
-    mov ax, si
-    sub ax, di
-    shl ax, 1
-    shl ax, 1               ; ax = 4*(x-y)
-    add ax, 10
-    add bp, ax
-    
-    ; Decrementar y
-    dec di
-    
-    ; Incrementar x
-    inc si
-    jmp bresenham_loop
-
-update_d_negative:
-    ; d < 0: d = d + 4*x + 6
-    mov ax, si
-    shl ax, 1
-    shl ax, 1               ; ax = 4*x
-    add ax, 6
-    add bp, ax
-    
-    ; Incrementar x
-    inc si
-    jmp bresenham_loop
-
-bresenham_done:
-    ; Esperar tecla
-    mov ah, 0
-    int 16h
-
-    ; Restaurar modo texto
-    mov ax, 0003h
-    int 10h
-
-    ; Salir
-    mov ax, 4C00h
-    int 21h
-    ret
-
-;============
 ; Subrutina: Dibujar 8 puntos simétricos
 ;============
 ; Dibuja los 8 puntos de simetría del círculo
@@ -195,3 +116,85 @@ plot_pixel:
     pop bx
     pop ax
     ret
+
+
+;============
+; Programa Principal
+;============
+start:
+    ; Establecer modo de video 13h (320x200, 256 colores)
+    mov ah, 0
+    mov al, 13h
+    int 10h
+
+    ; Inicializar algoritmo de Bresenham para círculos
+    ; Registros usados:
+    ; SI = x (inicia en 0)
+    ; DI = y (inicia en radius)
+    ; BP = d (variable de decisión)
+    
+    xor si, si              ; SI = x = 0
+    mov di, RADIUS          ; DI = y = radius
+    
+    ; d = 3 - 2*radius
+    mov ax, RADIUS
+    shl ax, 1               ; ax = 2*radius
+    mov bp, 3
+    sub bp, ax              ; BP = d = 3 - 2*radius
+
+bresenham_loop:
+    ; Verificar si x > y (condición de parada)
+    cmp si, di
+    jg bresenham_done
+
+    ; Dibujar los 8 puntos simétricos
+    call draw_8_points
+
+    ; Actualizar d y coordenadas
+    mov ax, bp
+    cmp ax, 0
+    jl update_d_negative
+
+update_d_positive:
+    ; d >= 0: d = d + 4*(x-y) + 10
+    mov ax, si
+    sub ax, di
+    shl ax, 1
+    shl ax, 1               ; ax = 4*(x-y)
+    add ax, 10
+    add bp, ax
+    
+    ; Decrementar y
+    dec di
+    
+    ; Incrementar x
+    inc si
+    jmp bresenham_loop
+
+update_d_negative:
+    ; d < 0: d = d + 4*x + 6
+    mov ax, si
+    shl ax, 1
+    shl ax, 1               ; ax = 4*x
+    add ax, 6
+    add bp, ax
+    
+    ; Incrementar x
+    inc si
+    jmp bresenham_loop
+
+bresenham_done:
+    ; Esperar tecla
+    mov ah, 0
+    int 16h
+
+    ; Restaurar modo texto
+    mov ax, 0003h
+    int 10h
+
+    ; Salir
+    mov ax, 4C00h
+    int 21h
+    ret
+
+

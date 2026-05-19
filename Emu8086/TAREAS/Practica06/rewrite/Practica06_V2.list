@@ -1,0 +1,442 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Practica06_V1.com -- emu8086 assembler version: 4.08  
+ 
+[ 17/05/2026  --  11:48:36 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       include 'emu8086.inc'
+[   2]        :                                       
+[   3]        :                                       org 100h
+[   4]    0100: E9 D6 01                              jmp Inicio
+[   5]        :                                       
+[   6]        :                                       ;--------------------
+[   7]        :                                       ;| SEGMENTO DE DATOS |
+[   8]        :                                       ;--------------------
+[   9]        :                                       max_caracteres EQU 60
+[  10]        :                                       ; Estructura: [Tamaño Max], [Leídos], [Espacio para caracteres]
+[  11]    0103: 3C 00 20 20 20 20 20 20 20 20 20 20   buffer db max_caracteres, 0, max_caracteres dup(' ')
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20                               
+[  12]    0141: 00 00 00 00 00 00 00 00 00 00 00 00   cadena db 60 dup(0)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                                                    
+[  13]    017D: 00                                    tam_cadena db 0 ;para saber cuantos elementos hay en la cadena
+[  14]    017E: 00 00 00 00 00 00 00 00 00 00 00 00   cadena_binario db 60 dup(0) ;contiene los digitos en binario de la cadena original
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                                                    
+[  15]    01BA: 00 00 00 00 00 00 00 00 00 00 00 00   cadena_resultado1 db 60 dup(0) ;resultado del primer parse
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                                                    
+[  16]        :                                       
+[  17]        :                                       
+[  18]        :                                       ;Variables
+[  19]    01F6: 00                                    operador1 db 0 ;contenedor del primer operando
+[  20]    01F7: 00                                    operacion db 0 ;contenedor de la operacion a realizar
+[  21]    01F8: 00                                    operador2 db 0 ;contenedor del segundo operando
+[  22]    01F9: 00                                    resultado db 0 ;resultado de la operacion
+[  23]    01FA: 01                                    contador db 1 ;cuenta los caracteres
+[  24]    01FB: 00                                    total db 0       ;resultado del parseo de la expresion
+[  25]        :                                       
+[  26]        :                                       ; Funciones de la librería emu8086.inc
+[  27]    01FC: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[  28]    0210: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[  29]    025F: EB 50 50 53 51 52 B9 01 00 BB 10 27   DEFINE_PRINT_NUM_UNS
+                3D 00 00 74 32 83 FB 00 74 35 83 F9 
+                00 74 04 3B C3 72 14 B9 00 00 BA 00 
+                00 F7 F3 04 30 50 8A C0 B4 0E CD 10 
+                58 8B C2 50 BA 00 00 8B C3 2E F7 36 
+                AF 02 8B D8 58 EB CE 50 B0 30 B4 0E 
+                CD 10 58 5A 59 5B 58 C3 0A 00       
+[  30]    02B1: EB 26 52 50 3D 00 00 75 0A 50 B0 30   DEFINE_PRINT_NUM
+                B4 0E CD 10 58 EB 12 3D 00 00 79 0A 
+                F7 D8 50 B0 2D B4 0E CD 10 58 E8 8B 
+                FF 58 5A C3                         
+[  31]        :                                       
+[  32]    02D9:                                       Inicio:
+[  33]    02D9: 50 56 EB 16 52 6F 64 72 69 67 6F 20   PRINT "Rodrigo Torres Rivera"
+                54 6F 72 72 65 73 20 52 69 76 65 72 
+                61 00 BE DD 02 2E 8A 04 3C 00 74 07 
+                46 B4 0E CD 10 EB F2 5E 58          
+[  34]    0306: 50 56 EB 03 0D 0A 00 BE 0A 03 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  35]        :                                       
+[  36]    0320: 50 56 EB 03 0D 0A 00 BE 24 03 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  37]    033A: 50 56 EB 22 4E 4F 54 41 3A 20 63 61   PRINT "NOTA: cadenas invalidas 33 o 4++5"
+                64 65 6E 61 73 20 69 6E 76 61 6C 69 
+                64 61 73 20 33 33 20 6F 20 34 2B 2B 
+                35 00 BE 3E 03 2E 8A 04 3C 00 74 07 
+                46 B4 0E CD 10 EB F2 5E 58          
+[  38]    0373: 50 56 EB 49 20 63 61 64 65 6E 61 20   PRINT " cadena minima aceptada con tres elementos op1 operacion op2 ejemplo 2/3"
+                6D 69 6E 69 6D 61 20 61 63 65 70 74 
+                61 64 61 20 63 6F 6E 20 74 72 65 73 
+                20 65 6C 65 6D 65 6E 74 6F 73 20 6F 
+                70 31 20 6F 70 65 72 61 63 69 6F 6E 
+                20 6F 70 32 20 65 6A 65 6D 70 6C 6F 
+                20 32 2F 33 00 BE 77 03 2E 8A 04 3C 
+                00 74 07 46 B4 0E CD 10 EB F2 5E 58 
+                                                    
+[  39]    03D3: 50 56 EB 03 0D 0A 00 BE D7 03 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  40]    03ED: 50 56 EB 1E 45 73 63 72 69 62 65 20   PRINT "Escribe la cadena a traducir:"
+                6C 61 20 63 61 64 65 6E 61 20 61 20 
+                74 72 61 64 75 63 69 72 3A 00 BE F1 
+                03 2E 8A 04 3C 00 74 07 46 B4 0E CD 
+                10 EB F2 5E 58                      
+[  41]    0422: 50 56 EB 03 0D 0A 00 BE 26 04 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  42]        :                                       
+[  43]        :                                       ;LEEMOS LOS DATOS
+[  44]        :                                       ;como la cadena puede ser de tamano variable se utilizara INT21h/0Ah
+[  45]    043C: BA 03 01                              LEA DX, buffer      ;variable donde se guardan los datos a leer
+[  46]    043F: B4 0A                                 MOV AH, 0ah         ;indicamos la opcion de INT para lectura del teclado
+[  47]    0441: CD 21                                 INT 21h
+[  48]    0443: 33 DB                                 XOR BX, BX          ;procesamos la cadena
+[  49]    0445: 8A 1E 04 01                           MOV BL, buffer[1]   ; Obtenemos cuántos caracteres se escribieron realmente
+[  50]    0449: C6 87 05 01 24                        MOV buffer[BX+2], '$' ; Ponemos el centinela para poder imprimir con AH=09h
+[  51]        :                                       ;termina la lectura de datos de cadena variable
+[  52]        :                                       
+[  53]        :                                       ;MOSTRAR LOS DATOS
+[  54]        :                                       ;PRINTN ''           ; Salto de línea antes de mostrar el resultado
+[  55]        :                                       ;MOV DX, offset buffer + 2 ; Saltamos los dos bytes de control
+[  56]        :                                       ;MOV AH, 9           ;
+[  57]        :                                       ;INT 21h
+[  58]        :                                       
+[  59]        :                                       ;detemos para debug paso a paso
+[  60]        :                                       ;PRINT "cambie a ejecucion paso a paso para DEBUG"
+[  61]        :                                       ;mov ah, 0
+[  62]        :                                       ;int 16h
+[  63]        :                                       
+[  64]        :                                       
+[  65]        :                                       ;copiaremos los datos del buffe a cadena para evitar los ajustes del inicio del buffer
+[  66]    044E: B8 00 00                              MOV AX, 0       ; Inicializamos AX en 0 para el ejemplo
+[  67]    0451: BE 05 01                              MOV SI, offset buffer + 2;indice fuente direccion
+[  68]    0454: BF 41 01                              LEA DI, cadena  ;indice destino direccion
+[  69]    0457: B3 00                                 MOV BL, 0
+[  70]    0459:                                       inicio_while:
+[  71]    0459: 8A 04                                 MOV AL, [SI]        ;Tomamos el dato de la casilla fuente
+[  72]    045B: 3C 24                                 CMP AL, '$'         ;Si es el centinela terminamos
+[  73]    045D: 74 08                                 JE fin_while
+[  74]    045F: 88 05                                 MOV [DI], AL        ;Lo copiamos a la casilla destino
+[  75]    0461: 46                                    INC SI              ;Movemos el apuntador a la siguiente direccion
+[  76]    0462: 47                                    INC DI
+[  77]    0463: FE C3                                 INC BL              ;Aumentamos la cuenta sólo si copiamos un carácter
+[  78]    0465: EB F2                                 JMP inicio_while
+[  79]    0467:                                       fin_while: ;salimos del bucle while
+[  80]    0467: C6 05 24                              MOV [DI], '$'         ;terminador para INTs
+[  81]    046A: C6 45 01 00                           MOV [DI+1], 0         ;terminador para PRINT_STRING
+[  82]    046E: 88 1E 7D 01                           MOV [tam_cadena], BL ;guardamos el numero de elementos en la cadena
+[  83]        :                                       
+[  84]        :                                       ;MOV BL, 0
+[  85]        :                                       
+[  86]        :                                       ;PRINTN '';salto de linea
+[  87]        :                                       ;LEA    SI, cadena       ;cargamos el mensaje a enviar
+[  88]        :                                       ;CALL   PRINT_STRING   ;imprimimos el mensaje
+[  89]        :                                       ;PRINTN ''
+[  90]        :                                       ;PRINT "tamio de la cadena: "
+[  91]        :                                       ;XOR AX, AX
+[  92]        :                                       ;MOV AL, [tam_cadena]
+[  93]        :                                       ;call PRINT_NUM_UNS
+[  94]        :                                       ;PRINT ''
+[  95]        :                                       
+[  96]        :                                       
+[  97]        :                                       ;detemos para debug paso a paso
+[  98]        :                                       ;PRINT "cambie a ejecucion paso a paso para DEBUG"
+[  99]        :                                       ;mov ah, 0
+[ 100]        :                                       ;int 16h
+[ 101]        :                                       
+[ 102]        :                                       
+[ 103]        :                                       ;ahora convertiremos en esa cade los digitos numericos
+[ 104]        :                                       ;a su valor de binario, usando un for loop gracias al
+[ 105]        :                                       ;valor tama_cadena
+[ 106]    0472: 8A 0E 7D 01                           MOV CL, [tam_cadena] ;inicializamos el contador parte baja
+[ 107]    0476: B5 00                                 MOV CH, 0          ;parte alta 0
+[ 108]    0478: BE 41 01                              LEA SI, cadena ;cadena de origen
+[ 109]    047B: BF 7E 01                              LEA DI, cadena_binario ;cadena destino
+[ 110]    047E: B3 00                                 MOV BL, 0   ;preparamos el contador de caracteres
+[ 111]    0480:                                       ASCII_Binario:
+[ 112]    0480: 8A 04                                 MOV AL, [SI] ;leemos el primer dato
+[ 113]        :                                       ;inicia_conversion ASCCII->Binario
+[ 114]    0482: 3C 30                                 CMP AL, 30h    ;verificamos el rango menor
+[ 115]    0484: 72 08                                 JB no_digito   ;si el caracter esta dentro
+[ 116]    0486: 3C 39                                 CMP AL, 39h    ;verificamos el rango mayor
+[ 117]    0488: 77 04                                 JA no_digito   ;en caso de no ser digito
+[ 118]    048A: 2C 30                                 SUB AL, 30h    ;restamos 30h para convertir
+[ 119]    048C: EB 00                                 JMP termina_conversion
+[ 120]    048E:                                       no_digito:
+[ 121]        :                                       ;no hacemos nada al dato se envia un mensaje de
+[ 122]        :                                       ;error en caso de ser requerido dejado a futuro
+[ 123]        :                                       ;para revision si es cadena valida
+[ 124]    048E:                                       termina_conversion:
+[ 125]        :                                       ;se ha terminado la conversion
+[ 126]        :                                       ;independientemente si se convirtio o no
+[ 127]    048E: 88 05                                 MOV [DI], AL ;Movemos el dato convertido a la cadena destino
+[ 128]    0490: 46                                    INC SI   ;Nos movemos al siguiente caracter
+[ 129]    0491: 47                                    INC DI   ;en las cadenas fuente SI destino DI
+[ 130]    0492: FE C3                                 INC BL   ;incrementamos el contador de caracteres
+[ 131]    0494: E2 EA                                 LOOP ASCII_Binario
+[ 132]    0496: C6 05 24                              MOV [DI], '$'         ;terminador para INTs
+[ 133]    0499: C6 45 01 00                           MOV [DI+1], 0         ;terminador para PRINT_STRING
+[ 134]    049D: 88 1E 7D 01                           MOV [tam_cadena], BL ;guardamos el numero de elementos en la cadena
+[ 135]        :                                       
+[ 136]        :                                       ;veerificamos el resultado
+[ 137]        :                                       ;PRINTN '';salto de linea
+[ 138]        :                                       ;LEA    SI, cadena_binario ;cargamos el mensaje a enviar
+[ 139]        :                                       ;CALL   PRINT_STRING   ;imprimimos el mensaje
+[ 140]        :                                       ;PRINTN ''
+[ 141]        :                                       ;PRINT "tamio de la cadena: "
+[ 142]        :                                       ;XOR AX, AX
+[ 143]        :                                       ;MOV AL, [tam_cadena]
+[ 144]        :                                       ;call PRINT_NUM_UNS
+[ 145]        :                                       ;PRINT ''
+[ 146]        :                                       
+[ 147]        :                                       
+[ 148]        :                                       ;detemos para debug paso a paso
+[ 149]        :                                       ;PRINT "cambie a ejecucion paso a paso para DEBUG"
+[ 150]        :                                       ;mov ah, 0
+[ 151]        :                                       ;int 16h
+[ 152]        :                                       
+[ 153]        :                                       
+[ 154]        :                                       
+[ 155]        :                                       ;NOTA: el siguiente codigo espera que la cadena sea
+[ 156]        :                                       ;valida y el minimo de cadena es de tres elementos
+[ 157]        :                                       ;mas el caracter '$', por ejemplo:
+[ 158]        :                                       ; op1,operacion,op2,$
+[ 159]        :                                       
+[ 160]        :                                       ;Ahora vamos a procesar la cadena
+[ 161]    04A1: BE 7E 01                              LEA SI, cadena_binario ;cadena de origen
+[ 162]    04A4: BF BA 01                              LEA DI, cadena_resultado1 ;cadena destino
+[ 163]    04A7: 8A 1E FA 01                           MOV BL, contador   ;preparamos el contador de caracteres
+[ 164]    04AB: 8A 0C                                 MOV CL, [SI];caracter de fin de cadena '$'
+[ 165]    04AD: B5 00                                 MOV CH, 0   ;parte alta 0
+[ 166]    04AF: 33 C0                                 XOR AX, AX ;Resetamos AX a 0 AH=0 AL=0
+[ 167]    04B1: 33 DB                                 XOR BX, BX ;Resetamos BX a 0 BH=0 BL=0
+[ 168]    04B3:                                       recorrer_cadena:
+[ 169]        :                                       ;obtenemos los datos operando1 operacion operando2
+[ 170]    04B3: 8A 04                                 MOV AL, [SI] ;tomamos el primer operador
+[ 171]    04B5: A2 F6 01                              MOV operador1, AL ;y lo guardamos
+[ 172]    04B8: 46                                    INC SI            ;nos movemos al caracter de
+[ 173]    04B9: 8A 04                                 MOV AL,[SI]       ;de la operacion
+[ 174]    04BB: A2 F7 01                              MOV operacion, AL ;y lo guardamos
+[ 175]    04BE: 46                                    INC SI            ;segundo operador
+[ 176]    04BF: 8A 04                                 MOV AL, [SI]      ;lo leemos
+[ 177]    04C1: A2 F8 01                              MOV operador2, AL ;y lo guardamos
+[ 178]        :                                       ;procesamos los operandos acorde al operador
+[ 179]    04C4: A0 F7 01                              MOV AL, operacion
+[ 180]    04C7: 3C 2F                                 CMP AL, '/' ;la operacion es division?
+[ 181]    04C9: 75 02                                 JNE es_multiplicacion
+[ 182]    04CB: EB 06                                 JMP aplicar_division
+[ 183]    04CD:                                       es_multiplicacion:
+[ 184]    04CD: 3C 2A                                 CMP AL, '*'   ;la operacion es multiplicacion?
+[ 185]    04CF: 75 3C                                 JNE no_parsear
+[ 186]    04D1: EB 0E                                 JMP aplicar_multiplicacion
+[ 187]    04D3:                                       aplicar_division:
+[ 188]        :                                       ;division de bytes cociente en AL residuo AH
+[ 189]    04D3: A0 F6 01                              MOV AL, operador1 ;dividendo
+[ 190]    04D6: 8A 1E F8 01                           MOV BL, operador2 ;divisor
+[ 191]    04DA: F6 F3                                 DIV BL  ;aplicamos division
+[ 192]    04DC: A2 F9 01                              MOV resultado, AL ;recuperamos el cociente
+[ 193]    04DF: EB 0E                                 JMP guardar_en_arreglo
+[ 194]    04E1:                                       aplicar_multiplicacion:
+[ 195]        :                                       ;multiplicacin de bytes, nota resultado no es mayor a 255 un byte
+[ 196]        :                                       ;debido a que es un digito solamente
+[ 197]    04E1: A0 F6 01                              MOV AL, operador1 ;multiplicando
+[ 198]    04E4: 8A 1E F8 01                           MOV BL, operador2 ;multiplicador
+[ 199]    04E8: F6 E3                                 MUL BL  ;aplicamos multiplicacion
+[ 200]    04EA: A2 F9 01                              MOV resultado, AL ;recuperamos el resultado
+[ 201]    04ED: EB 00                                 JMP guardar_en_arreglo ;este salto parece innecesario se deja para mantener logica
+[ 202]    04EF:                                       guardar_en_arreglo:
+[ 203]    04EF: A0 F9 01                              MOV AL, resultado ;cargamos el resultado
+[ 204]    04F2: 88 05                                 MOV [DI], AL;guardamos en la cadena_resultado1
+[ 205]    04F4: 88 04                                 MOV [SI], AL;
+[ 206]        :                                       ;solo nos movemos a la siguiente casilla cuando no halla parseo
+[ 207]    04F6: C6 45 01 24                           MOV [DI+1], '$' ;Agregamos el fin de linea
+[ 208]    04FA: C6 45 02 00                           MOV [DI+2], 0   ;terminador de linea
+[ 209]    04FE: 8A 1E FA 01                           MOV BL, contador
+[ 210]    0502: 80 C3 00                              ADD BL, 0      ;se agregan 0 caracteres
+[ 211]    0505: 88 1E FA 01                           MOV contador, BL
+[ 212]    0509: 32 DB                                 XOR BL, BL     ;
+[ 213]    050B: EB 26                                 JMP termina_parseo
+[ 214]    050D:                                       no_parsear:
+[ 215]        :                                       ;guardamos los valores en la cadena sin reducir
+[ 216]    050D: A0 F6 01                              MOV AL, operador1
+[ 217]    0510: 88 05                                 MOV [DI], AL
+[ 218]    0512: 47                                    INC DI
+[ 219]    0513: A0 F7 01                              MOV AL, operacion
+[ 220]    0516: 88 05                                 MOV [DI], AL
+[ 221]    0518: 47                                    INC DI
+[ 222]    0519: A0 F8 01                              MOV AL, operador2
+[ 223]    051C: 88 05                                 MOV [DI], AL
+[ 224]        :                                       ;DI apunta al siguiente carcter en cadena_resultado1
+[ 225]    051E: C6 45 01 24                           MOV [DI+1], '$' ;agregamos el fin de linea
+[ 226]    0522: C6 45 02 00                           MOV [DI+2], 0   ;terminador de linea
+[ 227]    0526: 8A 1E FA 01                           MOV BL, contador
+[ 228]    052A: 80 C3 02                              ADD BL, 2      ;se agregan tres caracteres
+[ 229]    052D: 88 1E FA 01                           MOV contador, BL
+[ 230]    0531: 32 DB                                 XOR BL, BL     ;
+[ 231]    0533:                                       termina_parseo:
+[ 232]        :                                       ;SI esta posicionado dos espacios adelante
+[ 233]        :                                       ;verificamos si el siguiente elemento es un '$'
+[ 234]        :                                       ;que indica el final de la cadena
+[ 235]    0533: 8A 4C 01                              MOV CL, [SI+1]
+[ 236]    0536: 80 F9 24                              CMP CL, '$' ;Fin de la cadena?
+[ 237]    0539: 74 03 E9 75 FF                        JNE recorrer_cadena
+[ 238]        :                                       ;MOV [DI], '$'         ;terminador para INTs
+[ 239]        :                                       ;MOV [DI+1], 0         ;terminador para PRINT_STRING
+[ 240]    053E: 8A 1E FA 01                           MOV BL, contador
+[ 241]    0542: 88 1E 7D 01                           MOV [tam_cadena], BL ;guardamos el numero de elementos en la cadena
+[ 242]        :                                       
+[ 243]        :                                       ;veerificamos el resultado
+[ 244]    0546: 50 56 EB 03 0D 0A 00 BE 4A 05 2E 8A   PRINTN '';salto de linea
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 245]        :                                       ;LEA    SI, cadena_resultado1 ;cargamos el mensaje a enviar
+[ 246]        :                                       ;CALL   PRINT_STRING   ;imprimimos el mensaje
+[ 247]        :                                       ;PRINTN ''
+[ 248]    0560: 50 56 EB 16 74 61 6D 6E 69 6F 20 64   PRINT "tamnio de la cadena: "
+                65 20 6C 61 20 63 61 64 65 6E 61 3A 
+                20 00 BE 64 05 2E 8A 04 3C 00 74 07 
+                46 B4 0E CD 10 EB F2 5E 58          
+[ 249]    058D: 33 C0                                 XOR AX, AX
+[ 250]    058F: A0 7D 01                              MOV AL, [tam_cadena]
+[ 251]    0592: E8 CC FC                              call PRINT_NUM_UNS
+[ 252]    0595: 50 56 EB 01 00 BE 99 05 2E 8A 04 3C   PRINT ''
+                00 74 07 46 B4 0E CD 10 EB F2 5E 58 
+                                                    
+[ 253]        :                                       
+[ 254]        :                                       
+[ 255]        :                                       ;cadena_binario ahora ya solo tiene sumas y restas
+[ 256]        :                                       ;se puede parsear "directo", solo hay que ver que
+[ 257]        :                                       ;operacion hay que realizar
+[ 258]    05AD: BE BA 01                              LEA SI, cadena_resultado1 ;cadena de origen
+[ 259]    05B0: 8A 1E FA 01                           MOV BL, contador   ;preparamos el contador de caracteres
+[ 260]    05B4: 8A 0C                                 MOV CL, [SI];caracter de fin de cadena '$'
+[ 261]    05B6: B5 00                                 MOV CH, 0   ;parte alta 0
+[ 262]    05B8: 33 C0                                 XOR AX, AX ;Resetamos AX a 0 AH=0 AL=0
+[ 263]    05BA: 33 DB                                 XOR BX, BX ;Resetamos BX a 0 BH=0 BL=0
+[ 264]        :                                       
+[ 265]        :                                       ;verificamos si hay elementos en la cadena
+[ 266]    05BC: 8A 54 01                              MOV DL, [SI+1]
+[ 267]    05BF: 88 0E FB 01                           MOV total, CL ;asume que CL es el valor total
+[ 268]    05C3: 80 FA 24                              CMP DL, '$'
+[ 269]    05C6: 74 57                                 JE  solo_un_elemento
+[ 270]        :                                       
+[ 271]    05C8:                                       recorrer_final:
+[ 272]        :                                       ;obtenemos los datos operando1 operacion operando2
+[ 273]    05C8: 8A 04                                 MOV AL, [SI] ;tomamos el primer operador
+[ 274]    05CA: A2 F6 01                              MOV operador1, AL ;y lo guardamos
+[ 275]    05CD: 46                                    INC SI            ;nos movemos al caracter de
+[ 276]    05CE: 8A 04                                 MOV AL,[SI]       ;de la operacion
+[ 277]    05D0: A2 F7 01                              MOV operacion, AL ;y lo guardamos
+[ 278]    05D3: 46                                    INC SI            ;segundo operador
+[ 279]    05D4: 8A 04                                 MOV AL, [SI]      ;lo leemos
+[ 280]    05D6: A2 F8 01                              MOV operador2, AL ;y lo guardamos
+[ 281]        :                                       ;procesamos los operandos acorde al operador
+[ 282]    05D9: A0 F7 01                              MOV AL, operacion
+[ 283]    05DC: 3C 2B                                 CMP AL, '+' ;la operacion es suma?
+[ 284]    05DE: 75 02                                 JNE es_resta
+[ 285]    05E0: EB 04                                 JMP aplicar_suma
+[ 286]    05E2:                                       es_resta:
+[ 287]    05E2: 3C 2D                                 CMP AL, '-'   ;la operacion es resta?
+[ 288]        :                                       ;JNE no_parsear  ;condicion de error
+[ 289]    05E4: EB 0E                                 JMP aplicar_resta
+[ 290]    05E6:                                       aplicar_suma:
+[ 291]        :                                       ;division de bytes cociente en AL residuo AH
+[ 292]    05E6: A0 F6 01                              MOV AL, operador1 ;dividendo
+[ 293]    05E9: 8A 1E F8 01                           MOV BL, operador2 ;divisor
+[ 294]    05ED: 02 C3                                 ADD AL, BL  ;aplicamos la suma
+[ 295]    05EF: A2 F9 01                              MOV resultado, AL ;recuperamos la suma
+[ 296]    05F2: EB 0E                                 JMP guardar_resultado
+[ 297]    05F4:                                       aplicar_resta:
+[ 298]        :                                       ;multiplicacin de bytes, nota resultado no es mayor a 255 un byte
+[ 299]        :                                       ;debido a que es un digito solamente
+[ 300]    05F4: A0 F6 01                              MOV AL, operador1 ;multiplicando
+[ 301]    05F7: 8A 1E F8 01                           MOV BL, operador2 ;multiplicador
+[ 302]    05FB: 2A C3                                 SUB AL, BL  ;aplicamos la resta
+[ 303]    05FD: A2 F9 01                              MOV resultado, AL ;recuperamos el resultado
+[ 304]    0600: EB 00                                 JMP guardar_resultado ;este salto parece innecesario se deja para mantener logica
+[ 305]    0602:                                       guardar_resultado:
+[ 306]    0602: A0 F9 01                              MOV AL, resultado ;cargamos el resultado
+[ 307]        :                                       ;MOV [DI], AL;guardamos en la cadena_resultado1
+[ 308]    0605: 88 04                                 MOV [SI], AL;SI apunta a lo acumulado
+[ 309]        :                                       ;solo nos movemos a la siguiente casilla cuando no halla parseo
+[ 310]        :                                       ;MOV [DI+1], '$' ;Agregamos el fin de linea
+[ 311]        :                                       ;MOV [DI+2], 0   ;terminador de linea
+[ 312]    0607: A2 FB 01                              MOV total, AL ; guardamos lo acumulado hasta ahora
+[ 313]        :                                       
+[ 314]    060A: 8A 1E FA 01                           MOV BL, contador
+[ 315]    060E: 80 C3 00                              ADD BL, 0      ;se agregan 0 caracteres
+[ 316]    0611: 88 1E FA 01                           MOV contador, BL
+[ 317]    0615: 32 DB                                 XOR BL, BL     ;
+[ 318]        :                                       
+[ 319]    0617: 8A 4C 01                              MOV CL, [SI+1]
+[ 320]    061A: 80 F9 24                              CMP CL, '$' ;Fin de la cadena?
+[ 321]    061D: 75 A9                                 JNE recorrer_final
+[ 322]    061F:                                       solo_un_elemento:  ; no hay necesitad de recorrer el arreglo
+[ 323]        :                                       
+[ 324]        :                                       ;veerificamos el resultado
+[ 325]    061F: 50 56 EB 03 0D 0A 00 BE 23 06 2E 8A   PRINTN '';salto de linea
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 326]    0639: 50 56 EB 22 45 6C 20 72 65 73 75 6C   PRINT "El resultado de la expresion es: "
+                74 61 64 6F 20 64 65 20 6C 61 20 65 
+                78 70 72 65 73 69 6F 6E 20 65 73 3A 
+                20 00 BE 3D 06 2E 8A 04 3C 00 74 07 
+                46 B4 0E CD 10 EB F2 5E 58          
+[ 327]    0672: 50 56 EB 03 0D 0A 00 BE 76 06 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[ 328]    068C: 50 56 EB 08 54 6F 74 61 6C 3A 20 00   PRINT "Total: "
+                BE 90 06 2E 8A 04 3C 00 74 07 46 B4 
+                0E CD 10 EB F2 5E 58                
+[ 329]    06AB: 33 C0                                 XOR AX, AX
+[ 330]    06AD: A0 FB 01                              MOV AL, [total]
+[ 331]    06B0: E8 AE FB                              call PRINT_NUM_UNS
+[ 332]    06B3: 50 56 EB 01 00 BE B7 06 2E 8A 04 3C   PRINT ''
+                00 74 07 46 B4 0E CD 10 EB F2 5E 58 
+                                                    
+[ 333]        :                                       
+[ 334]    06CB:                                       Fin_programa:
+[ 335]    06CB: CD 20                                 INT 20h             ; Terminar programa de forma segura
+[ 336]        :                                       
+[ 337]    06CD: C3                                    ret
+[ 338]        :                                       
+[ 339]        :                                       
+[ 340]        :                                       
+[ 341]        :                                       
+[ 342]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

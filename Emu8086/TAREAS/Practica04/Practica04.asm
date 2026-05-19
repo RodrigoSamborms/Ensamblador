@@ -1,4 +1,4 @@
-
+     
 ; You may customize this and other start-up templates; 
 ; The location of this template is c:\emu8086\inc\0_com_template.txt
 
@@ -18,7 +18,17 @@ msg5:   db "Resultado variable de salida de 32 bits"
 
 base dw ?   ;variables de 16 bits
 exponente dw ?
-resultado dw 2 dup(?) ;variable de 32 bits
+resultado db 4 dup(0) ;variable de 32 bits
+
+;#### PROCEDIMIENTOS ####
+potencia:
+    MOV AX, 1
+    MOV BX, base
+    MOV CX, exponente
+    ;JCXZ exp_zero ;evitar bucles infinitos
+    elevar: MUL BX
+    LOOP elevar 
+    ret
 
            
 start:           
@@ -31,14 +41,37 @@ start:
     PRINT "escribe el valor de la base: "
     CALL SCAN_NUM
     MOV base, CX
-    PRINTN 
+    PRINTN ''
     PRINT "escribe el valor del exponente: "
     CALL SCAN_NUM
     MOV exponente, CX
-    PRINTN
+    PRINTN ''
+    
+    ;punto de debug
+    ;PRINT 'entrando al procedimiento'
+    ;mov ah, 0          ;espera a presionar una tecla
+    ;int 16h
+    ;punto de debug
+    
+    PRINTN ''
     PRINT "verifique el resultado de la operacion "
     PRINT "en la ventana de las variables"
-          
+    
+    CMP CX, 0 ;verificamos que no sea 0
+    JZ Exponente_Cero   ;verificamos si CX es 0
+        
+    ;llamamos al procedimiento
+    CALL potencia
+    ;recuperamos los datos DX:AX
+    MOV resultado+1, DL;valor bajo de BX
+    MOV resultado, DH;valor alto de BX
+    
+    MOV resultado+3, AL;valor bajo de AX
+    MOV resultado+2, AH;valor alto de AX
+    JMP fin_programa ;termino el programa
+
+Exponente_Cero: MOV resultado+3, 1;El resultado es 1     
+fin_programa:    
     int 20h ;interrupcion para regresar al OS FF88  
 def_macros:   
     DEFINE_PRINT_STRING 

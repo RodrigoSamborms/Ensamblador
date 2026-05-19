@@ -1,0 +1,159 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Practica04_V2.com -- emu8086 assembler version: 4.08  
+ 
+[ 18/05/2026  --  04:18:39 a. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       
+[   2]        :                                       ; You may customize this and other start-up templates;
+[   3]        :                                       ; The location of this template is c:\emu8086\inc\0_com_template.txt
+[   4]        :                                       
+[   5]        :                                       include 'emu8086.inc';incluimos las macrofunciones
+[   6]        :                                       
+[   7]        :                                       org 100h
+[   8]    0100: E9 AD 00                              jmp start
+[   9]        :                                       ;---------------------
+[  10]        :                                       ;| SEGMENTO DE DATOS |
+[  11]        :                                       ;---------------------
+[  12]        :                                       ;el cero indica null al final de la cadena
+[  13]    0103: 54 6F 72 72 65 73 20 52 69 76 65 72   msg1:   db "Torres Rivera Rodrigo",0
+                61 20 52 6F 64 72 69 67 6F 00       
+[  14]    0119: 53 65 63 63 69 6F 6E 20 44 30 31 00   msg2:   db "Seccion D01",0
+                                                    
+[  15]    0125: 44 61 74 6F 31 20 76 61 72 69 61 62   msg3:   db "Dato1 variable de entrada de 16 bits"
+                6C 65 20 64 65 20 65 6E 74 72 61 64 
+                61 20 64 65 20 31 36 20 62 69 74 73 
+                                                    
+[  16]    0149: 45 78 70 6F 6E 65 6E 74 65 20 76 61   msg4:   db "Exponente variable de entrada de 16 bits"
+                72 69 61 62 6C 65 20 64 65 20 65 6E 
+                74 72 61 64 61 20 64 65 20 31 36 20 
+                62 69 74 73                         
+[  17]    0171: 52 65 73 75 6C 74 61 64 6F 20 76 61   msg5:   db "Resultado variable de salida de 32 bits"
+                72 69 61 62 6C 65 20 64 65 20 73 61 
+                6C 69 64 61 20 64 65 20 33 32 20 62 
+                69 74 73                            
+[  18]        :                                       
+[  19]    0198: 00 00                                 base dw ?   ;variables de 16 bits
+[  20]    019A: 00 00                                 exponente dw ?
+[  21]    019C: 00 00 00 00                           resultado db 4 dup(0) ;variable de 32 bits
+[  22]        :                                       
+[  23]        :                                       ;#### PROCEDIMIENTOS ####
+[  24]    01A0:                                       potencia:
+[  25]    01A0: B8 01 00                              MOV AX, 1
+[  26]    01A3: 8B 1E 98 01                           MOV BX, base
+[  27]    01A7: 8B 0E 9A 01                           MOV CX, exponente
+[  28]        :                                       ;JCXZ exp_zero ;evitar bucles infinitos
+[  29]    01AB: F7 E3                                 elevar: MUL BX
+[  30]    01AD: E2 FC                                 LOOP elevar
+[  31]    01AF: C3                                    ret
+[  32]        :                                       
+[  33]        :                                       
+[  34]    01B0:                                       start:
+[  35]    01B0: BE 03 01                              LEA    SI, msg1       ;cargamos el mensaje a enviar
+[  36]    01B3: E8 9A 01                              CALL   print_string   ;imprimimos el mensaje
+[  37]    01B6: 50 56 EB 03 0D 0A 00 BE BA 01 2E 8A   PRINTN '' ;salto de linea
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  38]    01D0: BE 19 01                              LEA    SI, msg2
+[  39]    01D3: E8 7A 01                              CALL   print_string
+[  40]    01D6: 50 56 EB 03 0D 0A 00 BE DA 01 2E 8A   PRINTN ;escribe un salto de linea
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  41]    01F0: 50 56 EB 1E 65 73 63 72 69 62 65 20   PRINT "escribe el valor de la base: "
+                65 6C 20 76 61 6C 6F 72 20 64 65 20 
+                6C 61 20 62 61 73 65 3A 20 00 BE F4 
+                01 2E 8A 04 3C 00 74 07 46 B4 0E CD 
+                10 EB F2 5E 58                      
+[  42]    0225: E8 3D 01                              CALL SCAN_NUM
+[  43]    0228: 89 0E 98 01                           MOV base, CX
+[  44]    022C: 50 56 EB 03 0D 0A 00 BE 30 02 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  45]    0246: 50 56 EB 21 65 73 63 72 69 62 65 20   PRINT "escribe el valor del exponente: "
+                65 6C 20 76 61 6C 6F 72 20 64 65 6C 
+                20 65 78 70 6F 6E 65 6E 74 65 3A 20 
+                00 BE 4A 02 2E 8A 04 3C 00 74 07 46 
+                B4 0E CD 10 EB F2 5E 58             
+[  46]    027E: E8 E4 00                              CALL SCAN_NUM
+[  47]    0281: 89 0E 9A 01                           MOV exponente, CX
+[  48]    0285: 50 56 EB 03 0D 0A 00 BE 89 02 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  49]        :                                       
+[  50]        :                                       ;punto de debug
+[  51]        :                                       ;PRINT 'entrando al procedimiento'
+[  52]        :                                       ;mov ah, 0          ;espera a presionar una tecla
+[  53]        :                                       ;int 16h
+[  54]        :                                       ;punto de debug
+[  55]        :                                       
+[  56]    029F: 50 56 EB 03 0D 0A 00 BE A3 02 2E 8A   PRINTN ''
+                04 3C 00 74 07 46 B4 0E CD 10 EB F2 
+                5E 58                               
+[  57]    02B9: 50 56 EB 28 76 65 72 69 66 69 71 75   PRINT "verifique el resultado de la operacion "
+                65 20 65 6C 20 72 65 73 75 6C 74 61 
+                64 6F 20 64 65 20 6C 61 20 6F 70 65 
+                72 61 63 69 6F 6E 20 00 BE BD 02 2E 
+                8A 04 3C 00 74 07 46 B4 0E CD 10 EB 
+                F2 5E 58                            
+[  58]    02F8: 50 56 EB 1F 65 6E 20 6C 61 20 76 65   PRINT "en la ventana de las variables"
+                6E 74 61 6E 61 20 64 65 20 6C 61 73 
+                20 76 61 72 69 61 62 6C 65 73 00 BE 
+                FC 02 2E 8A 04 3C 00 74 07 46 B4 0E 
+                CD 10 EB F2 5E 58                   
+[  59]        :                                       
+[  60]    032E: 83 F9 00                              CMP CX, 0 ;verificamos que no sea 0
+[  61]    0331: 74 14                                 JZ Exponente_Cero   ;verificamos si CX es 0
+[  62]        :                                       
+[  63]        :                                       ;llamamos al procedimiento
+[  64]    0333: E8 6A FE                              CALL potencia
+[  65]        :                                       ;recuperamos los datos DX:AX
+[  66]    0336: 88 16 9D 01                           MOV resultado+1, DL;valor bajo de BX
+[  67]    033A: 88 36 9C 01                           MOV resultado, DH;valor alto de BX
+[  68]        :                                       
+[  69]    033E: A2 9F 01                              MOV resultado+3, AL;valor bajo de AX
+[  70]    0341: 88 26 9E 01                           MOV resultado+2, AH;valor alto de AX
+[  71]    0345: EB 05                                 JMP fin_programa ;termino el programa
+[  72]        :                                       
+[  73]    0347: C6 06 9F 01 01                        Exponente_Cero: MOV resultado+3, 1;El resultado es 1
+[  74]    034C:                                       fin_programa:
+[  75]    034C: CD 20                                 int 20h ;interrupcion para regresar al OS FF88
+[  76]    034E:                                       def_macros:
+[  77]    034E: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[  78]    0362: E9 C3 00 52 50 56 B9 00 00 2E C6 06   DEFINE_SCAN_NUM
+                25 04 00 B4 00 CD 16 B4 0E CD 10 3C 
+                2D 74 69 3C 0D 75 03 E9 93 00 3C 08 
+                75 1E BA 00 00 8B C1 2E F7 36 26 04 
+                8B C8 50 B0 20 B4 0E CD 10 58 50 B0 
+                08 B4 0E CD 10 58 EB CB 3C 30 73 02 
+                EB 04 3C 39 76 1A 50 B0 08 B4 0E CD 
+                10 58 50 B0 20 B4 0E CD 10 58 50 B0 
+                08 B4 0E CD 10 58 EB A7 50 8B C1 2E 
+                F7 26 26 04 8B C8 58 83 FA 00 75 19 
+                2C 30 B4 00 8B D1 03 C8 72 0A EB 8B 
+                2E C6 06 25 04 01 EB 83 8B CA BA 00 
+                00 8B C1 2E F7 36 26 04 8B C8 50 B0 
+                08 B4 0E CD 10 58 50 B0 20 B4 0E CD 
+                10 58 50 B0 08 B4 0E CD 10 58 E9 5A 
+                FF 2E 80 3E 25 04 00 74 02 F7 D9 5E 
+                58 5A C3 00 0A 00                   
+[  79]        :                                       ;PRINTN ;no requiere definicion
+[  80]    0428: C3                                    ret
+[  81]        :                                       
+[  82]        :                                       
+[  83]        :                                       
+[  84]        :                                       
+[  85]        :                                       
+[  86]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
